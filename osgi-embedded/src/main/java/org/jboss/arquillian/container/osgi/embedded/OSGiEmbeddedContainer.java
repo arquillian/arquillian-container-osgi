@@ -93,8 +93,8 @@ public class OSGiEmbeddedContainer implements DeployableContainer<OSGiEmbeddedCo
          if (getInstalledBundle(bundles, "osgi.cmpn") == null)
             installBundle("org.osgi.compendium", false);
          
-         if (getInstalledBundle(bundles, "arquillian-protocol-jmx-osgi-bundle") == null) 
-            installBundle("arquillian-protocol-jmx-osgi-bundle", true);
+         if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null) 
+            installBundle("arquillian-osgi-bundle", true);
       }
       catch (BundleException ex)
       {

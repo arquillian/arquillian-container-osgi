@@ -17,8 +17,8 @@
     <artifactId>arquillian-parent-osgi</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Arquillian Container Parent OSGi</name>
-    <description>OSGi Container integrations for the Arquillian Project</description>
+    <name>Arquillian OSGi</name>
+    <description>OSGi Framework integrations for the Arquillian Project</description>
 
 
     <!-- Properties -->
@@ -89,13 +89,10 @@
     </dependencyManagement>
 
     <modules>
-        <module>osgi-embedded</module>
-
-        <module>protocols/jmx</module>
-        <module>protocols/jmx-osgi</module>
-        <module>protocols/jmx-osgi-bundle</module>
-
+        <module>protocols/osgi</module>
         <module>testenrichers/osgi</module>
+        <module>osgi-bundle</module>
+        <module>osgi-embedded</module>
     </modules>
 
 </project>
