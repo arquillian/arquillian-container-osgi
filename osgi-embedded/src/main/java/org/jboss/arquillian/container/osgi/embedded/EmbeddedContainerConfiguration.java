@@ -20,16 +20,12 @@ import org.jboss.arquillian.spi.ConfigurationException;
 import org.jboss.arquillian.spi.client.container.ContainerConfiguration;
 
 /**
- * OSGiEmbeddedConfiguration
+ * OSGi embedded configuration
  *
  * @author thomas.diesler@jboss.com
- * @version $Revision: $
  */
-public class OSGiEmbeddedConfiguration implements ContainerConfiguration
+public class EmbeddedContainerConfiguration implements ContainerConfiguration
 {
-   /* (non-Javadoc)
-    * @see org.jboss.arquillian.spi.client.container.ContainerConfiguration#validate()
-    */
    @Override
    public void validate() throws ConfigurationException
    {

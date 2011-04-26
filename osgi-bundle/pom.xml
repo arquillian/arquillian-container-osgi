@@ -7,7 +7,6 @@
         <groupId>org.jboss.arquillian.container</groupId>
         <artifactId>arquillian-parent-osgi</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <!-- Model Version -->
@@ -15,9 +14,9 @@
 
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.protocol</groupId>
-    <artifactId>arquillian-protocol-jmx-osgi-bundle</artifactId>
-    <name>Arquillian Protocol JMX OSGi Bundle</name>
-    <description>Arquillian OSGi Bundlei for JMX MBean registration</description>
+    <artifactId>arquillian-osgi-bundle</artifactId>
+    <name>Arquillian OSGi Bundle</name>
+    <description>Arquillian OSGi Bundle</description>
     <packaging>bundle</packaging>
 
     <!-- Properties -->
@@ -68,6 +67,7 @@
                         </Embed-Dependency>
                         <_exportcontents>
                             javax.inject;version=${version.javax.inject_javax.inject},
+                            org.jboss.arquillian.api;version=${project.version},
                             org.jboss.arquillian.junit;version=${project.version},
                             org.jboss.shrinkwrap.api;version=${version.shrinkwrap_shrinkwrap},
                             org.jboss.shrinkwrap.api.asset;version=${version.shrinkwrap_shrinkwrap},

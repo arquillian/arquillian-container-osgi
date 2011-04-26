@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.embedded;
+package org.jboss.arquillian.container.osgi.arq193;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 
@@ -26,37 +27,29 @@ import javax.inject.Inject;
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 
 /**
- * Test the embedded OSGi framework
+ * [ARQ-193] Create auxillary OSGi test bundle
  *
  * @author thomas.diesler@jboss.com
- * @version $Revision: $
+ * @since 31-Aug-2010
  */
 @RunWith(Arquillian.class)
-public class OSGiEmbeddedFrameworkTestCase
+public class ARQ193ExplicitTestCase
 {
-   @Inject
-   public BundleContext context;
-   
-   @Inject
-   public Bundle bundle;
-   
    @Deployment
-   public static JavaArchive createdeployment()
+   public static Archive<?> createDeployment()
    {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
-      archive.addClasses(SimpleActivator.class, SimpleService.class);
-      archive.addClasses(OSGiEmbeddedFrameworkTestCase.class);
+      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq139-explicit");
+      archive.addClass(ARQ193ExplicitTestCase.class);
       archive.setManifest(new Asset()
       {
          public InputStream openStream()
@@ -64,54 +57,44 @@ public class OSGiEmbeddedFrameworkTestCase
             OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
             builder.addBundleSymbolicName(archive.getName());
             builder.addBundleManifestVersion(2);
-            builder.addBundleActivator(SimpleActivator.class.getName());
-            builder.addImportPackages(BundleActivator.class);
+            builder.addExportPackages(ARQ193ExplicitTestCase.class);
+            builder.addImportPackages("org.jboss.arquillian.api", "org.jboss.arquillian.junit");
+            builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
+            builder.addImportPackages("javax.inject", "org.junit", "org.junit.runner", "org.osgi.framework");
             return builder.openStream();
          }
       });
       return archive;
    }
-
-   //@Test
-   public void testBundleContextInjection() throws Exception
-   {
-      assertNotNull("BundleContext injected", context);
-      assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-   }
-
+   
+   @Inject
+   public Bundle bundle;
+   
    @Test
    public void testBundleInjection() throws Exception
    {
-      // Assert that the bundle is injected
       assertNotNull("Bundle injected", bundle);
+      assertEquals("Bundle INSTALLED", Bundle.RESOLVED, bundle.getState());
       
-      // Assert that the bundle is in state RESOLVED
-      // Note when the test bundle contains the test case it 
-      // must be resolved already when this test method is called
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-      
-      // Start the bundle
       bundle.start();
       assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
       
-      // Assert the bundle context
+      // The injected bundle is the one that contains the test case
+      assertEquals("arq139-explicit", bundle.getSymbolicName());
+      bundle.loadClass(ARQ193ExplicitTestCase.class.getName());
+      
+      // The application bundle is installed before the generated test bundle
       BundleContext context = bundle.getBundleContext();
-      assertNotNull("BundleContext available", context);
+      for(Bundle bundle : context.getBundles())
+      {
+         if (bundle.getSymbolicName().equals(ARQ193ExplicitTestCase.class.getSimpleName()))
+            fail("Unexpected generated bundle: " + bundle);
+      }
       
-      // Get the service reference
-      ServiceReference sref = context.getServiceReference(SimpleService.class.getName());
-      assertNotNull("ServiceReference not null", sref);
-      
-      // Get the service for the reference
-      SimpleService service = (SimpleService)context.getService(sref);
-      assertNotNull("Service not null", service);
-      
-      // Invoke the service 
-      int sum = service.sum(1, 2, 3);
-      assertEquals(6, sum);
-      
-      // Stop the bundle
       bundle.stop();
       assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+      
+      bundle.uninstall();
+      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
    }
 }

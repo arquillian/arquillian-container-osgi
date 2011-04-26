@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jboss.arquillian</groupId>
         <artifactId>arquillian-build</artifactId>
-        <version>1.0.0.Alpha5</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <!-- Model Version -->
@@ -17,13 +17,13 @@
     <artifactId>arquillian-parent-osgi</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Arquillian Container Parent OSGi</name>
-    <description>OSGi Container integrations for the Arquillian Project</description>
+    <name>Arquillian OSGi</name>
+    <description>OSGi Framework integrations for the Arquillian Project</description>
 
 
     <!-- Properties -->
     <properties>
-        <version.arquillian>1.0.0.Alpha5</version.arquillian>
+        <version.arquillian>1.0.0-SNAPSHOT</version.arquillian>
 
         <version.osgi>4.2.0</version.osgi>
         <version.jboss_osgi_spi>1.0.26</version.jboss_osgi_spi>
@@ -88,14 +88,28 @@
         </dependencies>
     </dependencyManagement>
 
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<failIfNoTests>false</failIfNoTests>
+					<systemProperties>
+						<property>
+							<name>java.util.logging.manager</name>
+							<value>org.jboss.logmanager.LogManager</value>
+						</property>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
     <modules>
-        <module>osgi-embedded</module>
-
-        <module>protocols/jmx</module>
-        <module>protocols/jmx-osgi</module>
-        <module>protocols/jmx-osgi-bundle</module>
-
+        <module>protocols/osgi</module>
         <module>testenrichers/osgi</module>
+        <module>osgi-bundle</module>
+        <module>osgi-embedded</module>
     </modules>
 
 </project>
