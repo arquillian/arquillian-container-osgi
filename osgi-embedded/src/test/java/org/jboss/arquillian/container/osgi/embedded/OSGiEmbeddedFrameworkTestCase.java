@@ -65,11 +65,6 @@ public class OSGiEmbeddedFrameworkTestCase
             builder.addBundleSymbolicName(archive.getName());
             builder.addBundleManifestVersion(2);
             builder.addBundleActivator(SimpleActivator.class.getName());
-            // [TODO] generate a separate bundle the contains the test case
-            builder.addExportPackages(OSGiEmbeddedFrameworkTestCase.class);
-            builder.addImportPackages("org.jboss.arquillian.junit");
-            builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
-            builder.addImportPackages("javax.inject", "org.junit", "org.junit.runner");
             builder.addImportPackages(BundleActivator.class);
             return builder.openStream();
          }

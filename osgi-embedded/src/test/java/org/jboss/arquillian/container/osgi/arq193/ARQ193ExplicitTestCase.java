@@ -58,7 +58,7 @@ public class ARQ193ExplicitTestCase
             builder.addBundleSymbolicName(archive.getName());
             builder.addBundleManifestVersion(2);
             builder.addExportPackages(ARQ193ExplicitTestCase.class);
-            builder.addImportPackages("org.jboss.arquillian.junit");
+            builder.addImportPackages("org.jboss.arquillian.api", "org.jboss.arquillian.junit");
             builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
             builder.addImportPackages("javax.inject", "org.junit", "org.junit.runner", "org.osgi.framework");
             return builder.openStream();
