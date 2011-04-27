@@ -72,7 +72,7 @@ public class OSGiEmbeddedFrameworkTestCase
       return archive;
    }
 
-   //@Test
+   @Test
    public void testBundleContextInjection() throws Exception
    {
       assertNotNull("BundleContext injected", context);

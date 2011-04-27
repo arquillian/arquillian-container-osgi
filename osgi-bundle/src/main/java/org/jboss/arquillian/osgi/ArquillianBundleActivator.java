@@ -34,7 +34,6 @@ import org.jboss.logging.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleReference;
 import org.osgi.framework.ServiceReference;
 
 /**
@@ -52,9 +51,6 @@ public class ArquillianBundleActivator implements BundleActivator
 
    private  JMXTestRunner testRunner;
    
-   //@Inject
-   //private InstanceProducer<BundleContext> bundleContextInst = new InstanceImpl<BundleContext>();
-   
    public void start(final BundleContext context) throws Exception
    {
       TestClassLoader loader = new TestClassLoader()
@@ -66,10 +62,6 @@ public class ArquillianBundleActivator implements BundleActivator
             return arqBundle.loadClass(className);
          }
       };
-      
-      // Make the system bundle contaext available
-      BundleContext systemContext = context.getBundle(0).getBundleContext();
-      //bundleContextInst.set(systemContext);
       
       // Register the JMXTestRunner
       MBeanServer mbeanServer = getMBeanServer(context);
