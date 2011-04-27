@@ -19,6 +19,11 @@ package org.jboss.arquillian.container.osgi.embedded;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerFactory;
 
 import org.jboss.arquillian.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.spi.client.container.DeploymentException;
@@ -57,10 +62,14 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
    @Inject
    @ContainerScoped
    private InstanceProducer<BundleContext> bundleContextInst;
-
+   
    @Inject
    @DeploymentScoped
    private InstanceProducer<Bundle> bundleInst;
+
+   @Inject
+   @ContainerScoped
+   private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
    @Override
    public Class<EmbeddedContainerConfiguration> getConfigurationClass()
@@ -71,13 +80,17 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
    @Override
    public ProtocolDescription getDefaultProtocol()
    {
-      return new ProtocolDescription("JMX-OSGi");
+      return new ProtocolDescription("jmx-osgi");
    }
 
+   @Override
    public void setup(EmbeddedContainerConfiguration configuration)
    {
       OSGiBootstrapProvider provider = OSGiBootstrap.getBootstrapProvider();
       frameworkInst.set(provider.getFramework());
+      
+      MBeanServerConnection mbeanServer = getMBeanServerConnection();
+      mbeanServerInst.set(mbeanServer);
    }
 
    public void start() throws LifecycleException
@@ -130,7 +143,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
          ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
 
-         BundleContext sysContext = frameworkInst.get().getBundleContext();
+         BundleContext sysContext = bundleContextInst.get();
          Bundle bundle = sysContext.installBundle(archive.getName(), inputStream);
          bundleInst.set(bundle);
       }
@@ -167,13 +180,13 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
    @Override
    public void deploy(Descriptor descriptor) throws DeploymentException
    {
-      throw new UnsupportedOperationException("JBoss Reloaded does not support Descriptor deployment");
+      throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
    }
 
    @Override
    public void undeploy(Descriptor descriptor) throws DeploymentException
    {
-      throw new UnsupportedOperationException("JBoss Reloaded does not support Descriptor deployment");
+      throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
    }
 
    private Bundle getInstalledBundle(Bundle[] bundles, String symbolicName)
@@ -200,9 +213,9 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
       {
          if (path.contains(artifactId))
          {
-            BundleContext sysContext = frameworkInst.get().getBundleContext();
             try
             {
+               BundleContext sysContext = bundleContextInst.get();
                Bundle bundle = sysContext.installBundle(new File(path).toURI().toString());
                if (startBundle == true)
                   bundle.start();
@@ -211,10 +224,33 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             }
             catch (BundleException ex)
             {
-               log.error("Cannot install bundle: " + path);
+               log.error("Cannot install/start bundle: " + path, ex);
             }
          }
       }
       return null;
+   }
+
+   private MBeanServerConnection getMBeanServerConnection()
+   {
+      MBeanServer mbeanServer = null;
+
+      ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
+      if (serverArr.size() > 1)
+         log.warnf("Multiple MBeanServer instances: %s", serverArr);
+
+      if (serverArr.size() > 0)
+      {
+         mbeanServer = serverArr.get(0);
+         log.debugf("Found MBeanServer:%s ", mbeanServer.getDefaultDomain());
+      }
+
+      if (mbeanServer == null)
+      {
+         log.debugf("No MBeanServer, create one ...");
+         mbeanServer = MBeanServerFactory.createMBeanServer();
+      }
+
+      return mbeanServer;
    }
 }

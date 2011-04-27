@@ -14,31 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.osgi;
+package org.jboss.arquillian.container.osgi.remote;
 
-import org.jboss.arquillian.junit.JUnitTestRunner;
-import org.jboss.arquillian.spi.TestResult;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
 /**
- * A JUnitTestRunner for OSGi
+ * A BundleActivator that registers a {@ SimpleService}
  *
  * @author thomas.diesler@jboss.com
+ * @version $Revision: $
  */
-public class JUnitBundleTestRunner extends JUnitTestRunner
+public class SimpleActivator implements BundleActivator
 {
-   @Override
-   public TestResult execute(Class<?> testClass, String methodName)
+   public void start(BundleContext context) throws Exception
    {
-      ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
-      try
+      SimpleService service = new SimpleService()
       {
-         // Make sure we run in the context of the arquillian-bundle class loader
-         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-         return super.execute(testClass, methodName);
-      }
-      finally
-      {
-         Thread.currentThread().setContextClassLoader(ctxLoader);
-      }
+         public Integer sum(Integer... values)
+         {
+            Integer result = 0;
+            if (values != null)
+            {
+               for (Integer i : values)
+               {
+                  result += i;
+               }
+            }
+            return result;
+         }
+      };
+      context.registerService(SimpleService.class.getName(), service, null);
+   }
+
+   public void stop(BundleContext context) throws Exception
+   {
    }
 }

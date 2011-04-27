@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<arquillian xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+  <container qualifier="osgi" default="true">
+    <configuration>
+      <property name="host">localhost</property>
+      <property name="port">1090</property>
+      <property name="urlPath">jmxrmi</property>
+    </configuration>
+    <protocol type="jmx-osgi">
+      <configuration>
+        <property name="executionType">remote</property>
+      </configuration>
+    </protocol>
+  </container>
+</arquillian>

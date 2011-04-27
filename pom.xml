@@ -1,116 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <!-- Parent -->
-    <parent>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-build</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-    </parent>
-
-    <!-- Model Version -->
-    <modelVersion>4.0.0</modelVersion>
-
-    <!-- Artifact Configuration -->
-    <groupId>org.jboss.arquillian.container</groupId>
-    <artifactId>arquillian-parent-osgi</artifactId>
+  <!-- Parent -->
+  <parent>
+    <groupId>org.jboss.arquillian</groupId>
+    <artifactId>arquillian-build</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>Arquillian OSGi</name>
-    <description>OSGi Framework integrations for the Arquillian Project</description>
+  </parent>
+
+  <!-- Model Version -->
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Artifact Configuration -->
+  <groupId>org.jboss.arquillian.osgi</groupId>
+  <artifactId>arquillian-osgi-parent</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Arquillian OSGi</name>
+  <description>OSGi Framework integrations for the Arquillian Project</description>
 
 
-    <!-- Properties -->
-    <properties>
-        <version.arquillian>1.0.0-SNAPSHOT</version.arquillian>
+  <!-- Properties -->
+  <properties>
+    <version.arquillian_core>1.0.0-SNAPSHOT</version.arquillian_core>
+    <version.jboss_osgi_framework>1.0.0.Alpha25</version.jboss_osgi_framework>
+    <version.jboss_osgi_resolver>1.0.9</version.jboss_osgi_resolver>
+    <version.jboss_osgi_spi>1.0.26</version.jboss_osgi_spi>
+    <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
+    <version.osgi>4.2.0</version.osgi>
+  </properties>
 
-        <version.osgi>4.2.0</version.osgi>
-        <version.jboss_osgi_spi>1.0.26</version.jboss_osgi_spi>
-        <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
-        <version.jboss_osgi_framework>1.0.0.Alpha25</version.jboss_osgi_framework>
-        <version.jboss_osgi_resolver>1.0.9</version.jboss_osgi_resolver>
-        <version.jboss_logmanager>1.2.0.CR8</version.jboss_logmanager>
-        <version.jboss_logging>3.0.0.Beta4</version.jboss_logging>
-    </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.osgi.spi</groupId>
+        <artifactId>jbosgi-spi</artifactId>
+        <version>${version.jboss_osgi_spi}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>${version.osgi}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.compendium</artifactId>
+        <version>${version.osgi}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.osgi.vfs</groupId>
+        <artifactId>jbosgi-vfs30</artifactId>
+        <version>${version.jboss_osgi_vfs}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.arquillian</groupId>
+        <artifactId>arquillian-spi</artifactId>
+        <version>${version.arquillian_core}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.arquillian</groupId>
+        <artifactId>arquillian-junit</artifactId>
+        <version>${version.arquillian_core}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.jboss.osgi.spi</groupId>
-                <artifactId>jbosgi-spi</artifactId>
-                <version>${version.jboss_osgi_spi}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>${version.osgi}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.compendium</artifactId>
-                <version>${version.osgi}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.osgi.vfs</groupId>
-                <artifactId>jbosgi-vfs30</artifactId>
-                <version>${version.jboss_osgi_vfs}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.logmanager</groupId>
-                <artifactId>jboss-logmanager</artifactId>
-                <version>${version.jboss_logmanager}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging</artifactId>
-                <version>${version.jboss_logging}</version>
-                <scope>provided</scope>
-            </dependency>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <failIfNoTests>false</failIfNoTests>
+          <systemProperties>
+            <property>
+              <name>java.util.logging.manager</name>
+              <value>org.jboss.logmanager.LogManager</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-spi</artifactId>
-                <version>${version.arquillian}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-junit</artifactId>
-                <version>${version.arquillian}</version>
-                <scope>test</scope>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<failIfNoTests>false</failIfNoTests>
-					<systemProperties>
-						<property>
-							<name>java.util.logging.manager</name>
-							<value>org.jboss.logmanager.LogManager</value>
-						</property>
-					</systemProperties>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-    <modules>
-        <module>protocols/osgi</module>
-        <module>testenrichers/osgi</module>
-        <module>osgi-bundle</module>
-        <module>osgi-embedded</module>
-    </modules>
+  <modules>
+    <module>osgi-protocol</module>
+    <module>osgi-testenricher</module>
+    <module>osgi-bundle</module>
+    <module>osgi-embedded</module>
+    <module>osgi-remote</module>
+  </modules>
 
 </project>
 
