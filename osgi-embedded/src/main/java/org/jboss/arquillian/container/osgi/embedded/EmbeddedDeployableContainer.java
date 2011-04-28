@@ -40,6 +40,9 @@ import org.jboss.osgi.spi.framework.OSGiBootstrapProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
+import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
+import org.jboss.shrinkwrap.resolver.impl.maven.filter.StrictFilter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -201,32 +204,26 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
    private Bundle installBundle(String artifactId, boolean startBundle)
    {
-      String classPath = System.getProperty("java.class.path");
-      if (classPath.contains(artifactId) == false)
+      File[] resolved = DependencyResolvers.use(MavenDependencyResolver.class)
+                                    .artifact("org.jboss.arquillian.osgi:arquillian-osgi-bundle:jar:1.0.0-SNAPSHOT")
+                                    .resolveAsFiles(new StrictFilter());
+      if(resolved.length != 1)
       {
-         log.debug("Class path does not contain '" + artifactId + "'");
-         return null;
+         throw new RuntimeException("OSGi Arquillian Bundle not resolved");
       }
-
-      String[] paths = classPath.split("" + File.pathSeparatorChar);
-      for (String path : paths)
+      File bundleFile = resolved[0];
+      try
       {
-         if (path.contains(artifactId))
-         {
-            try
-            {
-               BundleContext sysContext = bundleContextInst.get();
-               Bundle bundle = sysContext.installBundle(new File(path).toURI().toString());
-               if (startBundle == true)
-                  bundle.start();
+         BundleContext sysContext = bundleContextInst.get();
+         Bundle bundle = sysContext.installBundle(bundleFile.toURI().toString());
+         if (startBundle == true)
+            bundle.start();
 
-               return bundle;
-            }
-            catch (BundleException ex)
-            {
-               log.error("Cannot install/start bundle: " + path, ex);
-            }
-         }
+         return bundle;
+      }
+      catch (BundleException ex)
+      {
+         log.error("Cannot install/start bundle: " + bundleFile, ex);
       }
       return null;
    }
