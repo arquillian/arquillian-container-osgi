@@ -46,17 +46,22 @@
                         <DynamicImport-Package>*</DynamicImport-Package>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>
-                            arquillian-container-test-api;inline=false,
-                            arquillian-container-test-spi;inline=false,
                             arquillian-core-api;inline=false,
                             arquillian-core-impl-base;inline=false,
                             arquillian-core-spi;inline=false,
+                            arquillian-test-api;inline=false,
+                            arquillian-test-impl-base;inline=false,
+                            arquillian-test-spi;inline=false,
+                            arquillian-container-api;inline=false,
+                            arquillian-container-impl-base;inline=false,
+                            arquillian-container-spi;inline=false,
+                            arquillian-container-test-api;inline=false,
+                            arquillian-container-test-impl-base;inline=false,
+                            arquillian-container-test-spi;inline=false,
                             arquillian-junit-core;inline=false,
                             arquillian-junit-container;inline=false,
                             arquillian-protocol-jmx;inline=false,
                             arquillian-testenricher-osgi;inline=false,
-                            arquillian-test-spi;inline=false,
-                            arquillian-test-impl-base;inline=false,
                             shrinkwrap-api;inline=false,
                             shrinkwrap-impl-base;inline=false,
                             shrinkwrap-spi;inline=false,
@@ -114,12 +119,12 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
-            <artifactId>arquillian-container-test-spi</artifactId>
+            <artifactId>arquillian-container-impl-base</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.test</groupId>
-            <artifactId>arquillian-test-spi</artifactId>
+            <artifactId>arquillian-test-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

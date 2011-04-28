@@ -71,12 +71,6 @@
       <artifactId>arquillian-protocol-osgi</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.osgi</groupId>
-      <artifactId>arquillian-osgi-bundle</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
 
     <dependency>
       <groupId>org.jboss.shrinkwrap</groupId>
