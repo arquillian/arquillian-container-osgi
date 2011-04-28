@@ -20,9 +20,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
 
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.osgi.arq194.bundle.ARQ194RemoteActivator;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.spi.core.annotation.Inject;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;

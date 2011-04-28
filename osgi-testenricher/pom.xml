@@ -27,8 +27,8 @@
 
     <!-- org.jboss.arquillian -->
     <dependency>
-      <groupId>org.jboss.arquillian</groupId>
-      <artifactId>arquillian-spi</artifactId>
+      <groupId>org.jboss.arquillian.test</groupId>
+      <artifactId>arquillian-test-spi</artifactId>
     </dependency>
 
     <dependency>

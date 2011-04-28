@@ -78,7 +78,7 @@ public class OSGiDeploymentPackager implements DeploymentPackager
       try
       {
          ZipExporter exporter = archive.as(ZipExporter.class);
-         exporter.exportZip(target, true);
+         exporter.exportTo(target, true);
          VirtualFile virtualFile = AbstractVFS.toVirtualFile(target.toURI().toURL());
          BundleInfo.createBundleInfo(virtualFile);
       }

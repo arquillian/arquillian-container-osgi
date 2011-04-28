@@ -21,8 +21,8 @@ import java.lang.reflect.Method;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.spi.TestEnricher;
-import org.jboss.arquillian.spi.core.Instance;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
@@ -44,10 +44,10 @@ import org.osgi.framework.BundleReference;
  */
 public class OSGiTestEnricher implements TestEnricher
 {
-   @org.jboss.arquillian.spi.core.annotation.Inject
+   @org.jboss.arquillian.core.api.annotation.Inject
    private Instance<BundleContext> bundleContextInst;
 
-   @org.jboss.arquillian.spi.core.annotation.Inject
+   @org.jboss.arquillian.core.api.annotation.Inject
    private Instance<Bundle> bundleInst;
 
    public void enrich(Object testCase)

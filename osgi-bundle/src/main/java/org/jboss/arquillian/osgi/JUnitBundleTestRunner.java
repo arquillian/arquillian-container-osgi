@@ -16,7 +16,7 @@
  */
 package org.jboss.arquillian.osgi;
 
-import org.jboss.arquillian.junit.JUnitTestRunner;
+import org.jboss.arquillian.junit.container.JUnitTestRunner;
 import org.jboss.arquillian.spi.TestResult;
 
 /**

@@ -32,14 +32,14 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.spi.client.container.DeploymentException;
 import org.jboss.arquillian.spi.client.container.LifecycleException;
 import org.jboss.arquillian.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.spi.client.protocol.metadata.ProtocolMetaData;
-import org.jboss.arquillian.spi.core.InstanceProducer;
-import org.jboss.arquillian.spi.core.annotation.ContainerScoped;
-import org.jboss.arquillian.spi.core.annotation.Inject;
 import org.jboss.logging.Logger;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.testing.internal.ManagementSupport;
@@ -63,8 +63,7 @@ public class RemoteDeployableContainer implements DeployableContainer<RemoteCont
    // Provide logging
    private static final Logger log = Logger.getLogger(RemoteDeployableContainer.class.getName());
 
-   @Inject
-   @ContainerScoped
+   @Inject @ContainerScoped
    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
    private JMXConnector jmxConnector;
