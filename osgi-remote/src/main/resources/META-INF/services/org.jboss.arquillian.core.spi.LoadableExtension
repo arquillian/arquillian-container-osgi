@@ -1,1 +1,1 @@
-org.jboss.arquillian.container.osgi.remote.OSGiContainerExtension
+org.jboss.arquillian.container.osgi.remote.RemoteContainerExtension

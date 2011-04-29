@@ -42,7 +42,7 @@ import org.osgi.framework.ServiceReference;
  * @author thomas.diesler@jboss.com
  */
 @RunWith(Arquillian.class)
-public class OSGiRemoteFrameworkTestCase
+public class RemoteFrameworkTestCase
 {
    @Inject
    public BundleContext context;

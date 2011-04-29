@@ -3,6 +3,7 @@
   Set these VM properties in your IDE debugger 
   
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+  -Dtest.archive.directory=${workspace_loc:arquillian-osgi-embedded}/target/test-libs
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -70,6 +71,12 @@
       <groupId>org.jboss.arquillian.protocol</groupId>
       <artifactId>arquillian-protocol-osgi</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.osgi</groupId>
+      <artifactId>arquillian-osgi-bundle</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>

@@ -16,7 +16,7 @@
  */
 package org.jboss.arquillian.protocol.osgi;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.Collection;
 
 import org.jboss.arquillian.spi.TestDeployment;
@@ -40,16 +40,15 @@ public class OSGiDeploymentPackager implements DeploymentPackager
    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors)
    {
       Archive<?> bundleArchive = testDeployment.getApplicationArchive();
-      if(JavaArchive.class.isInstance(bundleArchive))
+      if (JavaArchive.class.isInstance(bundleArchive))
       {
          return handleArchive(JavaArchive.class.cast(bundleArchive), testDeployment.getAuxiliaryArchives());
       }
-      
-      throw new IllegalArgumentException(OSGiDeploymentPackager.class.getName()  + 
-            " can not handle archive of type " +  bundleArchive.getClass().getName());
+
+      throw new IllegalArgumentException(OSGiDeploymentPackager.class.getName() + " can not handle archive of type " + bundleArchive.getClass().getName());
    }
 
-   private Archive<?> handleArchive(JavaArchive archive, Collection<Archive<?>> auxiliaryArchives) 
+   private Archive<?> handleArchive(JavaArchive archive, Collection<Archive<?>> auxiliaryArchives)
    {
       try
       {
@@ -68,23 +67,9 @@ public class OSGiDeploymentPackager implements DeploymentPackager
 
    private void validateBundleArchive(Archive<?> archive) throws Exception
    {
-      String archiveName = archive.getName();
-      int dotIndex = archiveName.lastIndexOf(".");
-      if (dotIndex > 0)
-         archiveName = archiveName.substring(0, dotIndex);
-      
-      // [TODO] Can this be done in memory?
-      File target = File.createTempFile(archiveName + "-", ".jar");
-      try
-      {
-         ZipExporter exporter = archive.as(ZipExporter.class);
-         exporter.exportTo(target, true);
-         VirtualFile virtualFile = AbstractVFS.toVirtualFile(target.toURI().toURL());
-         BundleInfo.createBundleInfo(virtualFile);
-      }
-      finally
-      {
-         target.delete();
-      }
+      ZipExporter exporter = archive.as(ZipExporter.class);
+      InputStream inputStream = exporter.exportAsInputStream();
+      VirtualFile virtualFile = AbstractVFS.toVirtualFile(inputStream);
+      BundleInfo.createBundleInfo(virtualFile);
    }
 }

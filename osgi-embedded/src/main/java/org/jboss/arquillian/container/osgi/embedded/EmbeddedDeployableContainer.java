@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.osgi.ArquillianBundleActivator;
 import org.jboss.arquillian.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.spi.client.container.DeploymentException;
 import org.jboss.arquillian.spi.client.container.LifecycleException;
@@ -65,7 +66,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
    @Inject
    @ContainerScoped
    private InstanceProducer<BundleContext> bundleContextInst;
-   
+
    @Inject
    @DeploymentScoped
    private InstanceProducer<Bundle> bundleInst;
@@ -91,7 +92,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
    {
       OSGiBootstrapProvider provider = OSGiBootstrap.getBootstrapProvider();
       frameworkInst.set(provider.getFramework());
-      
+
       MBeanServerConnection mbeanServer = getMBeanServerConnection();
       mbeanServerInst.set(mbeanServer);
    }
@@ -106,10 +107,13 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
          Bundle[] bundles = framework.getBundleContext().getBundles();
          if (getInstalledBundle(bundles, "osgi.cmpn") == null)
-            installBundle("org.osgi.compendium", false);
+            installBundle("org.osgi", "org.osgi.compendium", "4.2.0", false);
 
          if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null)
-            installBundle("arquillian-osgi-bundle", true);
+         {
+            String arqVersion = ArquillianBundleActivator.class.getPackage().getImplementationVersion();
+            installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
+         }
       }
       catch (BundleException ex)
       {
@@ -202,15 +206,16 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
       return null;
    }
 
-   private Bundle installBundle(String artifactId, boolean startBundle)
+   private Bundle installBundle(String groupId, String artifactId, String version, boolean startBundle) throws BundleException
    {
-      File[] resolved = DependencyResolvers.use(MavenDependencyResolver.class)
-                                    .artifact("org.jboss.arquillian.osgi:arquillian-osgi-bundle:jar:1.0.0-SNAPSHOT")
-                                    .resolveAsFiles(new StrictFilter());
-      if(resolved.length != 1)
-      {
-         throw new RuntimeException("OSGi Arquillian Bundle not resolved");
-      }
+      String filespec = groupId + ":" + artifactId + ":jar:" + version;
+      MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class);
+      File[] resolved = resolver.artifact(filespec).resolveAsFiles(new StrictFilter());
+      if (resolved == null || resolved.length == 0)
+         throw new BundleException("Cannot obtain maven artifact: " + filespec);
+      if (resolved.length > 1)
+         throw new BundleException("Multiple maven artifacts for: " + filespec);
+
       File bundleFile = resolved[0];
       try
       {

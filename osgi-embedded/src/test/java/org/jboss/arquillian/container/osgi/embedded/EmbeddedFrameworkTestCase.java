@@ -43,7 +43,7 @@ import org.osgi.framework.ServiceReference;
  * @version $Revision: $
  */
 @RunWith(Arquillian.class)
-public class OSGiEmbeddedFrameworkTestCase
+public class EmbeddedFrameworkTestCase
 {
    @Inject
    public BundleContext context;
@@ -56,7 +56,6 @@ public class OSGiEmbeddedFrameworkTestCase
    {
       final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
       archive.addClasses(SimpleActivator.class, SimpleService.class);
-      archive.addClasses(OSGiEmbeddedFrameworkTestCase.class);
       archive.setManifest(new Asset()
       {
          public InputStream openStream()

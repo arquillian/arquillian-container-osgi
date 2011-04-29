@@ -19,12 +19,16 @@ package org.jboss.arquillian.container.osgi.arq271;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.InputStream;
+
 import javax.inject.Inject;
 
 import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,7 +57,19 @@ public class ARQ271BeforeClassTestCase
    @Deployment
    public static JavaArchive createdeployment()
    {
-      return ShrinkWrap.create(JavaArchive.class, "test.jar");
+      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
+      archive.setManifest(new Asset()
+      {
+         public InputStream openStream()
+         {
+            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+            builder.addBundleSymbolicName(archive.getName());
+            builder.addBundleManifestVersion(2);
+            builder.addImportPackages(OSGiTestHelper.class);
+            return builder.openStream();
+         }
+      });
+      return archive;
    }
 
    @BeforeClass

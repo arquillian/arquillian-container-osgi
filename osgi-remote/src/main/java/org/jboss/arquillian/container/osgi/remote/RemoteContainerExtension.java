@@ -15,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.embedded;
+package org.jboss.arquillian.container.osgi.remote;
 
 import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.protocol.osgi.OSGiDeploymentPackager;
 import org.jboss.arquillian.spi.client.container.DeployableContainer;
-import org.jboss.arquillian.spi.client.deployment.DeploymentPackager;
 
 /**
  * OSGiContainerExtension
@@ -28,13 +26,11 @@ import org.jboss.arquillian.spi.client.deployment.DeploymentPackager;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class OSGiContainerExtension implements LoadableExtension
+public class RemoteContainerExtension implements LoadableExtension
 {
    @Override
    public void register(ExtensionBuilder builder)
    {
-      builder.service(DeployableContainer.class, EmbeddedDeployableContainer.class)
-             .service(DeploymentPackager.class, OSGiDeploymentPackager.class);
+      builder.service(DeployableContainer.class, RemoteDeployableContainer.class);
    }
-
 }

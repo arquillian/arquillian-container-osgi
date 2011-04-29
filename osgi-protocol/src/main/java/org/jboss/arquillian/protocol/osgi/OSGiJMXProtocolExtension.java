@@ -19,6 +19,7 @@ package org.jboss.arquillian.protocol.osgi;
 
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.spi.client.protocol.Protocol;
 
 /**
@@ -33,7 +34,8 @@ public class OSGiJMXProtocolExtension implements LoadableExtension
    public void register(ExtensionBuilder builder)
    {
       builder.service(Protocol.class, JMXOSGiProtocol.class)
-             .service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
+             .service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class)
+             .service(DeploymentPackager.class, OSGiDeploymentPackager.class);
    }
 
 }

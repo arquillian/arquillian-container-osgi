@@ -15,31 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.osgi;
+package org.jboss.arquillian.container.osgi.embedded;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.arquillian.core.spi.ExtensionLoader;
 import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.spi.client.container.DeployableContainer;
 
 /**
- * OSGiExtensionLoader
+ * OSGiContainerExtension
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class OSGiExtensionLoader implements ExtensionLoader
+public class EmbeddedContainerExtension implements LoadableExtension
 {
-   /* (non-Javadoc)
-    * @see org.jboss.arquillian.core.spi.ExtensionLoader#load()
-    */
    @Override
-   public Collection<LoadableExtension> load()
+   public void register(ExtensionBuilder builder)
    {
-      return Arrays.asList(
-            new org.jboss.arquillian.container.test.impl.ContainerTestRemoteExtension(), 
-            new org.jboss.arquillian.testenricher.osgi.OSGiEnricherExtension());
+      builder.service(DeployableContainer.class, EmbeddedDeployableContainer.class);
    }
 
 }

@@ -114,7 +114,6 @@ public class OSGiApplicationArchiveProcessor implements ApplicationArchiveProces
         builder.addImportPackages("org.jboss.arquillian.api", "org.jboss.arquillian.junit");
         builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
         builder.addImportPackages("org.junit", "org.junit.runner", "javax.inject", "org.osgi.framework");
-        builder.addImportPackages("org.jboss.osgi.spi.util", "org.jboss.osgi.testing");
 
         // Add the manifest to the archive
         appArchive.setManifest(new Asset()
