@@ -4,8 +4,8 @@
 
     <!-- Parent -->
     <parent>
-        <groupId>org.jboss.arquillian.container</groupId>
-        <artifactId>arquillian-parent-osgi</artifactId>
+        <groupId>org.jboss.arquillian.osgi</groupId>
+        <artifactId>arquillian-osgi-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
@@ -13,18 +13,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Artifact Configuration -->
-    <groupId>org.jboss.arquillian.protocol</groupId>
+    <groupId>org.jboss.arquillian.osgi</groupId>
     <artifactId>arquillian-osgi-bundle</artifactId>
     <name>Arquillian OSGi Bundle</name>
     <description>Arquillian OSGi Bundle</description>
     <packaging>bundle</packaging>
-
-    <!-- Properties -->
-    <properties>
-
-        <!-- Versioning -->
-
-    </properties>
 
     <build>
         <plugins>
@@ -41,9 +34,7 @@
                             javax.naming,
                             javax.xml.parsers,
                             org.w3c.dom,
-
                             org.jboss.logging;version="[3.0,4.0)",
-
                             org.osgi.framework;version="[1.5,2.0)",
                             org.osgi.util.tracker;version="[1.4,2.0)",
                         </Import-Package>
@@ -53,12 +44,22 @@
                         <DynamicImport-Package>*</DynamicImport-Package>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>
-                            arquillian-api;inline=false,
-                            arquillian-impl-base;inline=false,
-                            arquillian-junit;inline=false,
+                            arquillian-core-api;inline=false,
+                            arquillian-core-impl-base;inline=false,
+                            arquillian-core-spi;inline=false,
+                            arquillian-test-api;inline=false,
+                            arquillian-test-impl-base;inline=false,
+                            arquillian-test-spi;inline=false,
+                            arquillian-container-api;inline=false,
+                            arquillian-container-impl-base;inline=false,
+                            arquillian-container-spi;inline=false,
+                            arquillian-container-test-api;inline=false,
+                            arquillian-container-test-impl-base;inline=false,
+                            arquillian-container-test-spi;inline=false,
+                            arquillian-junit-core;inline=false,
+                            arquillian-junit-container;inline=false,
                             arquillian-protocol-jmx;inline=false,
                             arquillian-testenricher-osgi;inline=false,
-                            arquillian-spi;inline=false,
                             shrinkwrap-api;inline=false,
                             shrinkwrap-impl-base;inline=false,
                             shrinkwrap-spi;inline=false,
@@ -108,17 +109,31 @@
         <dependency>
             <groupId>org.jboss.arquillian.protocol</groupId>
             <artifactId>arquillian-protocol-jmx</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-impl-base</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.test</groupId>
+            <artifactId>arquillian-test-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.test</groupId>
+            <artifactId>arquillian-test-impl-base</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-osgi</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian</groupId>
-            <artifactId>arquillian-junit</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>

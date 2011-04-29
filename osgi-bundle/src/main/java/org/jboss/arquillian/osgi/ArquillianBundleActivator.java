@@ -23,14 +23,13 @@ package org.jboss.arquillian.osgi;
 
 // $Id$
 
+import java.util.ArrayList;
+
 import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.management.StandardMBean;
+import javax.management.MBeanServerFactory;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
-import org.jboss.arquillian.testenricher.osgi.BundleContextHolder;
-import org.jboss.arquillian.testenricher.osgi.OSGiTestEnricher;
 import org.jboss.logging.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -58,8 +57,9 @@ public class ArquillianBundleActivator implements BundleActivator
       {
          public Class<?> loadTestClass(String className) throws ClassNotFoundException
          {
-            Bundle bundle = context.getBundle();
-            return bundle.loadClass(className);
+            // Load the test class dynamically from the arquillian bundle
+            Bundle arqBundle = context.getBundle();
+            return arqBundle.loadClass(className);
          }
       };
       
@@ -67,17 +67,6 @@ public class ArquillianBundleActivator implements BundleActivator
       MBeanServer mbeanServer = getMBeanServer(context);
       testRunner = new JMXTestRunner(loader);
       testRunner.registerMBean(mbeanServer);
-
-      // Register the BundleContextHolder
-      BundleContextHolder holder = new BundleContextHolder()
-      {
-         public BundleContext getBundleContext()
-         {
-            return context;
-         }
-      };
-      StandardMBean holderMBean = new StandardMBean(holder, BundleContextHolder.class);
-      mbeanServer.registerMBean(holderMBean, new ObjectName(BundleContextHolder.OBJECT_NAME));
    }
 
    public void stop(BundleContext context) throws Exception
@@ -85,9 +74,6 @@ public class ArquillianBundleActivator implements BundleActivator
       // Unregister the JMXTestRunner
       MBeanServer mbeanServer = getMBeanServer(context);
       testRunner.unregisterMBean(mbeanServer);
-
-      // Unregister the BundleContextHolder
-      mbeanServer.unregisterMBean(new ObjectName(BundleContextHolder.OBJECT_NAME));
    }
 
    private MBeanServer getMBeanServer(BundleContext context)
@@ -102,6 +88,29 @@ public class ArquillianBundleActivator implements BundleActivator
       }
 
       // Find or create the MBeanServer
-      return OSGiTestEnricher.findOrCreateMBeanServer();
+      return findOrCreateMBeanServer();
+   }
+
+   private MBeanServer findOrCreateMBeanServer()
+   {
+      MBeanServer mbeanServer = null;
+
+      ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
+      if (serverArr.size() > 1)
+         log.warn("Multiple MBeanServer instances: " + serverArr);
+
+      if (serverArr.size() > 0)
+      {
+         mbeanServer = serverArr.get(0);
+         log.debug("Found MBeanServer: " + mbeanServer.getDefaultDomain());
+      }
+
+      if (mbeanServer == null)
+      {
+         log.debug("No MBeanServer, create one ...");
+         mbeanServer = MBeanServerFactory.createMBeanServer();
+      }
+
+      return mbeanServer;
    }
 }

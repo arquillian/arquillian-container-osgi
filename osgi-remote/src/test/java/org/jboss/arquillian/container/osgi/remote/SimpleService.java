@@ -14,31 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.osgi;
+package org.jboss.arquillian.container.osgi.remote;
 
-import org.jboss.arquillian.junit.container.JUnitTestRunner;
-import org.jboss.arquillian.spi.TestResult;
 
 /**
- * A JUnitTestRunner for OSGi
+ * A simple service.
  *
  * @author thomas.diesler@jboss.com
+ * @version $Revision: $
  */
-public class JUnitBundleTestRunner extends JUnitTestRunner
+public interface SimpleService 
 {
-   @Override
-   public TestResult execute(Class<?> testClass, String methodName)
-   {
-      ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
-      try
-      {
-         // Make sure we run in the context of the arquillian-bundle class loader
-         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-         return super.execute(testClass, methodName);
-      }
-      finally
-      {
-         Thread.currentThread().setContextClassLoader(ctxLoader);
-      }
-   }
+   Integer sum(Integer... values);
 }
