@@ -22,6 +22,9 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.api.ArquillianResource;
+import org.jboss.arquillian.api.Deployer;
+import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.container.osgi.arq194.bundle.ARQ194Activator;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
@@ -42,63 +45,26 @@ import org.osgi.framework.BundleContext;
  * @since 06-Sep-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[ARQ-194] Support multiple bundle deployments")
 public class ARQ194TestCase
 {
-   @Inject
-   public BundleContext context;
+   private static final String BUNDLE_NAME = "arq194-bundle";
 
-   //@Inject
-   //public DeploymentProvider provider;
-
-   @Test
-   public void testInstallBundleFromArchive() throws Exception
+   @Deployment
+   public static JavaArchive create()
    {
-      InputStream input = null; //provider.getClientDeploymentAsStream("arq194-bundle");
-      Bundle bundle = context.installBundle("arq194-bundle", input);
-
-      assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-      assertEquals("arq194-bundle", bundle.getSymbolicName());
-
-      bundle.start();
-      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-
-      bundle.stop();
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-
-      bundle.uninstall();
-      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+      return ShrinkWrap.create(JavaArchive.class);
    }
-
-   @Test
-   public void testInstallBundleFromStream() throws Exception
+   
+   @Deployment(name = BUNDLE_NAME, managed = false)
+   public static JavaArchive getTestArchive()
    {
-      InputStream input = null; //provider.getClientDeploymentAsStream("arq194-bundle");
-      Bundle bundle = context.installBundle("arq194-bundle", input);
-
-      assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-      assertEquals("arq194-bundle", bundle.getSymbolicName());
-
-      bundle.start();
-      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-
-      bundle.stop();
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-
-      bundle.uninstall();
-      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
-   }
-
-   //@ArchiveProvider
-   public static JavaArchive getTestArchive(String name)
-   {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
+      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
       archive.setManifest(new Asset()
       {
          public InputStream openStream()
          {
             OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-            builder.addBundleSymbolicName(archive.getName());
+            builder.addBundleSymbolicName(BUNDLE_NAME);
             builder.addBundleManifestVersion(2);
             builder.addBundleActivator(ARQ194Activator.class.getName());
             builder.addExportPackages(ARQ194Service.class);
@@ -108,5 +74,50 @@ public class ARQ194TestCase
       });
       archive.addClasses(ARQ194Activator.class, ARQ194Service.class);
       return archive;
+   }
+
+   @Inject
+   public BundleContext context;
+
+   @ArquillianResource
+   public Deployer provider;
+
+   @Test
+   public void testInstallBundleFromArchive() throws Exception
+   {
+      InputStream input = provider.getDeployment(BUNDLE_NAME);
+      Bundle bundle = context.installBundle(BUNDLE_NAME, input);
+
+      assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+      assertEquals("arq194-bundle", bundle.getSymbolicName());
+
+      bundle.start();
+      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+      bundle.stop();
+      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+
+      bundle.uninstall();
+      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+   }
+
+   @Test
+   @Ignore // same as above
+   public void testInstallBundleFromStream() throws Exception
+   {
+      InputStream input = provider.getDeployment(BUNDLE_NAME);
+      Bundle bundle = context.installBundle(BUNDLE_NAME, input);
+
+      assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+      assertEquals("arq194-bundle", bundle.getSymbolicName());
+
+      bundle.start();
+      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+      bundle.stop();
+      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+
+      bundle.uninstall();
+      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
    }
 }

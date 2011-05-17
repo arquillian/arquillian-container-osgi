@@ -24,6 +24,7 @@ import org.jboss.arquillian.container.test.impl.ContainerTestRemoteExtension;
 import org.jboss.arquillian.core.impl.loadable.JavaSPIExtensionLoader;
 import org.jboss.arquillian.core.spi.ExtensionLoader;
 import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.protocol.jmx.JMXExtension;
 import org.jboss.arquillian.testenricher.osgi.OSGiEnricherExtension;
 import org.osgi.framework.BundleReference;
 
@@ -49,7 +50,7 @@ public class ArquillianBundleExtensionLoader implements ExtensionLoader
       {
          // If this ExtensionLoader is used in the context of the installed bundle 
          // use a hard coded list of extensions
-         result = Arrays.asList(new ContainerTestRemoteExtension(), new OSGiEnricherExtension());
+         result = Arrays.asList(new ContainerTestRemoteExtension(), new OSGiEnricherExtension(), new JMXExtension());
       }
       else
       {
