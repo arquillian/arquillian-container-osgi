@@ -67,8 +67,9 @@
                         </Embed-Dependency>
                         <_exportcontents>
                             javax.inject;version=${version.javax.inject_javax.inject},
-                            org.jboss.arquillian.test.api;version=${project.version},
-                            org.jboss.arquillian.junit;version=${project.version},
+                            org.jboss.arquillian.test.api;version=${version.arquillian_core},
+                            org.jboss.arquillian.container.test.api;version=${version.arquillian_core},
+                            org.jboss.arquillian.junit;version=${version.arquillian_core},
                             org.jboss.shrinkwrap.api;version=${version.shrinkwrap_shrinkwrap},
                             org.jboss.shrinkwrap.api.asset;version=${version.shrinkwrap_shrinkwrap},
                             org.jboss.shrinkwrap.api.container;version=${version.shrinkwrap_shrinkwrap},

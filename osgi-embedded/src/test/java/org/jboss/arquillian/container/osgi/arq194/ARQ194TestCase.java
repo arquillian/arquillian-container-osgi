@@ -31,7 +31,6 @@ import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -84,26 +83,6 @@ public class ARQ194TestCase
 
    @Test
    public void testInstallBundleFromArchive() throws Exception
-   {
-      InputStream input = provider.getDeployment(BUNDLE_NAME);
-      Bundle bundle = context.installBundle(BUNDLE_NAME, input);
-
-      assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-      assertEquals("arq194-bundle", bundle.getSymbolicName());
-
-      bundle.start();
-      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-
-      bundle.stop();
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-
-      bundle.uninstall();
-      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
-   }
-
-   @Test
-   @Ignore // same as above
-   public void testInstallBundleFromStream() throws Exception
    {
       InputStream input = provider.getDeployment(BUNDLE_NAME);
       Bundle bundle = context.installBundle(BUNDLE_NAME, input);
