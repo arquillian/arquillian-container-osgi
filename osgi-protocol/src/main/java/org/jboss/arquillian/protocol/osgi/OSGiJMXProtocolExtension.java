@@ -17,10 +17,10 @@
  */
 package org.jboss.arquillian.protocol.osgi;
 
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
+import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.spi.client.deployment.DeploymentPackager;
-import org.jboss.arquillian.spi.client.protocol.Protocol;
 
 /**
  * OSGiProtocolExtension

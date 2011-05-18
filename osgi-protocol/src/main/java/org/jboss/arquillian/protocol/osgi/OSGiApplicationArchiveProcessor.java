@@ -29,8 +29,8 @@ import java.util.Map.Entry;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.jboss.arquillian.spi.TestClass;
-import org.jboss.arquillian.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
+import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -111,7 +111,7 @@ public class OSGiApplicationArchiveProcessor implements ApplicationArchiveProces
 
         // Add framework imports
         // [TODO] use bnd or another tool to do this more intelligently
-        builder.addImportPackages("org.jboss.arquillian.api", "org.jboss.arquillian.junit");
+        builder.addImportPackages("org.jboss.arquillian.test.api", "org.jboss.arquillian.junit");
         builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
         builder.addImportPackages("org.junit", "org.junit.runner", "javax.inject", "org.osgi.framework");
 

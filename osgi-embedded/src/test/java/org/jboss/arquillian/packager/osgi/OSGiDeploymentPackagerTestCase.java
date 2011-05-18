@@ -23,9 +23,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.jboss.arquillian.container.test.spi.TestDeployment;
+import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.arquillian.protocol.osgi.OSGiDeploymentPackager;
-import org.jboss.arquillian.spi.TestDeployment;
-import org.jboss.arquillian.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

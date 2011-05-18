@@ -17,8 +17,8 @@
  */
 package org.jboss.arquillian.protocol.osgi;
 
+import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.protocol.jmx.AbstractJMXProtocol;
-import org.jboss.arquillian.spi.client.deployment.DeploymentPackager;
 
 
 /**

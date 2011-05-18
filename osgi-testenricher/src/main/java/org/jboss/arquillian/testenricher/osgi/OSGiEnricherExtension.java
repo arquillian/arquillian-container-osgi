@@ -18,7 +18,7 @@
 package org.jboss.arquillian.testenricher.osgi;
 
 import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.spi.TestEnricher;
+import org.jboss.arquillian.test.spi.TestEnricher;
 
 /**
  * OSGiEnricherExtension

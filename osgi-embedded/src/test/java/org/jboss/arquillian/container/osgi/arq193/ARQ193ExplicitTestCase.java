@@ -24,7 +24,7 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -58,7 +58,7 @@ public class ARQ193ExplicitTestCase
             builder.addBundleSymbolicName(archive.getName());
             builder.addBundleManifestVersion(2);
             builder.addExportPackages(ARQ193ExplicitTestCase.class);
-            builder.addImportPackages("org.jboss.arquillian.api", "org.jboss.arquillian.junit");
+            builder.addImportPackages("org.jboss.arquillian.test.api", "org.jboss.arquillian.junit");
             builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
             builder.addImportPackages("javax.inject", "org.junit", "org.junit.runner", "org.osgi.framework");
             return builder.openStream();

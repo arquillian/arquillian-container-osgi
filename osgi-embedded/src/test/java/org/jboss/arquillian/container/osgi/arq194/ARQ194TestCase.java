@@ -22,11 +22,11 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.api.ArquillianResource;
-import org.jboss.arquillian.api.Deployer;
-import org.jboss.arquillian.api.Deployment;
 import org.jboss.arquillian.container.osgi.arq194.bundle.ARQ194Activator;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -55,7 +55,7 @@ public class ARQ194TestCase
       return ShrinkWrap.create(JavaArchive.class);
    }
    
-   @Deployment(name = BUNDLE_NAME, managed = false)
+   @Deployment(name = BUNDLE_NAME, managed = false, testable = false)
    public static JavaArchive getTestArchive()
    {
       final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);

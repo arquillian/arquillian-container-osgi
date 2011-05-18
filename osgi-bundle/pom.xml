@@ -50,7 +50,6 @@
                             arquillian-test-api;inline=false,
                             arquillian-test-impl-base;inline=false,
                             arquillian-test-spi;inline=false,
-                            arquillian-container-api;inline=false,
                             arquillian-container-impl-base;inline=false,
                             arquillian-container-spi;inline=false,
                             arquillian-container-test-api;inline=false,
@@ -68,7 +67,7 @@
                         </Embed-Dependency>
                         <_exportcontents>
                             javax.inject;version=${version.javax.inject_javax.inject},
-                            org.jboss.arquillian.api;version=${project.version},
+                            org.jboss.arquillian.test.api;version=${project.version},
                             org.jboss.arquillian.junit;version=${project.version},
                             org.jboss.shrinkwrap.api;version=${version.shrinkwrap_shrinkwrap},
                             org.jboss.shrinkwrap.api.asset;version=${version.shrinkwrap_shrinkwrap},
