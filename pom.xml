@@ -102,11 +102,11 @@
   </build>
 
   <modules>
-    <module>osgi-protocol</module>
-    <module>osgi-testenricher</module>
-    <module>osgi-bundle</module>
-    <module>osgi-embedded</module>
-    <module>osgi-remote</module>
+    <module>protocol</module>
+    <module>testenricher</module>
+    <module>bundle</module>
+    <module>container-embedded</module>
+    <module>container-remote</module>
   </modules>
 
 </project>
