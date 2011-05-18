@@ -61,6 +61,17 @@ public class ARQ194ServiceTestCase
       // Include and export the service interface
       final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq194-main");
       archive.addClass(ARQ194Service.class);
+      archive.setManifest(new Asset()
+      {
+         public InputStream openStream()
+         {
+            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+            builder.addBundleSymbolicName(archive.getName());
+            builder.addBundleManifestVersion(2);
+            builder.addExportPackages(ARQ194Service.class);
+            return builder.openStream();
+         }
+      });
       return archive;
    }
 
@@ -68,6 +79,7 @@ public class ARQ194ServiceTestCase
    public static JavaArchive getTestArchive()
    {
       final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE + ".jar");
+      archive.addClasses(ARQ194Activator.class);
       archive.setManifest(new Asset()
       {
          public InputStream openStream()
@@ -81,7 +93,6 @@ public class ARQ194ServiceTestCase
             return builder.openStream();
          }
       });
-      archive.addClasses(ARQ194Activator.class, ARQ194Service.class);
       return archive;
    }
 
