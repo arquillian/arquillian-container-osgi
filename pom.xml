@@ -22,7 +22,7 @@
 
   <!-- Properties -->
   <properties>
-    <version.arquillian_core>1.0.0-SNAPSHOT</version.arquillian_core>
+    <version.arquillian_core>1.0.0.Beta1</version.arquillian_core>
     <version.jboss_osgi_framework>1.0.0.Alpha25</version.jboss_osgi_framework>
     <version.jboss_osgi_resolver>1.0.9</version.jboss_osgi_resolver>
     <version.jboss_osgi_spi>1.0.26</version.jboss_osgi_spi>
