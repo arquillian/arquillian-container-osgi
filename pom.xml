@@ -131,8 +131,8 @@
     </build>
 
     <modules>
-        <module>protocol</module>
-        <module>testenricher</module>
+        <module>protocol-osgi</module>
+        <module>testenricher-osgi</module>
         <module>bundle</module>
         <module>container-embedded</module>
         <module>container-remote</module>
