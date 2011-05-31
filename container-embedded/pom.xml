@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Set these VM properties in your IDE debugger -Djava.util.logging.manager=org.jboss.logmanager.LogManager 
-    -Dtest.archive.directory=${workspace_loc:arquillian-osgi-embedded}/target/test-libs -->
+<!-- 
+	Set these VM properties in your IDE debugger 
+	
+	-Djava.util.logging.manager=org.jboss.logmanager.LogManager 
+    -Dtest.archive.directory=${workspace_loc:arquillian-osgi-embedded}/target/test-libs 
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -17,15 +21,9 @@
 
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.container</groupId>
-    <artifactId>arquillian-osgi-embedded</artifactId>
+    <artifactId>arquillian-container-osgi-embedded</artifactId>
     <name>Arquillian OSGi Embedded Container</name>
     <description>OSGi Embedded Container integration for the Arquillian Project</description>
-
-
-
-    <!-- Properties -->
-    <properties>
-    </properties>
 
     <!-- Build -->
     <build>
@@ -62,8 +60,8 @@
             <artifactId>arquillian-container-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-osgi</artifactId>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-osgi</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -71,6 +69,10 @@
             <artifactId>arquillian-osgi-bundle</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-jmx</artifactId>
         </dependency>
 
         <dependency>

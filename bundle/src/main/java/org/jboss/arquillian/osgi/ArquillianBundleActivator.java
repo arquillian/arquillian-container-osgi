@@ -61,6 +61,12 @@ public class ArquillianBundleActivator implements BundleActivator
             Bundle arqBundle = context.getBundle();
             return arqBundle.loadClass(className);
          }
+
+         @Override
+         public ClassLoader getServiceClassLoader() 
+         {
+            return ArquillianBundleActivator.class.getClassLoader();
+         }
       };
       
       // Register the JMXTestRunner

@@ -84,7 +84,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
    @Override
    public ProtocolDescription getDefaultProtocol()
    {
-      return new ProtocolDescription("jmx-osgi");
+      return new ProtocolDescription("jmx");
    }
 
    @Override

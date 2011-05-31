@@ -28,7 +28,7 @@
         <version.shrinkwrap_shrinkwrap>1.0.0-beta-2</version.shrinkwrap_shrinkwrap>
         <version.junit_junit>4.8.1</version.junit_junit>
         <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
-        <version.jboss_osgi_framework>1.0.0.Alpha25</version.jboss_osgi_framework>
+        <version.jboss_osgi_framework>1.0.0.CR3</version.jboss_osgi_framework>
         <version.jboss_osgi_resolver>1.0.9</version.jboss_osgi_resolver>
         <version.jboss_osgi_spi>1.0.26</version.jboss_osgi_spi>
         <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
@@ -131,9 +131,9 @@
     </build>
 
     <modules>
-        <module>protocol-osgi</module>
         <module>testenricher-osgi</module>
         <module>bundle</module>
+        <module>container-common</module>
         <module>container-embedded</module>
         <module>container-remote</module>
     </modules>
