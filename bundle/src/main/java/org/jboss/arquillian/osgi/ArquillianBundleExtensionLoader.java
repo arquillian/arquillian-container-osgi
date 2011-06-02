@@ -29,34 +29,28 @@ import org.jboss.arquillian.testenricher.osgi.OSGiEnricherExtension;
 import org.osgi.framework.BundleReference;
 
 /**
- * An {@link ExtensionLoader} that works in the context of the installed
- * Arquillian bundle. If so it uses a hardcoded list of extensions instead
- * of dynamic discovery via META-INF/services. The latter would load the wrong
- * extensions from jars embedded in the Arquillian bundle.
- *
+ * An {@link ExtensionLoader} that works in the context of the installed Arquillian bundle. If so it uses a hardcoded list of
+ * extensions instead of dynamic discovery via META-INF/services. The latter would load the wrong extensions from jars embedded
+ * in the Arquillian bundle.
+ * 
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Thomas.Diesler@jboss.com
  * @version $Revision: $
  */
-public class ArquillianBundleExtensionLoader implements ExtensionLoader
-{
-   @Override
-   public Collection<LoadableExtension> load()
-   {
-      Collection<LoadableExtension> result;
-      
-      ClassLoader classLoader = ArquillianBundleExtensionLoader.class.getClassLoader();
-      if (classLoader instanceof BundleReference)
-      {
-         // If this ExtensionLoader is used in the context of the installed bundle 
-         // use a hard coded list of extensions
-         result = Arrays.asList(new ContainerTestRemoteExtension(), new OSGiEnricherExtension(), new JMXExtension());
-      }
-      else
-      {
-         // Otherwise (e.g. from the client class path) fall back to the default ExtensionLoader
-         result = new JavaSPIExtensionLoader().load();
-      }
-      return result;
-   }
+public class ArquillianBundleExtensionLoader implements ExtensionLoader {
+    @Override
+    public Collection<LoadableExtension> load() {
+        Collection<LoadableExtension> result;
+
+        ClassLoader classLoader = ArquillianBundleExtensionLoader.class.getClassLoader();
+        if (classLoader instanceof BundleReference) {
+            // If this ExtensionLoader is used in the context of the installed bundle
+            // use a hard coded list of extensions
+            result = Arrays.asList(new ContainerTestRemoteExtension(), new OSGiEnricherExtension(), new JMXExtension());
+        } else {
+            // Otherwise (e.g. from the client class path) fall back to the default ExtensionLoader
+            result = new JavaSPIExtensionLoader().load();
+        }
+        return result;
+    }
 }

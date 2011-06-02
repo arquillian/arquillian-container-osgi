@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.osgi;
+package org.jboss.arquillian.testenricher.osgi;
 
-import org.jboss.arquillian.junit.container.JUnitTestRunner;
-import org.jboss.arquillian.test.spi.TestResult;
+import org.osgi.framework.BundleContext;
 
 /**
- * A JUnitTestRunner for OSGi
- * 
+ * A thread local {@link BundleContext} association
+ *
+ * [ARQ-459] Allow TestRunner to TestEnricher communication
+ *
  * @author thomas.diesler@jboss.com
+ * @since 18-Nov-2010
  */
-public class JUnitBundleTestRunner extends JUnitTestRunner {
-    @Override
-    public TestResult execute(Class<?> testClass, String methodName) {
-        ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            // Make sure we run in the context of the arquillian-bundle class loader
-            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            return super.execute(testClass, methodName);
-        } finally {
-            Thread.currentThread().setContextClassLoader(ctxLoader);
-        }
+public final class BundleContextAssociation {
+    private static ThreadLocal<BundleContext> association = new ThreadLocal<BundleContext>();
+
+    public static BundleContext getBundleContext() {
+        return association.get();
+    }
+
+    public static void setBundleContext(BundleContext type) {
+        association.set(type);
     }
 }

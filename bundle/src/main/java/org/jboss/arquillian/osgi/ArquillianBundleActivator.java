@@ -30,93 +30,99 @@ import javax.management.MBeanServerFactory;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
+import org.jboss.arquillian.test.spi.TestResult;
+import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
+import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.logging.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
 import org.osgi.framework.ServiceReference;
 
 /**
  * This is the Arquillian {@link BundleActivator}.
- * 
+ *
  * It unconditionally starts the {@link JMXTestRunner}.
- * 
+ *
  * @author thomas.diesler@jboss.com
  * @since 17-May-2009
  */
-public class ArquillianBundleActivator implements BundleActivator
-{
-   // Provide logging
-   private static Logger log = Logger.getLogger(ArquillianBundleActivator.class);
+public class ArquillianBundleActivator implements BundleActivator {
+    // Provide logging
+    private static Logger log = Logger.getLogger(ArquillianBundleActivator.class);
 
-   private  JMXTestRunner testRunner;
-   
-   public void start(final BundleContext context) throws Exception
-   {
-      TestClassLoader loader = new TestClassLoader()
-      {
-         public Class<?> loadTestClass(String className) throws ClassNotFoundException
-         {
-            // Load the test class dynamically from the arquillian bundle
-            Bundle arqBundle = context.getBundle();
-            return arqBundle.loadClass(className);
-         }
+    private JMXTestRunner testRunner;
 
-         @Override
-         public ClassLoader getServiceClassLoader() 
-         {
-            return ArquillianBundleActivator.class.getClassLoader();
-         }
-      };
-      
-      // Register the JMXTestRunner
-      MBeanServer mbeanServer = getMBeanServer(context);
-      testRunner = new JMXTestRunner(loader);
-      testRunner.registerMBean(mbeanServer);
-   }
+    public void start(final BundleContext context) throws Exception {
 
-   public void stop(BundleContext context) throws Exception
-   {
-      // Unregister the JMXTestRunner
-      MBeanServer mbeanServer = getMBeanServer(context);
-      testRunner.unregisterMBean(mbeanServer);
-   }
+        final TestClassLoader testClassLoader = new TestClassLoader() {
 
-   private MBeanServer getMBeanServer(BundleContext context)
-   {
-      // Check if the MBeanServer is registered as an OSGi service 
-      ServiceReference sref = context.getServiceReference(MBeanServer.class.getName());
-      if (sref != null)
-      {
-         MBeanServer mbeanServer = (MBeanServer)context.getService(sref);
-         log.debug("Found MBeanServer fom service: " + mbeanServer.getDefaultDomain());
-         return mbeanServer;
-      }
+            @Override
+            public Class<?> loadTestClass(String className) throws ClassNotFoundException {
+                Bundle arqBundle = context.getBundle();
+                return arqBundle.loadClass(className);
+            }
+        };
 
-      // Find or create the MBeanServer
-      return findOrCreateMBeanServer();
-   }
+        // Register the JMXTestRunner
+        MBeanServer mbeanServer = getMBeanServer(context);
+        testRunner = new JMXTestRunner(testClassLoader) {
 
-   private MBeanServer findOrCreateMBeanServer()
-   {
-      MBeanServer mbeanServer = null;
+            @Override
+            public TestResult runTestMethodRemote(String className, String methodName) {
+                Bundle bundle = null;
+                try {
+                    Class<?> testClass = testClassLoader.loadTestClass(className);
+                    BundleReference bundleRef = (BundleReference) testClass.getClassLoader();
+                    bundle = bundleRef.getBundle();
+                } catch (ClassNotFoundException e) {
+                    // ignore
+                }
+                BundleAssociation.setBundle(bundle);
+                BundleContextAssociation.setBundleContext(context);
+                return super.runTestMethodRemote(className, methodName);
+            }
+        };
+        testRunner.registerMBean(mbeanServer);
+    }
 
-      ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
-      if (serverArr.size() > 1)
-         log.warn("Multiple MBeanServer instances: " + serverArr);
+    public void stop(BundleContext context) throws Exception {
+        // Unregister the JMXTestRunner
+        MBeanServer mbeanServer = getMBeanServer(context);
+        testRunner.unregisterMBean(mbeanServer);
+    }
 
-      if (serverArr.size() > 0)
-      {
-         mbeanServer = serverArr.get(0);
-         log.debug("Found MBeanServer: " + mbeanServer.getDefaultDomain());
-      }
+    private MBeanServer getMBeanServer(BundleContext context) {
+        // Check if the MBeanServer is registered as an OSGi service
+        ServiceReference sref = context.getServiceReference(MBeanServer.class.getName());
+        if (sref != null) {
+            MBeanServer mbeanServer = (MBeanServer) context.getService(sref);
+            log.debug("Found MBeanServer fom service: " + mbeanServer.getDefaultDomain());
+            return mbeanServer;
+        }
 
-      if (mbeanServer == null)
-      {
-         log.debug("No MBeanServer, create one ...");
-         mbeanServer = MBeanServerFactory.createMBeanServer();
-      }
+        // Find or create the MBeanServer
+        return findOrCreateMBeanServer();
+    }
 
-      return mbeanServer;
-   }
+    private MBeanServer findOrCreateMBeanServer() {
+        MBeanServer mbeanServer = null;
+
+        ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
+        if (serverArr.size() > 1)
+            log.warn("Multiple MBeanServer instances: " + serverArr);
+
+        if (serverArr.size() > 0) {
+            mbeanServer = serverArr.get(0);
+            log.debug("Found MBeanServer: " + mbeanServer.getDefaultDomain());
+        }
+
+        if (mbeanServer == null) {
+            log.debug("No MBeanServer, create one ...");
+            mbeanServer = MBeanServerFactory.createMBeanServer();
+        }
+
+        return mbeanServer;
+    }
 }

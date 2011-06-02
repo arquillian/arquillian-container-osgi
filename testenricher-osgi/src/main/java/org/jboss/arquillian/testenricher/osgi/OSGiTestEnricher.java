@@ -29,91 +29,78 @@ import org.osgi.framework.BundleReference;
 
 /**
  * The OSGi TestEnricher
- * 
+ *
  * The enricher supports the injection of the system BundleContext and the test Bundle.
- * 
- * <pre><code>
+ *
+ * <pre>
+ * <code>
  *    @Inject
  *    BundleContext context;
- * 
+ *
  *    @Inject
  *    Bundle bundle;
- * </code></pre>
- * 
+ * </code>
+ * </pre>
+ *
  * @author thomas.diesler@jboss.com
  */
-public class OSGiTestEnricher implements TestEnricher
-{
-   @org.jboss.arquillian.core.api.annotation.Inject
-   private Instance<BundleContext> bundleContextInst;
+public class OSGiTestEnricher implements TestEnricher {
+    @org.jboss.arquillian.core.api.annotation.Inject
+    private Instance<BundleContext> bundleContextInst;
 
-   @org.jboss.arquillian.core.api.annotation.Inject
-   private Instance<Bundle> bundleInst;
+    @org.jboss.arquillian.core.api.annotation.Inject
+    private Instance<Bundle> bundleInst;
 
-   public void enrich(Object testCase)
-   {
-      Class<? extends Object> testClass = testCase.getClass();
-      for (Field field : testClass.getDeclaredFields())
-      {
-         if (field.isAnnotationPresent(Inject.class))
-         {
-            if (field.getType().isAssignableFrom(BundleContext.class))
-            {
-               injectBundleContext(testCase, field);
+    public void enrich(Object testCase) {
+        Class<? extends Object> testClass = testCase.getClass();
+        for (Field field : testClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Inject.class)) {
+                if (field.getType().isAssignableFrom(BundleContext.class)) {
+                    injectBundleContext(testCase, field);
+                }
+                if (field.getType().isAssignableFrom(Bundle.class)) {
+                    injectBundle(testCase, field);
+                }
             }
-            if (field.getType().isAssignableFrom(Bundle.class))
-            {
-               injectBundle(testCase, field);
-            }
-         }
-      }
-   }
+        }
+    }
 
-   public Object[] resolve(Method method)
-   {
-      return null;
-   }
+    public Object[] resolve(Method method) {
+        return null;
+    }
 
-   private void injectBundleContext(Object testCase, Field field)
-   {
-      try
-      {
-         BundleContext bundleContext = bundleContextInst.get();
-         if (bundleContext == null)
-         {
-            ClassLoader classLoader = OSGiTestEnricher.class.getClassLoader();
-            if (classLoader instanceof BundleReference) {
-               BundleReference bref = (BundleReference)classLoader;
-               bundleContext = bref.getBundle().getBundleContext();
-               bundleContext = bundleContext.getBundle(0).getBundleContext();
+    private void injectBundleContext(Object testCase, Field field) {
+        // [ARQ-459] Allow TestRunner to TestEnricher communication
+        BundleContext bundleContext = (bundleContextInst != null ? bundleContextInst.get() : BundleContextAssociation.getBundleContext());
+        if (bundleContext == null) {
+            try {
+                ClassLoader classLoader = OSGiTestEnricher.class.getClassLoader();
+                if (classLoader instanceof BundleReference) {
+                    BundleReference bref = (BundleReference) classLoader;
+                    bundleContext = bref.getBundle().getBundleContext();
+                    bundleContext = bundleContext.getBundle(0).getBundleContext();
+                }
+                field.set(testCase, bundleContext);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException("Cannot inject BundleContext", ex);
             }
-         }
-         field.set(testCase, bundleContext);
-      }
-      catch (IllegalAccessException ex)
-      {
-         throw new IllegalStateException("Cannot inject BundleContext", ex);
-      }
-   }
+        }
+    }
 
-   private void injectBundle(Object testCase, Field field)
-   {
-      try
-      {
-         Bundle bundle = bundleInst.get();
-         if (bundle == null)
-         {
-            ClassLoader classLoader = testCase.getClass().getClassLoader();
-            if (classLoader instanceof BundleReference) {
-               BundleReference bref = (BundleReference)classLoader;
-               bundle = bref.getBundle();
+    private void injectBundle(Object testCase, Field field) {
+        // [ARQ-459] Allow TestRunner to TestEnricher communication
+        Bundle bundle = (bundleInst != null ? bundleInst.get() : BundleAssociation.getBundle());
+        if (bundle == null) {
+            try {
+                ClassLoader classLoader = testCase.getClass().getClassLoader();
+                if (classLoader instanceof BundleReference) {
+                    BundleReference bref = (BundleReference) classLoader;
+                    bundle = bref.getBundle();
+                }
+                field.set(testCase, bundle);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException("Cannot inject Bundle", ex);
             }
-         }
-         field.set(testCase, bundle);
-      }
-      catch (IllegalAccessException ex)
-      {
-         throw new IllegalStateException("Cannot inject Bundle", ex);
-      }
-   }
+        }
+    }
 }
