@@ -10,7 +10,7 @@
  * You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,  
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -25,14 +25,14 @@ import org.jboss.arquillian.core.impl.loadable.JavaSPIExtensionLoader;
 import org.jboss.arquillian.core.spi.ExtensionLoader;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.protocol.jmx.JMXExtension;
-import org.jboss.arquillian.testenricher.osgi.OSGiEnricherExtension;
+import org.jboss.arquillian.testenricher.osgi.OSGiRemoteContainerExtension;
 import org.osgi.framework.BundleReference;
 
 /**
  * An {@link ExtensionLoader} that works in the context of the installed Arquillian bundle. If so it uses a hardcoded list of
  * extensions instead of dynamic discovery via META-INF/services. The latter would load the wrong extensions from jars embedded
  * in the Arquillian bundle.
- * 
+ *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Thomas.Diesler@jboss.com
  * @version $Revision: $
@@ -46,7 +46,7 @@ public class ArquillianBundleExtensionLoader implements ExtensionLoader {
         if (classLoader instanceof BundleReference) {
             // If this ExtensionLoader is used in the context of the installed bundle
             // use a hard coded list of extensions
-            result = Arrays.asList(new ContainerTestRemoteExtension(), new OSGiEnricherExtension(), new JMXExtension());
+            result = Arrays.asList(new ContainerTestRemoteExtension(), new OSGiRemoteContainerExtension(), new JMXExtension());
         } else {
             // Otherwise (e.g. from the client class path) fall back to the default ExtensionLoader
             result = new JavaSPIExtensionLoader().load();
