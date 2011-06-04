@@ -24,7 +24,7 @@
 
     <!-- Properties -->
     <properties>
-        <version.arquillian_core>1.0.0.Beta1</version.arquillian_core>
+        <version.arquillian_core>1.0.0.CR1-SNAPSHOT</version.arquillian_core>
         <version.shrinkwrap_shrinkwrap>1.0.0-beta-2</version.shrinkwrap_shrinkwrap>
         <version.junit_junit>4.8.1</version.junit_junit>
         <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
