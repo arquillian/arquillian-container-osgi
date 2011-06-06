@@ -43,7 +43,7 @@ import org.osgi.framework.Constants;
 
 /**
  * Generates the test bundle.
- * 
+ *
  * @author Thomas.Diesler@jboss.com
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -104,9 +104,8 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         // Add the imports required by the test class
         addImportsForClass(builder, javaClass);
 
-        // Add framework imports
-        // [TODO] use bnd or another tool to do this more intelligently
-        builder.addImportPackages("org.jboss.arquillian.test.api", "org.jboss.arquillian.junit");
+        // Add common test imports
+        builder.addImportPackages("org.jboss.arquillian.test.api", "org.jboss.arquillian.junit", "org.jboss.osgi.testing");
         builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
         builder.addImportPackages("org.junit", "org.junit.runner", "javax.inject", "org.osgi.framework");
 

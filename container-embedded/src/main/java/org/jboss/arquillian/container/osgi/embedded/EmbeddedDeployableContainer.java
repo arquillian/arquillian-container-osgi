@@ -34,7 +34,6 @@ import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.osgi.ArquillianBundleActivator;
 import org.jboss.logging.Logger;
 import org.jboss.osgi.spi.framework.OSGiBootstrap;
 import org.jboss.osgi.spi.framework.OSGiBootstrapProvider;
@@ -111,7 +110,8 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
          if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null)
          {
-            String arqVersion = ArquillianBundleActivator.class.getPackage().getImplementationVersion();
+            // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
+            String arqVersion = EmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
             installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
          }
       }
