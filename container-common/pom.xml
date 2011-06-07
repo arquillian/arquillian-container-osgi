@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jboss.arquillian.osgi</groupId>
         <artifactId>arquillian-osgi-parent</artifactId>
-        <version>1.0.0.Beta2-SNAPSHOT</version>
+        <version>1.0.0.CR1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -15,7 +15,7 @@
 
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.container</groupId>
-    <artifactId>arquillian-container-osgi</artifactId>
+    <artifactId>arquillian-container-osgi-common</artifactId>
     <name>Arquillian OSGi Container</name>
 
     <!-- Properties -->
@@ -36,7 +36,8 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-jmx</artifactId>
+            <artifactId>arquillian-protocol-osgi</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
