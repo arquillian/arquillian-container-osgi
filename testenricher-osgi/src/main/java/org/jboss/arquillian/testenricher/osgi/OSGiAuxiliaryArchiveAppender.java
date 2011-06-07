@@ -35,7 +35,7 @@ public class OSGiAuxiliaryArchiveAppender implements AuxiliaryArchiveAppender {
     public Archive<?> createAuxiliaryArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-testenricher-osgi.jar");
         archive.addPackage(OSGiTestEnricher.class.getPackage());
-        archive.addAsServiceProvider(RemoteLoadableExtension.class, OSGiRemoteContainerExtension.class);
+        archive.addAsServiceProvider(RemoteLoadableExtension.class, OSGiEnricherRemoteExtension.class);
         return archive;
     }
 }

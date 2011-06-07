@@ -16,25 +16,29 @@
  */
 package org.jboss.arquillian.testenricher.osgi;
 
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.Bundle;
 
 /**
- * A thread local {@link BundleContext} association
+ * A thread local association for the {@link Bundle} start level
  *
- * [ARQ-459] Allow TestRunner to TestEnricher communication
+ * [ARQ-465] Add suport for bundle start level
  *
  * @author thomas.diesler@jboss.com
- * @since 18-Nov-2010
+ * @since 07-Jun-2011
  */
-public final class BundleContextAssociation {
+public final class BundleStartLevelAssociation {
 
-    private static ThreadLocal<BundleContext> association = new ThreadLocal<BundleContext>();
+    private static ThreadLocal<Integer> association = new ThreadLocal<Integer>();
 
-    public static BundleContext getBundleContext() {
+    public static Integer getStartLevel() {
         return association.get();
     }
 
-    public static void setBundleContext(BundleContext type) {
+    public static void setStartLevel(Integer type) {
         association.set(type);
+    }
+
+    public static void removeStartLevel() {
+        association.remove();
     }
 }

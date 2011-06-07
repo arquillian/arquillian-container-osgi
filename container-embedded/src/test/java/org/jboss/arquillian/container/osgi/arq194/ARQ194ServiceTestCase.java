@@ -50,7 +50,7 @@ public class ARQ194ServiceTestCase
    private static final String BUNDLE = "arq194-bundle";
    
    @ArquillianResource
-   public Deployer provider;
+   public Deployer deployer;
 
    @Inject
    public BundleContext context;
@@ -100,7 +100,7 @@ public class ARQ194ServiceTestCase
    @Test
    public void testGeneratedBundle() throws Exception
    {
-      InputStream input = provider.getDeployment(BUNDLE);
+      InputStream input = deployer.getDeployment(BUNDLE);
       Bundle bundle = context.installBundle(BUNDLE, input);
 
       assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());

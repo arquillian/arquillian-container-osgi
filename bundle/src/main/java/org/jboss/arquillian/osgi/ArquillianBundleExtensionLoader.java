@@ -25,7 +25,7 @@ import org.jboss.arquillian.core.impl.loadable.JavaSPIExtensionLoader;
 import org.jboss.arquillian.core.spi.ExtensionLoader;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.protocol.jmx.JMXExtension;
-import org.jboss.arquillian.testenricher.osgi.OSGiRemoteContainerExtension;
+import org.jboss.arquillian.testenricher.osgi.OSGiEnricherRemoteExtension;
 import org.osgi.framework.BundleReference;
 
 /**
@@ -46,9 +46,10 @@ public class ArquillianBundleExtensionLoader implements ExtensionLoader {
         if (classLoader instanceof BundleReference) {
             // If this ExtensionLoader is used in the context of the installed bundle
             // use a hard coded list of extensions
+
             result = new ArrayList<LoadableExtension>();
             result.add(new ContainerTestRemoteExtension());
-            result.add(new OSGiRemoteContainerExtension());
+            result.add(new OSGiEnricherRemoteExtension());
             result.add(new JMXExtension());
         } else {
             // Otherwise (e.g. from the client class path) fall back to the default ExtensionLoader

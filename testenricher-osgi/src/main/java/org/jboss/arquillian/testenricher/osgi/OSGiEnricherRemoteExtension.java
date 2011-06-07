@@ -26,7 +26,7 @@ import org.jboss.arquillian.test.spi.TestEnricher;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class OSGiRemoteContainerExtension implements RemoteLoadableExtension {
+public class OSGiEnricherRemoteExtension implements RemoteLoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         builder.service(TestEnricher.class, OSGiTestEnricher.class);

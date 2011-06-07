@@ -19,16 +19,18 @@ package org.jboss.arquillian.testenricher.osgi;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
 import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.test.spi.TestEnricher;
 
 /**
- * OSGiClientContainerExtension
+ * OSGiEnricherExtension
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
- * @version $Revision: $
+ * @author thomas.diesler@jboss.com
  */
-public class OSGiClientContainerExtension implements LoadableExtension {
+public class OSGiEnricherExtension implements LoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
+        builder.service(TestEnricher.class, OSGiTestEnricher.class);
         builder.service(AuxiliaryArchiveAppender.class, OSGiAuxiliaryArchiveAppender.class);
     }
 

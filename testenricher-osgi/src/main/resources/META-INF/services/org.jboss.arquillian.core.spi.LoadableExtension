@@ -1,1 +1,1 @@
-org.jboss.arquillian.testenricher.osgi.OSGiClientContainerExtension
+org.jboss.arquillian.testenricher.osgi.OSGiEnricherExtension

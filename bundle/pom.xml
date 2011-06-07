@@ -35,6 +35,8 @@
                             org.w3c.dom,
                             org.jboss.logging;version="[3.0,4.0)",
                             org.osgi.framework;version="[1.5,2.0)",
+                            org.osgi.service.packageadmin;version="[1.2,2.0)",
+                            org.osgi.service.startlevel;version="[1.1,2.0)",
                             org.osgi.util.tracker;version="[1.4,2.0)",
                         </Import-Package>
                         <Private-Package>
@@ -69,6 +71,7 @@
                             org.jboss.arquillian.test.api;version=${version.arquillian_core},
                             org.jboss.arquillian.container.test.api;version=${version.arquillian_core},
                             org.jboss.arquillian.junit;version=${version.arquillian_core},
+                            org.jboss.arquillian.testenricher.osgi;version=${project.version},
                             org.jboss.shrinkwrap.api;version=${version.shrinkwrap_shrinkwrap},
                             org.jboss.shrinkwrap.api.asset;version=${version.shrinkwrap_shrinkwrap},
                             org.jboss.shrinkwrap.api.container;version=${version.shrinkwrap_shrinkwrap},

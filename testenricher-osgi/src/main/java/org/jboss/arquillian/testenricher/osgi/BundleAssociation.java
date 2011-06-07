@@ -27,6 +27,7 @@ import org.osgi.framework.Bundle;
  * @since 18-Nov-2010
  */
 public final class BundleAssociation {
+
     private static ThreadLocal<Bundle> association = new ThreadLocal<Bundle>();
 
     public static Bundle getBundle() {

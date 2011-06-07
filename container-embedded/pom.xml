@@ -3,7 +3,7 @@
 	Set these VM properties in your IDE debugger 
 	
 	-Djava.util.logging.manager=org.jboss.logmanager.LogManager 
-    -Dtest.archive.directory=${workspace_loc:arquillian-osgi-embedded}/target/test-libs 
+    -Dtest.archive.directory=${workspace_loc:arquillian-container-osgi-embedded}/target/test-libs 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
