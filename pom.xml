@@ -30,7 +30,7 @@
         <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
         <version.jboss_osgi_framework>1.0.0.CR3</version.jboss_osgi_framework>
         <version.jboss_osgi_resolver>1.0.9</version.jboss_osgi_resolver>
-        <version.jboss_osgi_spi>1.0.27-SNAPSHOT</version.jboss_osgi_spi>
+        <version.jboss_osgi_spi>1.0.27</version.jboss_osgi_spi>
         <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
         <version.osgi>4.2.0</version.osgi>
         <version.jboss_logging>3.0.0.Beta4</version.jboss_logging>
