@@ -18,13 +18,9 @@
 package org.jboss.arquillian.container.osgi.embedded;
 
 import org.jboss.arquillian.container.osgi.OSGiApplicationArchiveProcessor;
-import org.jboss.arquillian.container.osgi.OSGiDeploymentPackager;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
-import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
-import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.protocol.jmx.JMXProtocol;
 
 /**
  * EmbeddedContainerExtension
@@ -36,10 +32,8 @@ public class EmbeddedContainerExtension implements LoadableExtension {
     
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(Protocol.class, JMXProtocol.class);
         builder.service(DeployableContainer.class, EmbeddedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
-        builder.service(DeploymentPackager.class, OSGiDeploymentPackager.class);
     }
 
 }
