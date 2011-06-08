@@ -1,4 +1,4 @@
-package org.jboss.arquillian.testenricher.osgi;
+package org.jboss.arquillian.osgi;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 

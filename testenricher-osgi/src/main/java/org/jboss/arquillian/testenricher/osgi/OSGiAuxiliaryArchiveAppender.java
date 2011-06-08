@@ -19,6 +19,7 @@ package org.jboss.arquillian.testenricher.osgi;
 
 import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
+import org.jboss.arquillian.osgi.StartLevelAware;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -34,8 +35,8 @@ public class OSGiAuxiliaryArchiveAppender implements AuxiliaryArchiveAppender {
     @Override
     public Archive<?> createAuxiliaryArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arquillian-testenricher-osgi.jar");
-        archive.addPackage(OSGiTestEnricher.class.getPackage());
         archive.addAsServiceProvider(RemoteLoadableExtension.class, OSGiEnricherRemoteExtension.class);
+        archive.addPackages(false, OSGiTestEnricher.class.getPackage(), StartLevelAware.class.getPackage());
         return archive;
     }
 }

@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 
 import javax.inject.Inject;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.osgi.StartLevelAware;
 import org.jboss.arquillian.test.spi.TestEnricher;
 import org.jboss.logging.Logger;
 import org.osgi.framework.Bundle;
@@ -82,12 +84,15 @@ public class OSGiTestEnricher implements TestEnricher {
         }
         // Process {@link StartLevelAware} on the {@link Deployment}
         for (Method method : testClass.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(StartLevelAware.class)) {
-                int bundleStartLevel = method.getAnnotation(StartLevelAware.class).startLevel();
-                StartLevel startLevel = getStartLevel();
-                Bundle bundle = getBundle(testCase);
-                log.debugf("Setting bundle start level of %s to: %d", bundle, bundleStartLevel);
-                startLevel.setBundleStartLevel(bundle, bundleStartLevel);
+            if (method.isAnnotationPresent(Deployment.class)) {
+                Deployment andep = method.getAnnotation(Deployment.class);
+                if (andep.managed() && andep.testable() && method.isAnnotationPresent(StartLevelAware.class)) {
+                    int bundleStartLevel = method.getAnnotation(StartLevelAware.class).startLevel();
+                    StartLevel startLevel = getStartLevel();
+                    Bundle bundle = getBundle(testCase);
+                    log.debugf("Setting bundle start level of %s to: %d", bundle, bundleStartLevel);
+                    startLevel.setBundleStartLevel(bundle, bundleStartLevel);
+                }
             }
         }
     }

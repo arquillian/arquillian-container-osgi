@@ -15,7 +15,7 @@
 
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.container</groupId>
-    <artifactId>arquillian-container-osgi-common</artifactId>
+    <artifactId>arquillian-container-osgi</artifactId>
     <name>Arquillian OSGi Container</name>
 
     <!-- Properties -->
