@@ -21,11 +21,16 @@
     <name>Arquillian OSGi</name>
     <description>OSGi Framework integrations for the Arquillian Project</description>
 
+    <scm>
+        <connection>scm:git:git://git@github.com:arquillian/arquillian-container-osgi.git</connection>
+        <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
+        <url>git://github.com/arquillian/arquillian-container-osgi.git</url>
+    </scm>
 
     <!-- Properties -->
     <properties>
-        <version.arquillian_core>1.0.0.CR1-SNAPSHOT</version.arquillian_core>
-        <version.shrinkwrap_shrinkwrap>1.0.0-beta-2</version.shrinkwrap_shrinkwrap>
+        <version.arquillian_core>1.0.0.CR1</version.arquillian_core>
+        <version.shrinkwrap_shrinkwrap>1.0.0-beta-3</version.shrinkwrap_shrinkwrap>
         <version.junit_junit>4.8.1</version.junit_junit>
         <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
         <version.jboss_osgi_framework>1.0.0.CR3</version.jboss_osgi_framework>
@@ -35,6 +40,10 @@
         <version.osgi>4.2.0</version.osgi>
         <version.jboss_logging>3.0.0.Beta4</version.jboss_logging>
         <version.jboss_logmanager>1.2.0.CR8</version.jboss_logmanager>
+
+        <!-- jboss-parent override -->
+        <version.release.plugin>2.1</version.release.plugin>
+
     </properties>
 
     <dependencyManagement>
@@ -96,6 +105,13 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-build</artifactId>
+                <version>${version.arquillian_core}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -115,6 +131,16 @@
                             <value>org.jboss.logmanager.LogManager</value>
                         </property>
                     </systemProperties>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Release Plugin Configuration -->
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <pushChanges>false</pushChanges>
+                    <localCheckout>true</localCheckout>
                 </configuration>
             </plugin>
         </plugins>
