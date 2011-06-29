@@ -16,14 +16,12 @@
  */
 package org.jboss.arquillian.container.osgi.remote;
 
-
 /**
  * A simple service.
  *
  * @author thomas.diesler@jboss.com
  * @version $Revision: $
  */
-public interface SimpleService 
-{
-   Integer sum(Integer... values);
+public interface SimpleService {
+    Integer sum(Integer... values);
 }

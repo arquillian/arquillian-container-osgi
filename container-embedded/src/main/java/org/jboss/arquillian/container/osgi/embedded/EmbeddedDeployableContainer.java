@@ -53,206 +53,169 @@ import org.osgi.framework.launch.Framework;
  *
  * @author thomas.diesler@jboss.com
  */
-public class EmbeddedDeployableContainer implements DeployableContainer<EmbeddedContainerConfiguration>
-{
-   // Provide logging
-   private static final Logger log = Logger.getLogger(EmbeddedDeployableContainer.class);
+public class EmbeddedDeployableContainer implements DeployableContainer<EmbeddedContainerConfiguration> {
+    // Provide logging
+    private static final Logger log = Logger.getLogger(EmbeddedDeployableContainer.class);
 
-   @Inject
-   @ContainerScoped
-   private InstanceProducer<Framework> frameworkInst;
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<Framework> frameworkInst;
 
-   @Inject
-   @ContainerScoped
-   private InstanceProducer<BundleContext> bundleContextInst;
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<BundleContext> bundleContextInst;
 
-   @Inject
-   @DeploymentScoped
-   private InstanceProducer<Bundle> bundleInst;
+    @Inject
+    @DeploymentScoped
+    private InstanceProducer<Bundle> bundleInst;
 
-   @Inject
-   @ContainerScoped
-   private InstanceProducer<MBeanServerConnection> mbeanServerInst;
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
-   @Override
-   public Class<EmbeddedContainerConfiguration> getConfigurationClass()
-   {
-      return EmbeddedContainerConfiguration.class;
-   }
+    @Override
+    public Class<EmbeddedContainerConfiguration> getConfigurationClass() {
+        return EmbeddedContainerConfiguration.class;
+    }
 
-   @Override
-   public ProtocolDescription getDefaultProtocol()
-   {
-      return new ProtocolDescription("jmx-osgi");
-   }
+    @Override
+    public ProtocolDescription getDefaultProtocol() {
+        return new ProtocolDescription("jmx-osgi");
+    }
 
-   @Override
-   public void setup(EmbeddedContainerConfiguration configuration)
-   {
-      OSGiBootstrapProvider provider = OSGiBootstrap.getBootstrapProvider();
-      frameworkInst.set(provider.getFramework());
+    @Override
+    public void setup(EmbeddedContainerConfiguration configuration) {
+        OSGiBootstrapProvider provider = OSGiBootstrap.getBootstrapProvider();
+        frameworkInst.set(provider.getFramework());
 
-      MBeanServerConnection mbeanServer = getMBeanServerConnection();
-      mbeanServerInst.set(mbeanServer);
-   }
+        MBeanServerConnection mbeanServer = getMBeanServerConnection();
+        mbeanServerInst.set(mbeanServer);
+    }
 
-   public void start() throws LifecycleException
-   {
-      try
-      {
-         Framework framework = frameworkInst.get();
-         framework.start();
-         bundleContextInst.set(framework.getBundleContext());
+    public void start() throws LifecycleException {
+        try {
+            Framework framework = frameworkInst.get();
+            framework.start();
+            bundleContextInst.set(framework.getBundleContext());
 
-         Bundle[] bundles = framework.getBundleContext().getBundles();
-         if (getInstalledBundle(bundles, "osgi.cmpn") == null)
-            installBundle("org.osgi", "org.osgi.compendium", "4.2.0", false);
+            Bundle[] bundles = framework.getBundleContext().getBundles();
+            if (getInstalledBundle(bundles, "osgi.cmpn") == null)
+                installBundle("org.osgi", "org.osgi.compendium", "4.2.0", false);
 
-         if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null)
-         {
-            // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
-            String arqVersion = EmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
-            installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
-         }
-      }
-      catch (BundleException ex)
-      {
-         throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
-      }
-   }
+            if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null) {
+                // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
+                String arqVersion = EmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
+                installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
+            }
+        } catch (BundleException ex) {
+            throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
+        }
+    }
 
-   public void stop() throws LifecycleException
-   {
-      try
-      {
-         Framework framework = frameworkInst.get();
-         framework.stop();
-         framework.waitForStop(3000);
-      }
-      catch (RuntimeException rte)
-      {
-         throw rte;
-      }
-      catch (Exception ex)
-      {
-         throw new LifecycleException("Cannot stop embedded OSGi Framework", ex);
-      }
-   }
+    public void stop() throws LifecycleException {
+        try {
+            Framework framework = frameworkInst.get();
+            framework.stop();
+            framework.waitForStop(3000);
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception ex) {
+            throw new LifecycleException("Cannot stop embedded OSGi Framework", ex);
+        }
+    }
 
-   public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException
-   {
-      try
-      {
-         // Export the bundle bytes
-         ZipExporter exporter = archive.as(ZipExporter.class);
-         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         exporter.exportTo(baos);
+    public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException {
+        try {
+            // Export the bundle bytes
+            ZipExporter exporter = archive.as(ZipExporter.class);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            exporter.exportTo(baos);
 
-         ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
 
-         BundleContext sysContext = bundleContextInst.get();
-         Bundle bundle = sysContext.installBundle(archive.getName(), inputStream);
-         bundleInst.set(bundle);
-      }
-      catch (RuntimeException rte)
-      {
-         throw rte;
-      }
-      catch (Exception ex)
-      {
-         throw new DeploymentException("Cannot deploy: " + archive, ex);
-      }
+            BundleContext sysContext = bundleContextInst.get();
+            Bundle bundle = sysContext.installBundle(archive.getName(), inputStream);
+            bundleInst.set(bundle);
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception ex) {
+            throw new DeploymentException("Cannot deploy: " + archive, ex);
+        }
 
-      return new ProtocolMetaData();
-   }
+        return new ProtocolMetaData();
+    }
 
-   public void undeploy(Archive<?> archive) throws DeploymentException
-   {
-      try
-      {
-         Bundle bundle = bundleInst.get();
-         if (bundle != null)
-         {
-            int state = bundle.getState();
-            if (state != Bundle.UNINSTALLED)
-               bundle.uninstall();
-         }
-      }
-      catch (BundleException ex)
-      {
-         log.error("Cannot undeploy: " + archive, ex);
-      }
-   }
+    public void undeploy(Archive<?> archive) throws DeploymentException {
+        try {
+            Bundle bundle = bundleInst.get();
+            if (bundle != null) {
+                int state = bundle.getState();
+                if (state != Bundle.UNINSTALLED)
+                    bundle.uninstall();
+            }
+        } catch (BundleException ex) {
+            log.error("Cannot undeploy: " + archive, ex);
+        }
+    }
 
-   @Override
-   public void deploy(Descriptor descriptor) throws DeploymentException
-   {
-      throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
-   }
+    @Override
+    public void deploy(Descriptor descriptor) throws DeploymentException {
+        throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
+    }
 
-   @Override
-   public void undeploy(Descriptor descriptor) throws DeploymentException
-   {
-      throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
-   }
+    @Override
+    public void undeploy(Descriptor descriptor) throws DeploymentException {
+        throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
+    }
 
-   private Bundle getInstalledBundle(Bundle[] bundles, String symbolicName)
-   {
-      for (Bundle aux : bundles)
-      {
-         if (symbolicName.equals(aux.getSymbolicName()))
-            return aux;
-      }
-      return null;
-   }
+    private Bundle getInstalledBundle(Bundle[] bundles, String symbolicName) {
+        for (Bundle aux : bundles) {
+            if (symbolicName.equals(aux.getSymbolicName()))
+                return aux;
+        }
+        return null;
+    }
 
-   private Bundle installBundle(String groupId, String artifactId, String version, boolean startBundle) throws BundleException
-   {
-      String filespec = groupId + ":" + artifactId + ":jar:" + version;
-      MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class);
-      File[] resolved = resolver.artifact(filespec).resolveAsFiles(new StrictFilter());
-      if (resolved == null || resolved.length == 0)
-         throw new BundleException("Cannot obtain maven artifact: " + filespec);
-      if (resolved.length > 1)
-         throw new BundleException("Multiple maven artifacts for: " + filespec);
+    private Bundle installBundle(String groupId, String artifactId, String version, boolean startBundle) throws BundleException {
+        String filespec = groupId + ":" + artifactId + ":jar:" + version;
+        MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class);
+        File[] resolved = resolver.artifact(filespec).resolveAsFiles(new StrictFilter());
+        if (resolved == null || resolved.length == 0)
+            throw new BundleException("Cannot obtain maven artifact: " + filespec);
+        if (resolved.length > 1)
+            throw new BundleException("Multiple maven artifacts for: " + filespec);
 
-      File bundleFile = resolved[0];
-      try
-      {
-         BundleContext sysContext = bundleContextInst.get();
-         Bundle bundle = sysContext.installBundle(bundleFile.toURI().toString());
-         if (startBundle == true)
-            bundle.start();
+        File bundleFile = resolved[0];
+        try {
+            BundleContext sysContext = bundleContextInst.get();
+            Bundle bundle = sysContext.installBundle(bundleFile.toURI().toString());
+            if (startBundle == true)
+                bundle.start();
 
-         return bundle;
-      }
-      catch (BundleException ex)
-      {
-         log.error("Cannot install/start bundle: " + bundleFile, ex);
-      }
-      return null;
-   }
+            return bundle;
+        } catch (BundleException ex) {
+            log.error("Cannot install/start bundle: " + bundleFile, ex);
+        }
+        return null;
+    }
 
-   private MBeanServerConnection getMBeanServerConnection()
-   {
-      MBeanServer mbeanServer = null;
+    private MBeanServerConnection getMBeanServerConnection() {
+        MBeanServer mbeanServer = null;
 
-      ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
-      if (serverArr.size() > 1)
-         log.warnf("Multiple MBeanServer instances: %s", serverArr);
+        ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
+        if (serverArr.size() > 1)
+            log.warnf("Multiple MBeanServer instances: %s", serverArr);
 
-      if (serverArr.size() > 0)
-      {
-         mbeanServer = serverArr.get(0);
-         log.debugf("Found MBeanServer:%s ", mbeanServer.getDefaultDomain());
-      }
+        if (serverArr.size() > 0) {
+            mbeanServer = serverArr.get(0);
+            log.debugf("Found MBeanServer:%s ", mbeanServer.getDefaultDomain());
+        }
 
-      if (mbeanServer == null)
-      {
-         log.debugf("No MBeanServer, create one ...");
-         mbeanServer = MBeanServerFactory.createMBeanServer();
-      }
+        if (mbeanServer == null) {
+            log.debugf("No MBeanServer, create one ...");
+            mbeanServer = MBeanServerFactory.createMBeanServer();
+        }
 
-      return mbeanServer;
-   }
+        return mbeanServer;
+    }
 }

@@ -44,59 +44,53 @@ import org.osgi.framework.BundleContext;
  * @since 06-Sep-2010
  */
 @RunWith(Arquillian.class)
-public class ARQ194TestCase
-{
-   private static final String BUNDLE_NAME = "arq194-bundle";
+public class ARQ194TestCase {
+    private static final String BUNDLE_NAME = "arq194-bundle";
 
-   @Deployment
-   public static JavaArchive create()
-   {
-      return ShrinkWrap.create(JavaArchive.class);
-   }
-   
-   @Deployment(name = BUNDLE_NAME, managed = false, testable = false)
-   public static JavaArchive getTestArchive()
-   {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
-      archive.setManifest(new Asset()
-      {
-         public InputStream openStream()
-         {
-            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-            builder.addBundleSymbolicName(BUNDLE_NAME);
-            builder.addBundleManifestVersion(2);
-            builder.addBundleActivator(ARQ194Activator.class.getName());
-            builder.addExportPackages(ARQ194Service.class);
-            builder.addImportPackages(BundleActivator.class);
-            return builder.openStream();
-         }
-      });
-      archive.addClasses(ARQ194Activator.class, ARQ194Service.class);
-      return archive;
-   }
+    @Deployment
+    public static JavaArchive create() {
+        return ShrinkWrap.create(JavaArchive.class);
+    }
 
-   @Inject
-   public BundleContext context;
+    @Deployment(name = BUNDLE_NAME, managed = false, testable = false)
+    public static JavaArchive getTestArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(BUNDLE_NAME);
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(ARQ194Activator.class.getName());
+                builder.addExportPackages(ARQ194Service.class);
+                builder.addImportPackages(BundleActivator.class);
+                return builder.openStream();
+            }
+        });
+        archive.addClasses(ARQ194Activator.class, ARQ194Service.class);
+        return archive;
+    }
 
-   @ArquillianResource
-   public Deployer provider;
+    @Inject
+    public BundleContext context;
 
-   @Test
-   public void testInstallBundleFromArchive() throws Exception
-   {
-      InputStream input = provider.getDeployment(BUNDLE_NAME);
-      Bundle bundle = context.installBundle(BUNDLE_NAME, input);
+    @ArquillianResource
+    public Deployer provider;
 
-      assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-      assertEquals("arq194-bundle", bundle.getSymbolicName());
+    @Test
+    public void testInstallBundleFromArchive() throws Exception {
+        InputStream input = provider.getDeployment(BUNDLE_NAME);
+        Bundle bundle = context.installBundle(BUNDLE_NAME, input);
 
-      bundle.start();
-      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+        assertEquals("arq194-bundle", bundle.getSymbolicName());
 
-      bundle.stop();
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        bundle.start();
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
-      bundle.uninstall();
-      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
-   }
+        bundle.stop();
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+
+        bundle.uninstall();
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
 }

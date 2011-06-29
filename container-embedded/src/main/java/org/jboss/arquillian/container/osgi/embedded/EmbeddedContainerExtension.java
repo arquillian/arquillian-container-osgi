@@ -29,7 +29,7 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
  * @author thomas.diesler@jboss.com
  */
 public class EmbeddedContainerExtension implements LoadableExtension {
-    
+
     @Override
     public void register(ExtensionBuilder builder) {
         builder.service(DeployableContainer.class, EmbeddedDeployableContainer.class);

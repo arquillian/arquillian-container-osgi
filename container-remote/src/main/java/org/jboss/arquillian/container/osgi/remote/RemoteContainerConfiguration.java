@@ -25,44 +25,36 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  * @author thomas.diesler@jboss.com
  * @since 01-Sep-2010
  */
-public class RemoteContainerConfiguration implements ContainerConfiguration
-{
-   private String host = "localhost";
-   private String urlPath = "jmxrmi";
-   private int port = 1090;
-   
-   public String getHost()
-   {
-      return host;
-   }
+public class RemoteContainerConfiguration implements ContainerConfiguration {
+    private String host = "localhost";
+    private String urlPath = "jmxrmi";
+    private int port = 1090;
 
-   public void setHost(String host)
-   {
-      this.host = host;
-   }
+    public String getHost() {
+        return host;
+    }
 
-   public int getPort()
-   {
-      return port;
-   }
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-   public void setPort(int port)
-   {
-      this.port = port;
-   }
+    public int getPort() {
+        return port;
+    }
 
-   public String getUrlPath()
-   {
-      return urlPath;
-   }
+    public void setPort(int port) {
+        this.port = port;
+    }
 
-   public void setUrlPath(String urlPath)
-   {
-      this.urlPath = urlPath;
-   }
-   
-   @Override
-   public void validate() throws ConfigurationException
-   {
-   }
+    public String getUrlPath() {
+        return urlPath;
+    }
+
+    public void setUrlPath(String urlPath) {
+        this.urlPath = urlPath;
+    }
+
+    @Override
+    public void validate() throws ConfigurationException {
+    }
 }

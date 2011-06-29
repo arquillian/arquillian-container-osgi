@@ -46,56 +46,49 @@ import org.osgi.framework.BundleContext;
  */
 @RunWith(Arquillian.class)
 @Ignore("[ARQ-271] TestEnricher should be called in @BeforeClass")
-public class ARQ271BeforeClassTestCase
-{
-   @Inject
-   public static BundleContext context;
-   
-   @Inject
-   public static Bundle bundle;
-   
-   @Deployment
-   public static JavaArchive createdeployment()
-   {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
-      archive.setManifest(new Asset()
-      {
-         public InputStream openStream()
-         {
-            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-            builder.addBundleSymbolicName(archive.getName());
-            builder.addBundleManifestVersion(2);
-            builder.addImportPackages(OSGiTestHelper.class);
-            return builder.openStream();
-         }
-      });
-      return archive;
-   }
+public class ARQ271BeforeClassTestCase {
+    @Inject
+    public static BundleContext context;
 
-   @BeforeClass
-   public static void beforeClass() throws Exception
-   {
-      assertNotNull("BundleContext injected", context);
-      assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-      assertNotNull("Bundle injected", bundle);
-      OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-   }
+    @Inject
+    public static Bundle bundle;
 
-   @AfterClass
-   public static void afterClass() throws Exception
-   {
-      assertNotNull("BundleContext injected", context);
-      assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-      assertNotNull("Bundle injected", bundle);
-      OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-   }
+    @Deployment
+    public static JavaArchive createdeployment() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(OSGiTestHelper.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
 
-   @Test
-   public void testBundleInjection() throws Exception
-   {
-      assertNotNull("BundleContext injected", context);
-      assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-      assertNotNull("Bundle injected", bundle);
-      OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-   }
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        assertNotNull("BundleContext injected", context);
+        assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
+        assertNotNull("Bundle injected", bundle);
+        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        assertNotNull("BundleContext injected", context);
+        assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
+        assertNotNull("Bundle injected", bundle);
+        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+    }
+
+    @Test
+    public void testBundleInjection() throws Exception {
+        assertNotNull("BundleContext injected", context);
+        assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
+        assertNotNull("Bundle injected", bundle);
+        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+    }
 }

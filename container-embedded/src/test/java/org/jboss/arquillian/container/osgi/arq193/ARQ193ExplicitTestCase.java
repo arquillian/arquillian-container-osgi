@@ -43,58 +43,52 @@ import org.osgi.framework.BundleContext;
  * @since 31-Aug-2010
  */
 @RunWith(Arquillian.class)
-public class ARQ193ExplicitTestCase
-{
-   @Deployment
-   public static Archive<?> createDeployment()
-   {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq139-explicit");
-      archive.addClass(ARQ193ExplicitTestCase.class);
-      archive.setManifest(new Asset()
-      {
-         public InputStream openStream()
-         {
-            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-            builder.addBundleSymbolicName(archive.getName());
-            builder.addBundleManifestVersion(2);
-            builder.addExportPackages(ARQ193ExplicitTestCase.class);
-            builder.addImportPackages("org.jboss.arquillian.test.api", "org.jboss.arquillian.junit");
-            builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
-            builder.addImportPackages("javax.inject", "org.junit", "org.junit.runner", "org.osgi.framework");
-            return builder.openStream();
-         }
-      });
-      return archive;
-   }
-   
-   @Inject
-   public Bundle bundle;
-   
-   @Test
-   public void testBundleInjection() throws Exception
-   {
-      assertNotNull("Bundle injected", bundle);
-      assertEquals("Bundle INSTALLED", Bundle.RESOLVED, bundle.getState());
-      
-      bundle.start();
-      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-      
-      // The injected bundle is the one that contains the test case
-      assertEquals("arq139-explicit", bundle.getSymbolicName());
-      bundle.loadClass(ARQ193ExplicitTestCase.class.getName());
-      
-      // The application bundle is installed before the generated test bundle
-      BundleContext context = bundle.getBundleContext();
-      for(Bundle bundle : context.getBundles())
-      {
-         if (bundle.getSymbolicName().equals(ARQ193ExplicitTestCase.class.getSimpleName()))
-            fail("Unexpected generated bundle: " + bundle);
-      }
-      
-      bundle.stop();
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-      
-      bundle.uninstall();
-      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
-   }
+public class ARQ193ExplicitTestCase {
+    @Deployment
+    public static Archive<?> createDeployment() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq139-explicit");
+        archive.addClass(ARQ193ExplicitTestCase.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addExportPackages(ARQ193ExplicitTestCase.class);
+                builder.addImportPackages("org.jboss.arquillian.test.api", "org.jboss.arquillian.junit");
+                builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
+                builder.addImportPackages("javax.inject", "org.junit", "org.junit.runner", "org.osgi.framework");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Inject
+    public Bundle bundle;
+
+    @Test
+    public void testBundleInjection() throws Exception {
+        assertNotNull("Bundle injected", bundle);
+        assertEquals("Bundle INSTALLED", Bundle.RESOLVED, bundle.getState());
+
+        bundle.start();
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+        // The injected bundle is the one that contains the test case
+        assertEquals("arq139-explicit", bundle.getSymbolicName());
+        bundle.loadClass(ARQ193ExplicitTestCase.class.getName());
+
+        // The application bundle is installed before the generated test bundle
+        BundleContext context = bundle.getBundleContext();
+        for (Bundle bundle : context.getBundles()) {
+            if (bundle.getSymbolicName().equals(ARQ193ExplicitTestCase.class.getSimpleName()))
+                fail("Unexpected generated bundle: " + bundle);
+        }
+
+        bundle.stop();
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+
+        bundle.uninstall();
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
 }

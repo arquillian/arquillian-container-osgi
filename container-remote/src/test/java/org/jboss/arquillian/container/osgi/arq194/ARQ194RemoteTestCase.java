@@ -43,51 +43,46 @@ import org.osgi.framework.BundleContext;
  */
 @RunWith(Arquillian.class)
 @Ignore("[ARQ-194] Support multiple bundle deployments")
-public class ARQ194RemoteTestCase
-{
-   @Inject
-   public BundleContext context;
-   
-   //@Inject
-   //public DeploymentProvider provider;
+public class ARQ194RemoteTestCase {
+    @Inject
+    public BundleContext context;
 
-   @Test
-   public void testGeneratedBundle() throws Exception
-   {
-      InputStream input = null; //provider.getClientDeploymentAsStream("arq194-bundle");
-      Bundle bundle = context.installBundle("arq194-bundle", input);
+    //@Inject
+    //public DeploymentProvider provider;
 
-      assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-      assertEquals("arq194-bundle", bundle.getSymbolicName());
+    @Test
+    public void testGeneratedBundle() throws Exception {
+        InputStream input = null; //provider.getClientDeploymentAsStream("arq194-bundle");
+        Bundle bundle = context.installBundle("arq194-bundle", input);
 
-      bundle.start();
-      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+        assertEquals("arq194-bundle", bundle.getSymbolicName());
 
-      bundle.stop();
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        bundle.start();
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
-      bundle.uninstall();
-      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
-   }
+        bundle.stop();
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
 
-   //@ArchiveProvider
-   public static JavaArchive getTestArchive(String name)
-   {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
-      archive.addClasses(ARQ194RemoteActivator.class, ARQ194RemoteService.class);
-      archive.setManifest(new Asset()
-      {
-         public InputStream openStream()
-         {
-            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-            builder.addBundleSymbolicName(archive.getName());
-            builder.addBundleManifestVersion(2);
-            builder.addBundleActivator(ARQ194RemoteActivator.class.getName());
-            builder.addExportPackages(ARQ194RemoteService.class);
-            builder.addImportPackages(BundleActivator.class);
-            return builder.openStream();
-         }
-      });
-      return archive;
-   }
+        bundle.uninstall();
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
+
+    //@ArchiveProvider
+    public static JavaArchive getTestArchive(String name) {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
+        archive.addClasses(ARQ194RemoteActivator.class, ARQ194RemoteService.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(ARQ194RemoteActivator.class.getName());
+                builder.addExportPackages(ARQ194RemoteService.class);
+                builder.addImportPackages(BundleActivator.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
 }

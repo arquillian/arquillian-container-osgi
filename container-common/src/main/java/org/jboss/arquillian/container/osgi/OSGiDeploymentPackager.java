@@ -35,41 +35,31 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * @author thomas.diesler@jboss.com
  * @version $Revision: $
  */
-public class OSGiDeploymentPackager implements DeploymentPackager
-{
-   public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors)
-   {
-      Archive<?> bundleArchive = testDeployment.getApplicationArchive();
-      if (JavaArchive.class.isInstance(bundleArchive))
-      {
-         return handleArchive(JavaArchive.class.cast(bundleArchive), testDeployment.getAuxiliaryArchives());
-      }
+public class OSGiDeploymentPackager implements DeploymentPackager {
+    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
+        Archive<?> bundleArchive = testDeployment.getApplicationArchive();
+        if (JavaArchive.class.isInstance(bundleArchive)) {
+            return handleArchive(JavaArchive.class.cast(bundleArchive), testDeployment.getAuxiliaryArchives());
+        }
 
-      throw new IllegalArgumentException(OSGiDeploymentPackager.class.getName() + " can not handle archive of type " + bundleArchive.getClass().getName());
-   }
+        throw new IllegalArgumentException(OSGiDeploymentPackager.class.getName() + " can not handle archive of type " + bundleArchive.getClass().getName());
+    }
 
-   private Archive<?> handleArchive(JavaArchive archive, Collection<Archive<?>> auxiliaryArchives)
-   {
-      try
-      {
-         validateBundleArchive(archive);
-         return archive;
-      }
-      catch (RuntimeException rte)
-      {
-         throw rte;
-      }
-      catch (Exception ex)
-      {
-         throw new IllegalArgumentException("Not a valid OSGi bundle: " + archive, ex);
-      }
-   }
+    private Archive<?> handleArchive(JavaArchive archive, Collection<Archive<?>> auxiliaryArchives) {
+        try {
+            validateBundleArchive(archive);
+            return archive;
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Not a valid OSGi bundle: " + archive, ex);
+        }
+    }
 
-   private void validateBundleArchive(Archive<?> archive) throws Exception
-   {
-      ZipExporter exporter = archive.as(ZipExporter.class);
-      InputStream inputStream = exporter.exportAsInputStream();
-      VirtualFile virtualFile = AbstractVFS.toVirtualFile(inputStream);
-      BundleInfo.createBundleInfo(virtualFile);
-   }
+    private void validateBundleArchive(Archive<?> archive) throws Exception {
+        ZipExporter exporter = archive.as(ZipExporter.class);
+        InputStream inputStream = exporter.exportAsInputStream();
+        VirtualFile virtualFile = AbstractVFS.toVirtualFile(inputStream);
+        BundleInfo.createBundleInfo(virtualFile);
+    }
 }

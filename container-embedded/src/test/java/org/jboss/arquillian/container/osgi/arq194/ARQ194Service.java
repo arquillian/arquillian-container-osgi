@@ -16,13 +16,11 @@
  */
 package org.jboss.arquillian.container.osgi.arq194;
 
-
 /**
  * A simple service.
  *
  * @author thomas.diesler@jboss.com
  */
-public interface ARQ194Service 
-{
-   Integer sum(Integer... values);
+public interface ARQ194Service {
+    Integer sum(Integer... values);
 }

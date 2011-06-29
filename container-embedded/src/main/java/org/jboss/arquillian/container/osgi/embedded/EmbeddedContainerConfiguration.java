@@ -24,10 +24,8 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  *
  * @author thomas.diesler@jboss.com
  */
-public class EmbeddedContainerConfiguration implements ContainerConfiguration
-{
-   @Override
-   public void validate() throws ConfigurationException
-   {
-   }
+public class EmbeddedContainerConfiguration implements ContainerConfiguration {
+    @Override
+    public void validate() throws ConfigurationException {
+    }
 }

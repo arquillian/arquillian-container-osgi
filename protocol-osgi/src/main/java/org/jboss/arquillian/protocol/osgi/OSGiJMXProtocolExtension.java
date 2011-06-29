@@ -27,13 +27,10 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class OSGiJMXProtocolExtension implements LoadableExtension
-{
-   @Override
-   public void register(ExtensionBuilder builder)
-   {
-      builder.service(Protocol.class, JMXOSGiProtocol.class)
-             .service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
-   }
+public class OSGiJMXProtocolExtension implements LoadableExtension {
+    @Override
+    public void register(ExtensionBuilder builder) {
+        builder.service(Protocol.class, JMXOSGiProtocol.class).service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
+    }
 
 }

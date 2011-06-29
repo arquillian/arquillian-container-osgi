@@ -25,29 +25,22 @@ import org.osgi.framework.BundleContext;
  *
  * @author thomas.diesler@jboss.com
  */
-public class ARQ194Activator implements BundleActivator
-{
-   public void start(BundleContext context) throws Exception
-   {
-      ARQ194Service service = new ARQ194Service()
-      {
-         public Integer sum(Integer... values)
-         {
-            Integer result = 0;
-            if (values != null)
-            {
-               for (Integer i : values)
-               {
-                  result += i;
-               }
+public class ARQ194Activator implements BundleActivator {
+    public void start(BundleContext context) throws Exception {
+        ARQ194Service service = new ARQ194Service() {
+            public Integer sum(Integer... values) {
+                Integer result = 0;
+                if (values != null) {
+                    for (Integer i : values) {
+                        result += i;
+                    }
+                }
+                return result;
             }
-            return result;
-         }
-      };
-      context.registerService(ARQ194Service.class.getName(), service, null);
-   }
+        };
+        context.registerService(ARQ194Service.class.getName(), service, null);
+    }
 
-   public void stop(BundleContext context) throws Exception
-   {
-   }
+    public void stop(BundleContext context) throws Exception {
+    }
 }
