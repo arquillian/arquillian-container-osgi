@@ -18,7 +18,6 @@ package org.jboss.arquillian.container.osgi.remote;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -137,7 +136,7 @@ public class RemoteDeployableContainer implements DeployableContainer<RemoteCont
         }
     }
 
-    private VirtualFile toVirtualFile(Archive<?> archive) throws IOException, MalformedURLException {
+    private VirtualFile toVirtualFile(Archive<?> archive) throws IOException {
         ZipExporter exporter = archive.as(ZipExporter.class);
         return AbstractVFS.toVirtualFile(archive.getName(), exporter.exportAsInputStream());
     }
