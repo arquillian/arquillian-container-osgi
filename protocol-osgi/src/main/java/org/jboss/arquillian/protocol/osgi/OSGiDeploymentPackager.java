@@ -16,18 +16,16 @@
  */
 package org.jboss.arquillian.protocol.osgi;
 
-import java.io.InputStream;
 import java.util.Collection;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.osgi.spi.util.BundleInfo;
-import org.jboss.osgi.vfs.AbstractVFS;
-import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.Node;
 
 /**
  * Packager for running Arquillian against OSGi containers.
@@ -35,41 +33,30 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * @author thomas.diesler@jboss.com
  * @version $Revision: $
  */
-public class OSGiDeploymentPackager implements DeploymentPackager
-{
-   public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors)
-   {
-      Archive<?> bundleArchive = testDeployment.getApplicationArchive();
-      if (JavaArchive.class.isInstance(bundleArchive))
-      {
-         return handleArchive(JavaArchive.class.cast(bundleArchive), testDeployment.getAuxiliaryArchives());
-      }
+public class OSGiDeploymentPackager implements DeploymentPackager {
 
-      throw new IllegalArgumentException(OSGiDeploymentPackager.class.getName() + " can not handle archive of type " + bundleArchive.getClass().getName());
-   }
+    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors) {
+        Archive<?> bundleArchive = testDeployment.getApplicationArchive();
+        return handleArchive(bundleArchive, testDeployment.getAuxiliaryArchives());
+    }
 
-   private Archive<?> handleArchive(JavaArchive archive, Collection<Archive<?>> auxiliaryArchives)
-   {
-      try
-      {
-         validateBundleArchive(archive);
-         return archive;
-      }
-      catch (RuntimeException rte)
-      {
-         throw rte;
-      }
-      catch (Exception ex)
-      {
-         throw new IllegalArgumentException("Not a valid OSGi bundle: " + archive, ex);
-      }
-   }
+    private Archive<?> handleArchive(Archive<?> archive, Collection<Archive<?>> auxiliaryArchives) {
+        try {
+            validateBundleArchive(archive);
+            return archive;
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Not a valid OSGi bundle: " + archive, ex);
+        }
+    }
 
-   private void validateBundleArchive(Archive<?> archive) throws Exception
-   {
-      ZipExporter exporter = archive.as(ZipExporter.class);
-      InputStream inputStream = exporter.exportAsInputStream();
-      VirtualFile virtualFile = AbstractVFS.toVirtualFile(inputStream);
-      BundleInfo.createBundleInfo(virtualFile);
-   }
+    private void validateBundleArchive(Archive<?> archive) throws Exception {
+        Manifest manifest = null;
+        Node node = archive.get(JarFile.MANIFEST_NAME);
+        if (node != null) {
+            manifest = new Manifest(node.getAsset().openStream());
+        }
+        BundleInfo.validateBundleManifest(manifest);
+    }
 }

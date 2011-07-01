@@ -38,47 +38,38 @@ import org.junit.Test;
  * @author thomas.diesler@jboss.com
  * @version $Revision: $
  */
-public class OSGiDeploymentPackagerTestCase
-{
-   @Test
-   public void testValidBundle() throws Exception
-   {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
-      archive.setManifest(new Asset()
-      {
-         public InputStream openStream()
-         {
-            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-            builder.addBundleSymbolicName(archive.getName());
-            builder.addBundleManifestVersion(2);
-            return builder.openStream();
-         }
-      });
-      
-      Archive<?> result = new OSGiDeploymentPackager().generateDeployment(new TestDeployment(archive, new ArrayList<Archive<?>>()), new ArrayList<ProtocolArchiveProcessor>());
-      assertNotNull("Result archive not null", result);
-   }
-   
-   @Test
-   public void testInvalidBundle() throws Exception
-   {
-      final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
-      archive.setManifest(new Asset()
-      {
-         public InputStream openStream()
-         {
-            OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-            return builder.openStream();
-         }
-      });
-      try
-      {
-         new OSGiDeploymentPackager().generateDeployment(new TestDeployment(archive, new ArrayList<Archive<?>>()), new ArrayList<ProtocolArchiveProcessor>());
-         fail("RuntimeException expected");
-      }
-      catch (RuntimeException ex)
-      {
-         // expected
-      }
-   }
+public class OSGiDeploymentPackagerTestCase {
+    @Test
+    public void testValidBundle() throws Exception {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                return builder.openStream();
+            }
+        });
+
+        Archive<?> result = new OSGiDeploymentPackager().generateDeployment(new TestDeployment(archive, new ArrayList<Archive<?>>()),
+                new ArrayList<ProtocolArchiveProcessor>());
+        assertNotNull("Result archive not null", result);
+    }
+
+    @Test
+    public void testInvalidBundle() throws Exception {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                return builder.openStream();
+            }
+        });
+        try {
+            new OSGiDeploymentPackager().generateDeployment(new TestDeployment(archive, new ArrayList<Archive<?>>()), new ArrayList<ProtocolArchiveProcessor>());
+            fail("RuntimeException expected");
+        } catch (RuntimeException ex) {
+            // expected
+        }
+    }
 }

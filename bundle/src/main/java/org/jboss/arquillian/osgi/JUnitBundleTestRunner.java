@@ -21,7 +21,7 @@ import org.jboss.arquillian.test.spi.TestResult;
 
 /**
  * A JUnitTestRunner for OSGi
- * 
+ *
  * @author thomas.diesler@jboss.com
  */
 public class JUnitBundleTestRunner extends JUnitTestRunner {

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.arq193;
+package org.jboss.test.arquillian.container.osgi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -37,33 +37,30 @@ import org.osgi.framework.Bundle;
  * @since 31-Aug-2010
  */
 @RunWith(Arquillian.class)
-public class ARQ193GeneratedTestCase
-{
-   @Deployment
-   public static Archive<?> createDeployment()
-   {
-      return ShrinkWrap.create(JavaArchive.class, "empty-bundle");
-   }
+public class ARQ193GeneratedTestCase {
+    @Deployment
+    public static Archive<?> createDeployment() {
+        return ShrinkWrap.create(JavaArchive.class, "empty-bundle");
+    }
 
-   @Inject
-   public Bundle bundle;
+    @Inject
+    public Bundle bundle;
 
-   @Test
-   public void testBundleInjection() throws Exception
-   {
-      assertNotNull("Bundle injected", bundle);
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+    @Test
+    public void testBundleInjection() throws Exception {
+        assertNotNull("Bundle injected", bundle);
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
 
-      bundle.start();
-      assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+        bundle.start();
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
-      assertEquals("empty-bundle", bundle.getSymbolicName());
-      bundle.loadClass(ARQ193GeneratedTestCase.class.getName());
+        assertEquals("empty-bundle", bundle.getSymbolicName());
+        bundle.loadClass(ARQ193GeneratedTestCase.class.getName());
 
-      bundle.stop();
-      assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        bundle.stop();
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
 
-      bundle.uninstall();
-      assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
-   }
+        bundle.uninstall();
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+    }
 }

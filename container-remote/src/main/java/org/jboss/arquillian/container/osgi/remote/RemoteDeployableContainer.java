@@ -18,7 +18,6 @@ package org.jboss.arquillian.container.osgi.remote;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,251 +57,202 @@ import org.osgi.jmx.framework.FrameworkMBean;
  *
  * @author thomas.diesler@jboss.com
  */
-public class RemoteDeployableContainer implements DeployableContainer<RemoteContainerConfiguration>
-{
-   // Provide logging
-   private static final Logger log = Logger.getLogger(RemoteDeployableContainer.class.getName());
+public class RemoteDeployableContainer implements DeployableContainer<RemoteContainerConfiguration> {
+    // Provide logging
+    private static final Logger log = Logger.getLogger(RemoteDeployableContainer.class.getName());
 
-   @Inject @ContainerScoped
-   private InstanceProducer<MBeanServerConnection> mbeanServerInst;
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
-   private JMXConnector jmxConnector;
-   private ManagementSupport jmxSupport;
-   private Map<String, BundleHandle> deployedBundles = new HashMap<String, BundleHandle>();
+    private JMXConnector jmxConnector;
+    private ManagementSupport jmxSupport;
+    private Map<String, BundleHandle> deployedBundles = new HashMap<String, BundleHandle>();
 
-   @Override
-   public Class<RemoteContainerConfiguration> getConfigurationClass()
-   {
-      return RemoteContainerConfiguration.class;
-   }
+    @Override
+    public Class<RemoteContainerConfiguration> getConfigurationClass() {
+        return RemoteContainerConfiguration.class;
+    }
 
-   @Override
-   public ProtocolDescription getDefaultProtocol()
-   {
-      return new ProtocolDescription("jmx-osgi");
-   }
+    @Override
+    public ProtocolDescription getDefaultProtocol() {
+        return new ProtocolDescription("jmx-osgi");
+    }
 
-   @Override
-   public void setup(RemoteContainerConfiguration configuration)
-   {
-      // Create the JMXConnector that the test client uses to connect to the remote MBeanServer
-      MBeanServerConnection mbeanServer = getMBeanServerConnection(configuration);
-      mbeanServerInst.set(mbeanServer);
+    @Override
+    public void setup(RemoteContainerConfiguration configuration) {
+        // Create the JMXConnector that the test client uses to connect to the remote MBeanServer
+        MBeanServerConnection mbeanServer = getMBeanServerConnection(configuration);
+        mbeanServerInst.set(mbeanServer);
 
-      jmxSupport = new ManagementSupport(mbeanServer);
-   }
+        jmxSupport = new ManagementSupport(mbeanServer);
+    }
 
-   @Override
-   public void start() throws LifecycleException
-   {
-      List<BundleHandle> bundles = getBundles();
-      if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null)
-      {
-         installBundle("arquillian-osgi-bundle", true);
-      }
-   }
+    @Override
+    public void start() throws LifecycleException {
+        List<BundleHandle> bundles = getBundles();
+        if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null) {
+            installBundle("arquillian-osgi-bundle", true);
+        }
+    }
 
-   @Override
-   public void stop() throws LifecycleException
-   {
-      // nothing to do
-   }
+    @Override
+    public void stop() throws LifecycleException {
+        // nothing to do
+    }
 
-   @Override
-   public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException
-   {
-      try
-      {
-         BundleHandle handle = installBundle(archive);
-         deployedBundles.put(archive.getName(), handle);
-      }
-      catch (RuntimeException rte)
-      {
-         throw rte;
-      }
-      catch (Exception ex)
-      {
-         throw new DeploymentException("Cannot deploy: " + archive.getName(), ex);
-      }
-      return new ProtocolMetaData();
-   }
+    @Override
+    public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
+        try {
+            BundleHandle handle = installBundle(archive);
+            deployedBundles.put(archive.getName(), handle);
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception ex) {
+            throw new DeploymentException("Cannot deploy: " + archive.getName(), ex);
+        }
+        return new ProtocolMetaData();
+    }
 
-   @Override
-   public void undeploy(Archive<?> archive) throws DeploymentException
-   {
-      BundleHandle handle = deployedBundles.remove(archive.getName());
-      if (handle != null)
-      {
-         try
-         {
-            FrameworkMBean frameworkMBean = jmxSupport.getFrameworkMBean();
-            frameworkMBean.uninstallBundle(handle.getBundleId());
-         }
-         catch (IOException ex)
-         {
-            throw new DeploymentException("Cannot undeploy: " + archive.getName(), ex);
-         }
-      }
-   }
-
-   private BundleHandle installBundle(Archive<?> archive) throws BundleException, IOException
-   {
-      VirtualFile virtualFile = toVirtualFile(archive);
-      try
-      {
-         return installBundle(virtualFile);
-      }
-      finally
-      {
-         VFSUtils.safeClose(virtualFile);
-      }
-   }
-
-   private VirtualFile toVirtualFile(Archive<?> archive) throws IOException, MalformedURLException
-   {
-      ZipExporter exporter = archive.as(ZipExporter.class);
-      return AbstractVFS.toVirtualFile(archive.getName(), exporter.exportAsInputStream());
-   }
-
-   private BundleHandle installBundle(VirtualFile virtualFile) throws BundleException, IOException
-   {
-      BundleInfo info = BundleInfo.createBundleInfo(virtualFile);
-      String streamURL = info.getRoot().getStreamURL().toExternalForm();
-      FrameworkMBean frameworkMBean = jmxSupport.getFrameworkMBean();
-      long bundleId = frameworkMBean.installBundleFromURL(info.getLocation(), streamURL);
-      return new BundleHandle(bundleId, info.getSymbolicName());
-   }
-
-   @Override
-   public void deploy(Descriptor descriptor) throws DeploymentException
-   {
-      throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
-   }
-
-   @Override
-   public void undeploy(Descriptor descriptor) throws DeploymentException
-   {
-      throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
-   }
-
-   private MBeanServerConnection getMBeanServerConnection(RemoteContainerConfiguration config)
-   {
-      String host = config.getHost();
-      int port = config.getPort();
-      String path = config.getUrlPath();
-
-      MBeanServerConnection mbeanServer;
-      String urlString = "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/" + path;
-      try
-      {
-         if (jmxConnector == null)
-         {
-            log.debugf("Connecting JMXConnector to: %s", urlString);
-            JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-            jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
-         }
-
-         mbeanServer = jmxConnector.getMBeanServerConnection();
-      }
-      catch (IOException ex)
-      {
-         throw new IllegalStateException("Cannot obtain MBeanServerConnection to: " + urlString, ex);
-      }
-      return mbeanServer;
-   }
-
-   private List<BundleHandle> getBundles() throws LifecycleException
-   {
-      List<BundleHandle> bundleList = new ArrayList<BundleHandle>();
-      try
-      {
-         BundleStateMBean bundleStateMBean = jmxSupport.getBundleStateMBean();
-         TabularData listBundles = bundleStateMBean.listBundles();
-         Iterator<?> iterator = listBundles.values().iterator();
-         while (iterator.hasNext())
-         {
-            CompositeData bundleType = (CompositeData)iterator.next();
-            Long bundleId = (Long)bundleType.get(BundleStateMBean.IDENTIFIER);
-            String symbolicName = (String)bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
-            bundleList.add(new BundleHandle(bundleId, symbolicName));
-         }
-      }
-      catch (IOException ex)
-      {
-         throw new LifecycleException("Cannot list bundles", ex);
-      }
-      return bundleList;
-   }
-
-   private BundleHandle getInstalledBundle(List<BundleHandle> bundles, String symbolicName)
-   {
-      for (BundleHandle aux : bundles)
-      {
-         if (symbolicName.equals(aux.getSymbolicName()))
-            return aux;
-      }
-      return null;
-   }
-
-   private BundleHandle installBundle(String artifactId, boolean startBundle)
-   {
-      String classPath = System.getProperty("java.class.path");
-      if (classPath.contains(artifactId) == false)
-      {
-         log.debug("Class path does not contain '" + artifactId + "'");
-         return null;
-      }
-
-      String[] paths = classPath.split("" + File.pathSeparatorChar);
-      for (String path : paths)
-      {
-         if (path.contains(artifactId))
-         {
-            try
-            {
-               long bundleId = jmxSupport.getFrameworkMBean().installBundle(path);
-               String symbolicName = jmxSupport.getBundleStateMBean().getSymbolicName(bundleId);
-               BundleHandle handle = new BundleHandle(bundleId, symbolicName);
-               if (startBundle == true)
-                  jmxSupport.getFrameworkMBean().startBundle(bundleId);
-
-               return handle;
+    @Override
+    public void undeploy(Archive<?> archive) throws DeploymentException {
+        BundleHandle handle = deployedBundles.remove(archive.getName());
+        if (handle != null) {
+            try {
+                FrameworkMBean frameworkMBean = jmxSupport.getFrameworkMBean();
+                frameworkMBean.uninstallBundle(handle.getBundleId());
+            } catch (IOException ex) {
+                log.errorf(ex, "Cannot undeploy: %s" + archive.getName());
             }
-            catch (IOException e)
-            {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
+        }
+    }
+
+    private BundleHandle installBundle(Archive<?> archive) throws BundleException, IOException {
+        VirtualFile virtualFile = toVirtualFile(archive);
+        try {
+            return installBundle(virtualFile);
+        } finally {
+            VFSUtils.safeClose(virtualFile);
+        }
+    }
+
+    private VirtualFile toVirtualFile(Archive<?> archive) throws IOException {
+        ZipExporter exporter = archive.as(ZipExporter.class);
+        return AbstractVFS.toVirtualFile(archive.getName(), exporter.exportAsInputStream());
+    }
+
+    private BundleHandle installBundle(VirtualFile virtualFile) throws BundleException, IOException {
+        BundleInfo info = BundleInfo.createBundleInfo(virtualFile);
+        String streamURL = info.getRoot().getStreamURL().toExternalForm();
+        FrameworkMBean frameworkMBean = jmxSupport.getFrameworkMBean();
+        long bundleId = frameworkMBean.installBundleFromURL(info.getLocation(), streamURL);
+        return new BundleHandle(bundleId, info.getSymbolicName());
+    }
+
+    @Override
+    public void deploy(Descriptor descriptor) throws DeploymentException {
+        throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
+    }
+
+    @Override
+    public void undeploy(Descriptor descriptor) throws DeploymentException {
+        throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
+    }
+
+    private MBeanServerConnection getMBeanServerConnection(RemoteContainerConfiguration config) {
+        String host = config.getHost();
+        int port = config.getPort();
+        String path = config.getUrlPath();
+
+        MBeanServerConnection mbeanServer;
+        String urlString = "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/" + path;
+        try {
+            if (jmxConnector == null) {
+                log.debugf("Connecting JMXConnector to: %s", urlString);
+                JMXServiceURL serviceURL = new JMXServiceURL(urlString);
+                jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
             }
-         }
-      }
-      return null;
-   }
 
-   static class BundleHandle
-   {
-      private long bundleId;
-      private String symbolicName;
+            mbeanServer = jmxConnector.getMBeanServerConnection();
+        } catch (IOException ex) {
+            throw new IllegalStateException("Cannot obtain MBeanServerConnection to: " + urlString, ex);
+        }
+        return mbeanServer;
+    }
 
-      public BundleHandle(long bundleId, String symbolicName)
-      {
-         this.bundleId = bundleId;
-         this.symbolicName = symbolicName;
-      }
+    private List<BundleHandle> getBundles() throws LifecycleException {
+        List<BundleHandle> bundleList = new ArrayList<BundleHandle>();
+        try {
+            BundleStateMBean bundleStateMBean = jmxSupport.getBundleStateMBean();
+            TabularData listBundles = bundleStateMBean.listBundles();
+            Iterator<?> iterator = listBundles.values().iterator();
+            while (iterator.hasNext()) {
+                CompositeData bundleType = (CompositeData) iterator.next();
+                Long bundleId = (Long) bundleType.get(BundleStateMBean.IDENTIFIER);
+                String symbolicName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
+                bundleList.add(new BundleHandle(bundleId, symbolicName));
+            }
+        } catch (IOException ex) {
+            throw new LifecycleException("Cannot list bundles", ex);
+        }
+        return bundleList;
+    }
 
-      public long getBundleId()
-      {
-         return bundleId;
-      }
+    private BundleHandle getInstalledBundle(List<BundleHandle> bundles, String symbolicName) {
+        for (BundleHandle aux : bundles) {
+            if (symbolicName.equals(aux.getSymbolicName()))
+                return aux;
+        }
+        return null;
+    }
 
-      public String getSymbolicName()
-      {
-         return symbolicName;
-      }
+    private BundleHandle installBundle(String artifactId, boolean startBundle) {
+        String classPath = System.getProperty("java.class.path");
+        if (classPath.contains(artifactId) == false) {
+            log.debug("Class path does not contain '" + artifactId + "'");
+            return null;
+        }
 
-      @Override
-      public String toString()
-      {
-         return "[" + bundleId + "]" + symbolicName;
-      }
-   }
+        String[] paths = classPath.split("" + File.pathSeparatorChar);
+        for (String path : paths) {
+            if (path.contains(artifactId)) {
+                try {
+                    long bundleId = jmxSupport.getFrameworkMBean().installBundle(path);
+                    String symbolicName = jmxSupport.getBundleStateMBean().getSymbolicName(bundleId);
+                    BundleHandle handle = new BundleHandle(bundleId, symbolicName);
+                    if (startBundle == true)
+                        jmxSupport.getFrameworkMBean().startBundle(bundleId);
+
+                    return handle;
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    static class BundleHandle {
+        private long bundleId;
+        private String symbolicName;
+
+        public BundleHandle(long bundleId, String symbolicName) {
+            this.bundleId = bundleId;
+            this.symbolicName = symbolicName;
+        }
+
+        public long getBundleId() {
+            return bundleId;
+        }
+
+        public String getSymbolicName() {
+            return symbolicName;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + bundleId + "]" + symbolicName;
+        }
+    }
 }

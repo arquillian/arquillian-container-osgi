@@ -25,14 +25,12 @@ import java.util.jar.Manifest;
 
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 
-
 /**
  * Generates the test bundle.
  *
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiApplicationArchiveProcessor extends AbstractOSGiApplicationArchiveProcessor
-{
+public class OSGiApplicationArchiveProcessor extends AbstractOSGiApplicationArchiveProcessor {
     @Override
     protected Manifest createBundleManifest(String symbolicName) {
         final OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();

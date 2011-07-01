@@ -61,7 +61,7 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         }
     }
 
-    abstract protected Manifest createBundleManifest(String symbolicName);
+    protected abstract Manifest createBundleManifest(String symbolicName);
 
     private void enhanceApplicationArchive(Archive<?> appArchive, TestClass testClass, Manifest manifest) {
 

@@ -56,6 +56,7 @@ public class ArquillianBundleActivator implements BundleActivator {
 
     public void start(final BundleContext context) throws Exception {
 
+        final BundleContext sysContext = context.getBundle(0).getBundleContext();
         final TestClassLoader testClassLoader = new TestClassLoader() {
 
             @Override
@@ -80,7 +81,7 @@ public class ArquillianBundleActivator implements BundleActivator {
                     // ignore
                 }
                 BundleAssociation.setBundle(bundle);
-                BundleContextAssociation.setBundleContext(context);
+                BundleContextAssociation.setBundleContext(sysContext);
                 return super.runTestMethodRemote(className, methodName);
             }
         };
