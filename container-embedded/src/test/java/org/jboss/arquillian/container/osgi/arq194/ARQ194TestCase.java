@@ -45,11 +45,36 @@ import org.osgi.framework.BundleContext;
  */
 @RunWith(Arquillian.class)
 public class ARQ194TestCase {
+
     private static final String BUNDLE_NAME = "arq194-bundle";
 
     @Deployment
     public static JavaArchive create() {
-        return ShrinkWrap.create(JavaArchive.class);
+        return ShrinkWrap.create(JavaArchive.class, "arq194-test");
+    }
+
+    @Inject
+    public BundleContext context;
+
+    @ArquillianResource
+    public Deployer deployer;
+
+    @Test
+    public void testInstallBundleFromArchive() throws Exception {
+        InputStream input = deployer.getDeployment(BUNDLE_NAME);
+        Bundle bundle = context.installBundle(BUNDLE_NAME, input);
+
+        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+        assertEquals("arq194-bundle", bundle.getSymbolicName());
+
+        bundle.start();
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+        bundle.stop();
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+
+        bundle.uninstall();
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
     }
 
     @Deployment(name = BUNDLE_NAME, managed = false, testable = false)
@@ -68,29 +93,5 @@ public class ARQ194TestCase {
         });
         archive.addClasses(ARQ194Activator.class, ARQ194Service.class);
         return archive;
-    }
-
-    @Inject
-    public BundleContext context;
-
-    @ArquillianResource
-    public Deployer provider;
-
-    @Test
-    public void testInstallBundleFromArchive() throws Exception {
-        InputStream input = provider.getDeployment(BUNDLE_NAME);
-        Bundle bundle = context.installBundle(BUNDLE_NAME, input);
-
-        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-        assertEquals("arq194-bundle", bundle.getSymbolicName());
-
-        bundle.start();
-        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-
-        bundle.stop();
-        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-
-        bundle.uninstall();
-        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
     }
 }

@@ -10,7 +10,7 @@
       <property name="urlPath">jmxrmi</property>
     </configuration>
     <protocol type="jmx-osgi">
-		<property name="executionType">remote</property>
+		<property name="executionType">REMOTE</property>
     </protocol>
   </container>
 </arquillian>

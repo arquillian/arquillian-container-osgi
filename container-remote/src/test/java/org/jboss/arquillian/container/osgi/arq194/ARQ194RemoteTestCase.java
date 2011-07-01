@@ -23,12 +23,14 @@ import java.io.InputStream;
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.osgi.arq194.bundle.ARQ194RemoteActivator;
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -42,17 +44,24 @@ import org.osgi.framework.BundleContext;
  * @since 06-Sep-2010
  */
 @RunWith(Arquillian.class)
-@Ignore("[ARQ-194] Support multiple bundle deployments")
 public class ARQ194RemoteTestCase {
+
+    private static final String BUNDLE_NAME = "arq194-bundle";
+
+    @Deployment
+    public static JavaArchive create() {
+        return ShrinkWrap.create(JavaArchive.class, "arq194-test");
+    }
+
     @Inject
     public BundleContext context;
 
-    //@Inject
-    //public DeploymentProvider provider;
+    @ArquillianResource
+    public Deployer deployer;
 
     @Test
     public void testGeneratedBundle() throws Exception {
-        InputStream input = null; //provider.getClientDeploymentAsStream("arq194-bundle");
+        InputStream input = deployer.getDeployment(BUNDLE_NAME);
         Bundle bundle = context.installBundle("arq194-bundle", input);
 
         assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
@@ -68,14 +77,13 @@ public class ARQ194RemoteTestCase {
         assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
     }
 
-    //@ArchiveProvider
-    public static JavaArchive getTestArchive(String name) {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, name);
-        archive.addClasses(ARQ194RemoteActivator.class, ARQ194RemoteService.class);
+    @Deployment(name = BUNDLE_NAME, managed = false, testable = false)
+    public static JavaArchive getTestArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleSymbolicName(BUNDLE_NAME);
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(ARQ194RemoteActivator.class.getName());
                 builder.addExportPackages(ARQ194RemoteService.class);
@@ -83,6 +91,7 @@ public class ARQ194RemoteTestCase {
                 return builder.openStream();
             }
         });
+        archive.addClasses(ARQ194RemoteActivator.class, ARQ194RemoteService.class);
         return archive;
     }
 }
