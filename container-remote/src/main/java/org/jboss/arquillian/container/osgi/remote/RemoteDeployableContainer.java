@@ -122,7 +122,7 @@ public class RemoteDeployableContainer implements DeployableContainer<RemoteCont
                 FrameworkMBean frameworkMBean = jmxSupport.getFrameworkMBean();
                 frameworkMBean.uninstallBundle(handle.getBundleId());
             } catch (IOException ex) {
-                throw new DeploymentException("Cannot undeploy: " + archive.getName(), ex);
+                log.errorf(ex, "Cannot undeploy: %s" + archive.getName());
             }
         }
     }

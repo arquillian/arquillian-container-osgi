@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.remote;
+package org.jboss.test.arquillian.container.osgi.bundle;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 /**
- * A BundleActivator that registers a {@ SimpleService}
+ * A BundleActivator that registers a {@ ARQ194Service}
  *
  * @author thomas.diesler@jboss.com
- * @version $Revision: $
  */
-public class SimpleActivator implements BundleActivator {
+public class ARQ194Activator implements BundleActivator {
     public void start(BundleContext context) throws Exception {
-        SimpleService service = new SimpleService() {
+        ARQ194Service service = new ARQ194Service() {
             public Integer sum(Integer... values) {
                 Integer result = 0;
                 if (values != null) {
@@ -38,7 +37,7 @@ public class SimpleActivator implements BundleActivator {
                 return result;
             }
         };
-        context.registerService(SimpleService.class.getName(), service, null);
+        context.registerService(ARQ194Service.class.getName(), service, null);
     }
 
     public void stop(BundleContext context) throws Exception {

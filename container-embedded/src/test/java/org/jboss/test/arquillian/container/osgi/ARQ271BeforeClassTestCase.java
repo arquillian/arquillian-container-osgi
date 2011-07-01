@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.arq271;
+package org.jboss.test.arquillian.container.osgi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -30,8 +30,9 @@ import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -44,12 +45,13 @@ import org.osgi.framework.BundleContext;
  * @since 27-Apr-2011
  */
 @RunWith(Arquillian.class)
-public class ARQ271BeforeTestCase {
+@Ignore("[ARQ-271] TestEnricher should be called in @BeforeClass")
+public class ARQ271BeforeClassTestCase {
     @Inject
-    public BundleContext context;
+    public static BundleContext context;
 
     @Inject
-    public Bundle bundle;
+    public static Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {
@@ -66,16 +68,16 @@ public class ARQ271BeforeTestCase {
         return archive;
     }
 
-    @Before
-    public void before() throws Exception {
+    @BeforeClass
+    public static void beforeClass() throws Exception {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);
         OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
     }
 
-    @After
-    public void after() throws Exception {
+    @AfterClass
+    public static void afterClass() throws Exception {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);

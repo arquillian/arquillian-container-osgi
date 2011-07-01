@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.arq194;
+package org.jboss.test.arquillian.container.osgi;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,7 +22,6 @@ import java.io.InputStream;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.container.osgi.arq194.bundle.ARQ194Activator;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -31,6 +30,8 @@ import org.jboss.osgi.testing.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.test.arquillian.container.osgi.bundle.ARQ194Activator;
+import org.jboss.test.arquillian.container.osgi.bundle.ARQ194Service;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;

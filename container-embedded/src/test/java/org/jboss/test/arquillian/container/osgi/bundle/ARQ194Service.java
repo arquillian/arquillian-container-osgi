@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.embedded;
+package org.jboss.test.arquillian.container.osgi.bundle;
 
 /**
  * A simple service.
  *
  * @author thomas.diesler@jboss.com
- * @version $Revision: $
  */
-public interface SimpleService {
+public interface ARQ194Service {
     Integer sum(Integer... values);
 }

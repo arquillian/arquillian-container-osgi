@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.arq271;
+package org.jboss.test.arquillian.container.osgi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,69 +26,58 @@ import javax.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
+import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
- * [ARQ-271] TestEnricher should be called in @BeforeClass
+ * [ARQ-466] Add support for injected PackageAdmin
+ *
+ * https://issues.jboss.org/browse/ARQ-466
  *
  * @author thomas.diesler@jboss.com
- * @since 27-Apr-2011
+ * @since 07-Jun-2011
  */
 @RunWith(Arquillian.class)
-@Ignore("[ARQ-271] TestEnricher should be called in @BeforeClass")
-public class ARQ271BeforeClassTestCase {
-    @Inject
-    public static BundleContext context;
+public class ARQ466TestCase {
 
     @Inject
-    public static Bundle bundle;
+    public Bundle bundle;
+
+    @Inject
+    public PackageAdmin packageAdmin;
 
     @Deployment
-    public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
+    public static JavaArchive create() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq466-bundle");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(OSGiTestHelper.class);
+                builder.addImportPackages(StartLevel.class);
                 return builder.openStream();
             }
         });
         return archive;
     }
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        assertNotNull("BundleContext injected", context);
-        assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-        assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        assertNotNull("BundleContext injected", context);
-        assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-        assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
-    }
-
     @Test
-    public void testBundleInjection() throws Exception {
-        assertNotNull("BundleContext injected", context);
-        assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-        assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+    public void testPackageAdmin() throws Exception {
+
+        assertNotNull("PackageAdmin injected", packageAdmin);
+
+        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        assertEquals("arq466-bundle", bundle.getSymbolicName());
+
+        Bundle[] bundles = packageAdmin.getBundles("arq466-bundle", null);
+        assertNotNull("Bundles not null", bundles);
+        assertEquals("One bundle found", 1, bundles.length);
+        assertEquals(bundle, bundles[0]);
     }
 }
