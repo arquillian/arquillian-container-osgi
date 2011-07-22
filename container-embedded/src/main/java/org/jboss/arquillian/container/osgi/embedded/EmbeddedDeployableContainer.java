@@ -46,7 +46,9 @@ import org.jboss.shrinkwrap.resolver.api.maven.filter.StrictFilter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * OSGi embedded container
@@ -99,9 +101,6 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             bundleContextInst.set(framework.getBundleContext());
 
             Bundle[] bundles = framework.getBundleContext().getBundles();
-            if (getInstalledBundle(bundles, "osgi.cmpn") == null)
-                installBundle("org.osgi", "org.osgi.compendium", "4.2.0", false);
-
             if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null) {
                 // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
                 String arqVersion = EmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
@@ -131,10 +130,15 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             exporter.exportTo(baos);
 
+            BundleContext context = bundleContextInst.get();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+            Bundle bundle = context.installBundle(archive.getName(), inputStream);
 
-            BundleContext sysContext = bundleContextInst.get();
-            Bundle bundle = sysContext.installBundle(archive.getName(), inputStream);
+            ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
+            PackageAdmin pa = (PackageAdmin) context.getService(sref);
+            if (pa.resolveBundles(new Bundle[] { bundle }) == false)
+                throw new IllegalStateException("Cannot resolve test bundle - see framework log");
+
             bundleInst.set(bundle);
         } catch (RuntimeException rte) {
             throw rte;

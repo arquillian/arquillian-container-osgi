@@ -15,7 +15,7 @@
   <!-- Artifact Configuration -->
   <groupId>org.jboss.arquillian.osgi</groupId>
   <artifactId>arquillian-osgi-parent</artifactId>
-  <version>1.0.0.Final-SNAPSHOT</version>
+  <version>1.0.0.CR3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Arquillian OSGi</name>
   <description>OSGi Framework integrations for the Arquillian Project</description>
