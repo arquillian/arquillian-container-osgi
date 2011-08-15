@@ -29,7 +29,10 @@ import org.jboss.arquillian.test.spi.TestEnricher;
 public class OSGiEnricherRemoteExtension implements RemoteLoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(TestEnricher.class, OSGiTestEnricher.class);
+        // Don't load the OSGiTestEnricher unless the OSGi classes can be found at runtime
+        if(Validate.classExists("org.osgi.framework.Bundle")) {
+           builder.service(TestEnricher.class, OSGiTestEnricher.class);
+        }
     }
 
 }

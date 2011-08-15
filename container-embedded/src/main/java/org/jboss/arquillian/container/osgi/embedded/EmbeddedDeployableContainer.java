@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
@@ -146,7 +147,8 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             throw new DeploymentException("Cannot deploy: " + archive, ex);
         }
 
-        return new ProtocolMetaData();
+        return new ProtocolMetaData()
+                 .addContext(new JMXContext(mbeanServerInst.get()));
     }
 
     public void undeploy(Archive<?> archive) throws DeploymentException {

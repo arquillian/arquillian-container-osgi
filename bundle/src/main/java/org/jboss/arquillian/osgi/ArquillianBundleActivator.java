@@ -30,7 +30,6 @@ import javax.management.MBeanServerFactory;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
-import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.logging.Logger;
@@ -71,7 +70,7 @@ public class ArquillianBundleActivator implements BundleActivator {
         testRunner = new JMXTestRunner(testClassLoader) {
 
             @Override
-            public TestResult runTestMethodRemote(String className, String methodName) {
+            public byte[] runTestMethod(String className, String methodName) {
                 Bundle bundle = null;
                 try {
                     Class<?> testClass = testClassLoader.loadTestClass(className);
@@ -82,7 +81,7 @@ public class ArquillianBundleActivator implements BundleActivator {
                 }
                 BundleAssociation.setBundle(bundle);
                 BundleContextAssociation.setBundleContext(sysContext);
-                return super.runTestMethodRemote(className, methodName);
+                return super.runTestMethod(className, methodName);
             }
         };
         testRunner.registerMBean(mbeanServer);

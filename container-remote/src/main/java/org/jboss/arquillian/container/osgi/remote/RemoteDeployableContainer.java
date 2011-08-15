@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
@@ -111,7 +112,8 @@ public class RemoteDeployableContainer implements DeployableContainer<RemoteCont
         } catch (Exception ex) {
             throw new DeploymentException("Cannot deploy: " + archive.getName(), ex);
         }
-        return new ProtocolMetaData();
+        return new ProtocolMetaData()
+              .addContext(new JMXContext(mbeanServerInst.get()));
     }
 
     @Override

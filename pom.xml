@@ -28,8 +28,8 @@
 
   <!-- Properties -->
   <properties>
-    <version.arquillian_core>1.0.0.CR1</version.arquillian_core>
-    <version.shrinkwrap_shrinkwrap>1.0.0-beta-3</version.shrinkwrap_shrinkwrap>
+    <version.arquillian_core>1.0.0.CR3</version.arquillian_core>
+    <version.shrinkwrap_shrinkwrap>1.0.0-beta-5</version.shrinkwrap_shrinkwrap>
     <version.junit_junit>4.8.1</version.junit_junit>
     <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
     <version.jboss_osgi_framework>1.0.0.CR6</version.jboss_osgi_framework>
