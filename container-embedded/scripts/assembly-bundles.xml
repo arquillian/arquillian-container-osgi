@@ -16,7 +16,7 @@
       <outputFileNameMapping>${artifact.artifactId}${dashClassifier?}.${artifact.extension}</outputFileNameMapping>
       <includes>
         <include>*:arquillian-osgi-bundle:jar</include>
-        <include>*:org.osgi.compendium:jar</include>
+        <include>*:org.osgi.enterprise:jar</include>
       </includes>
       <useStrictFiltering>true</useStrictFiltering>
       <scope>provided</scope>

@@ -33,7 +33,7 @@
         <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
         <version.jboss_osgi_framework>1.1.0</version.jboss_osgi_framework>
         <version.jboss_osgi_resolver>1.0.10</version.jboss_osgi_resolver>
-        <version.jboss_osgi_spi>1.0.28</version.jboss_osgi_spi>
+        <version.jboss_osgi_spi>2.0.3</version.jboss_osgi_spi>
         <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
         <version.osgi>4.2.0</version.osgi>
         <version.jboss_logging>3.1.0.CR2</version.jboss_logging>
@@ -57,7 +57,7 @@
             </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.compendium</artifactId>
+                <artifactId>org.osgi.enterprise</artifactId>
                 <version>${version.osgi}</version>
             </dependency>
             <dependency>

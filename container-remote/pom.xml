@@ -34,7 +34,6 @@
 
     <!-- Properties -->
     <properties>
-        <surefire.system.args>${surefire.jpda.args}</surefire.system.args>
     </properties>
 
     <!-- Dependencies -->
@@ -84,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
+            <artifactId>org.osgi.enterprise</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -189,7 +188,6 @@
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <argLine>${surefire.system.args}</argLine>
                             <systemProperties>
                                 <property>
                                     <name>java.util.logging.manager</name>
