@@ -30,8 +30,6 @@
                         <Import-Package>
                             javax.management*,
                             javax.naming,
-                            javax.xml.parsers,
-                            org.w3c.dom,
                             org.jboss.logging;version="[3.0,4.0)",
                             org.osgi.framework;version="[1.5,2.0)",
                             org.osgi.service.packageadmin;version="[1.2,2.0)",
