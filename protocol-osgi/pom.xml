@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jboss.arquillian.osgi</groupId>
         <artifactId>arquillian-osgi-parent</artifactId>
-        <version>1.0.0.CR7-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <!-- Model Version -->
