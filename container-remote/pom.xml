@@ -14,194 +14,197 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <!-- Parent -->
-  <parent>
-    <groupId>org.jboss.arquillian.osgi</groupId>
-    <artifactId>arquillian-osgi-parent</artifactId>
-    <version>1.0.0.CR5-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
+    <!-- Parent -->
+    <parent>
+        <groupId>org.jboss.arquillian.osgi</groupId>
+        <artifactId>arquillian-osgi-parent</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-  <!-- Model Version -->
-  <modelVersion>4.0.0</modelVersion>
+    <!-- Model Version -->
+    <modelVersion>4.0.0</modelVersion>
 
-  <!-- Artifact Configuration -->
-  <groupId>org.jboss.arquillian.container</groupId>
-  <artifactId>arquillian-container-osgi-remote</artifactId>
-  <name>Arquillian OSGi Remote Container</name>
-  <description>OSGi Remote Container integration for the Arquillian Project</description>
+    <!-- Artifact Configuration -->
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-container-osgi-remote</artifactId>
+    <name>Arquillian OSGi Remote Container</name>
+    <description>OSGi Remote Container integration for the Arquillian Project</description>
 
-  <!-- Properties -->
-  <properties>
-    <surefire.system.args>${surefire.jpda.args}</surefire.system.args>
-  </properties>
+    <!-- Properties -->
+    <properties>
+    </properties>
 
-  <!-- Dependencies -->
-  <dependencies>
+    <!-- Dependencies -->
+    <dependencies>
 
-    <!-- org.jboss.arquillian -->
-    <dependency>
-      <groupId>org.jboss.arquillian.container</groupId>
-      <artifactId>arquillian-container-spi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.container</groupId>
-      <artifactId>arquillian-container-test-spi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.container</groupId>
-      <artifactId>arquillian-container-osgi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.protocol</groupId>
-      <artifactId>arquillian-protocol-osgi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.osgi</groupId>
-      <artifactId>arquillian-osgi-bundle</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
+        <!-- org.jboss.arquillian -->
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-test-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.osgi</groupId>
+            <artifactId>arquillian-osgi-bundle</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>org.jboss.shrinkwrap</groupId>
-      <artifactId>shrinkwrap-impl-base</artifactId>
-      <scope>provided</scope>
-    </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-    <!-- org.jboss.osgi -->
-    <dependency>
-      <groupId>org.jboss.osgi.spi</groupId>
-      <artifactId>jbosgi-spi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-      <scope>provided</scope>
-    </dependency>
+        <!-- org.jboss.osgi -->
+        <dependency>
+            <groupId>org.jboss.osgi.spi</groupId>
+            <artifactId>jbosgi-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.enterprise</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.jboss.arquillian.container</groupId>
-      <artifactId>arquillian-container-osgi-embedded</artifactId>
-      <version>${project.version}</version>
-      <!-- classifier>tests</classifier -->
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.junit</groupId>
-      <artifactId>arquillian-junit-container</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.osgi.vfs</groupId>
-      <artifactId>jbosgi-vfs30</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.logmanager</groupId>
-      <artifactId>jboss-logmanager</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-osgi-embedded</artifactId>
+            <version>${project.version}</version>
+            <!-- classifier>tests</classifier -->
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.vfs</groupId>
+            <artifactId>jbosgi-vfs30</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-  <!-- Build -->
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>bundles</id>
-            <phase>test-compile</phase>
-            <goals>
-              <goal>directory-single</goal>
-            </goals>
-            <configuration>
-              <finalName>test-libs</finalName>
-              <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
-              <appendAssemblyId>false</appendAssemblyId>
-              <descriptors>
-                <descriptor>scripts/assembly-bundles.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
-  <!-- Profiles -->
-  <profiles>
-
-    <!-- Name: default Descr: Skip remote integration testing -->
-    <profile>
-      <id>default</id>
-      <activation>
-        <property>
-          <name>!remote</name>
-        </property>
-      </activation>
-      <build>
+    <!-- Build -->
+    <build>
         <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <skipTests>true</skipTests>
-            </configuration>
-          </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundles</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>directory-single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>test-libs</finalName>
+                            <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>scripts/assembly-bundles.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-      </build>
-    </profile>
+    </build>
 
-    <!-- Name: no-jboss-bind-address Desc: Set the default jboss.bind.address -->
-    <profile>
-      <id>no-jboss-bind-address</id>
-      <activation>
-        <property>
-          <name>!jboss.bind.address</name>
-        </property>
-      </activation>
-      <properties>
-        <jboss.bind.address>localhost</jboss.bind.address>
-      </properties>
-    </profile>
+    <!-- Profiles -->
+    <profiles>
 
-    <!-- Name: remote Descr: Setup for remote integration testing -->
-    <profile>
-      <id>remote</id>
-      <activation>
-        <property>
-          <name>remote</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>${surefire.system.args}</argLine>
-              <systemProperties>
+        <!-- Name: default Descr: Skip remote integration testing -->
+        <profile>
+            <id>default</id>
+            <activation>
                 <property>
-                  <name>java.util.logging.manager</name>
-                  <value>org.jboss.logmanager.LogManager</value>
+                    <name>!remote</name>
                 </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Name: no-jboss-bind-address Desc: Set the default jboss.bind.address -->
+        <profile>
+            <id>no-jboss-bind-address</id>
+            <activation>
                 <property>
-                  <name>jboss.bind.address</name>
-                  <value>${jboss.bind.address}</value>
+                    <name>!jboss.bind.address</name>
                 </property>
+            </activation>
+            <properties>
+                <jboss.bind.address>localhost</jboss.bind.address>
+            </properties>
+        </profile>
+
+        <!-- Name: remote Descr: Setup for remote integration testing -->
+        <profile>
+            <id>remote</id>
+            <activation>
                 <property>
-                  <name>test.archive.directory</name>
-                  <value>${project.build.directory}/test-libs</value>
+                    <name>remote</name>
                 </property>
-              </systemProperties>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemProperties>
+                                <property>
+                                    <name>java.util.logging.manager</name>
+                                    <value>org.jboss.logmanager.LogManager</value>
+                                </property>
+                                <property>
+                                    <name>jboss.bind.address</name>
+                                    <value>${jboss.bind.address}</value>
+                                </property>
+                                <property>
+                                    <name>test.archive.directory</name>
+                                    <value>${project.build.directory}/test-libs</value>
+                                </property>
+                            </systemProperties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

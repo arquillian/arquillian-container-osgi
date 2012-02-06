@@ -1,177 +1,174 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <!-- Parent -->
-  <parent>
-    <groupId>org.jboss</groupId>
-    <artifactId>jboss-parent</artifactId>
-    <version>6-beta-1</version>
-    <relativePath />
-  </parent>
+    <!-- Parent -->
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>8</version>
+    </parent>
 
-  <!-- Model Version -->
-  <modelVersion>4.0.0</modelVersion>
+    <!-- Model Version -->
+    <modelVersion>4.0.0</modelVersion>
 
-  <!-- Artifact Configuration -->
-  <groupId>org.jboss.arquillian.osgi</groupId>
-  <artifactId>arquillian-osgi-parent</artifactId>
-  <version>1.0.0.CR5-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>Arquillian OSGi</name>
-  <description>OSGi Framework integrations for the Arquillian Project</description>
+    <!-- Artifact Configuration -->
+    <groupId>org.jboss.arquillian.osgi</groupId>
+    <artifactId>arquillian-osgi-parent</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Arquillian OSGi</name>
+    <description>OSGi Framework integrations for the Arquillian Project</description>
 
-  <scm>
-    <connection>scm:git:git://git@github.com:arquillian/arquillian-container-osgi.git</connection>
-    <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
-    <url>git://github.com/arquillian/arquillian-container-osgi.git</url>
-  </scm>
+    <scm>
+        <connection>scm:git:git://git@github.com:arquillian/arquillian-container-osgi.git</connection>
+        <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
+        <url>git://github.com/arquillian/arquillian-container-osgi.git</url>
+    </scm>
 
-  <!-- Properties -->
-  <properties>
-    <version.arquillian_core>1.0.0.CR3</version.arquillian_core>
-    <version.shrinkwrap_shrinkwrap>1.0.0-beta-5</version.shrinkwrap_shrinkwrap>
-    <version.junit_junit>4.8.1</version.junit_junit>
-    <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
-    <version.jboss_osgi_framework>1.0.0.CR6</version.jboss_osgi_framework>
-    <version.jboss_osgi_resolver>1.0.9</version.jboss_osgi_resolver>
-    <version.jboss_osgi_spi>1.0.27</version.jboss_osgi_spi>
-    <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
-    <version.osgi>4.2.0</version.osgi>
-    <version.jboss_logging>3.0.0.Beta4</version.jboss_logging>
-    <version.jboss_logmanager>1.2.0.CR8</version.jboss_logmanager>
+    <!-- Properties -->
+    <properties>
+        <version.arquillian_core>1.0.0.CR7</version.arquillian_core>
+        <version.junit_junit>4.8.1</version.junit_junit>
+        <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
+        <version.jboss_osgi_framework>1.1.0</version.jboss_osgi_framework>
+        <version.jboss_osgi_resolver>1.0.10</version.jboss_osgi_resolver>
+        <version.jboss_osgi_spi>2.0.3</version.jboss_osgi_spi>
+        <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
+        <version.osgi>4.2.0</version.osgi>
+        <version.jboss_logging>3.1.0.CR2</version.jboss_logging>
+        <version.jboss_logmanager>1.2.0.GA</version.jboss_logmanager>
 
-    <!-- jboss-parent override -->
-    <version.release.plugin>2.1</version.release.plugin>
+        <!-- must be in sync with what is defined in arquillian-parent POM -->
+        <version.shrinkwrap_shrinkwrap>1.0.0-cr-1</version.shrinkwrap_shrinkwrap>
+    </properties>
 
-  </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.osgi.spi</groupId>
+                <artifactId>jbosgi-spi</artifactId>
+                <version>${version.jboss_osgi_spi}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.core</artifactId>
+                <version>${version.osgi}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.enterprise</artifactId>
+                <version>${version.osgi}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.osgi.vfs</groupId>
+                <artifactId>jbosgi-vfs30</artifactId>
+                <version>${version.jboss_osgi_vfs}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.osgi.framework</groupId>
+                <artifactId>jbosgi-framework-core</artifactId>
+                <version>${version.jboss_osgi_framework}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.osgi.resolver</groupId>
+                <artifactId>jbosgi-resolver-felix</artifactId>
+                <version>${version.jboss_osgi_resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+                <version>${version.jboss_logging}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.logmanager</groupId>
+                <artifactId>jboss-logmanager</artifactId>
+                <version>${version.jboss_logmanager}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${version.javax.inject_javax.inject}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit_junit}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.arquillian_core}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-build</artifactId>
+                <version>${version.arquillian_core}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-  <dependencyManagement>    
-    <dependencies>
-      <dependency>
-        <groupId>org.jboss.osgi.spi</groupId>
-        <artifactId>jbosgi-spi</artifactId>
-        <version>${version.jboss_osgi_spi}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.core</artifactId>
-        <version>${version.osgi}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.compendium</artifactId>
-        <version>${version.osgi}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.osgi.vfs</groupId>
-        <artifactId>jbosgi-vfs30</artifactId>
-        <version>${version.jboss_osgi_vfs}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.osgi.framework</groupId>
-        <artifactId>jbosgi-framework-core</artifactId>
-        <version>${version.jboss_osgi_framework}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.osgi.resolver</groupId>
-        <artifactId>jbosgi-resolver-felix</artifactId>
-        <version>${version.jboss_osgi_resolver}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging</artifactId>
-        <version>${version.jboss_logging}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.logmanager</groupId>
-        <artifactId>jboss-logmanager</artifactId>
-        <version>${version.jboss_logmanager}</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.inject</groupId>
-        <artifactId>javax.inject</artifactId>
-        <version>${version.javax.inject_javax.inject}</version>
-      </dependency>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${version.junit_junit}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-bom</artifactId>
-        <version>${version.arquillian_core}</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-build</artifactId>
-        <version>${version.arquillian_core}</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>${basedir}/../checkstyle.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                    <useFile />
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-style</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>checkstyle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <failIfNoTests>false</failIfNoTests>
+                    <systemProperties>
+                        <property>
+                            <name>test.archive.directory</name>
+                            <value>${project.build.directory}/test-libs</value>
+                        </property>
+                        <property>
+                            <name>java.util.logging.manager</name>
+                            <value>org.jboss.logmanager.LogManager</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+            </plugin>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <configLocation>${basedir}/../checkstyle.xml</configLocation>
-          <consoleOutput>true</consoleOutput>
-          <failsOnError>true</failsOnError>
-          <useFile />
-        </configuration>
-        <executions>
-          <execution>
-            <id>check-style</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>checkstyle</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <failIfNoTests>false</failIfNoTests>
-          <systemProperties>
-            <property>
-              <name>test.archive.directory</name>
-              <value>${project.build.directory}/test-libs</value>
-            </property>
-            <property>
-              <name>java.util.logging.manager</name>
-              <value>org.jboss.logmanager.LogManager</value>
-            </property>
-          </systemProperties>
-        </configuration>
-      </plugin>
+            <!-- Maven Release Plugin Configuration -->
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <pushChanges>false</pushChanges>
+                    <localCheckout>true</localCheckout>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-      <!-- Maven Release Plugin Configuration -->
-      <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <pushChanges>false</pushChanges>
-          <localCheckout>true</localCheckout>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-  <modules>
-    <module>testenricher-osgi</module>
-    <module>protocol-osgi</module>
-    <module>bundle</module>
-    <module>container-common</module>
-    <module>container-embedded</module>
-    <module>container-remote</module>
-  </modules>
+    <modules>
+        <module>testenricher-osgi</module>
+        <module>protocol-osgi</module>
+        <module>bundle</module>
+        <module>container-common</module>
+        <module>container-embedded</module>
+        <module>container-remote</module>
+    </modules>
 
 </project>
 
