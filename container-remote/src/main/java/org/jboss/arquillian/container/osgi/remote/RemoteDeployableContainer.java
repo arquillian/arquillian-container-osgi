@@ -104,6 +104,7 @@ public class RemoteDeployableContainer implements DeployableContainer<RemoteCont
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
         try {
             BundleHandle handle = installBundle(archive);
+            resolveBundle(handle);
             deployedBundles.put(archive.getName(), handle);
         } catch (RuntimeException rte) {
             throw rte;
@@ -147,6 +148,11 @@ public class RemoteDeployableContainer implements DeployableContainer<RemoteCont
         FrameworkMBean frameworkMBean = jmxSupport.getFrameworkMBean();
         long bundleId = frameworkMBean.installBundleFromURL(info.getLocation(), streamURL);
         return new BundleHandle(bundleId, info.getSymbolicName());
+    }
+
+    private void resolveBundle(BundleHandle handle) throws IOException {
+        FrameworkMBean frameworkMBean = jmxSupport.getFrameworkMBean();
+        frameworkMBean.refreshBundle(handle.getBundleId());
     }
 
     @Override

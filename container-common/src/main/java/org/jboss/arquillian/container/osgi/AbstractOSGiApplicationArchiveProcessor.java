@@ -104,11 +104,13 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         // Add the imports required by the test class
         addImportsForClass(builder, javaClass);
 
-        // Add common test imports
+        // Add common test imports from the arquillian bundle
         builder.addImportPackages("org.jboss.arquillian.container.test.api", "org.jboss.arquillian.junit", "org.jboss.arquillian.osgi", "org.jboss.arquillian.test.api");
-        builder.addImportPackages("org.jboss.osgi.testing");
         builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
         builder.addImportPackages("org.junit", "org.junit.runner", "javax.inject", "org.osgi.framework");
+
+        // This is only available in a JBoss OSGi container
+        //builder.addImportPackages("org.jboss.osgi.testing");
 
         // Add or replace the manifest in the archive
         appArchive.delete(ArchivePaths.create(JarFile.MANIFEST_NAME));
