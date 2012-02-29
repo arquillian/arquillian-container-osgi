@@ -25,8 +25,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -47,6 +46,7 @@ import org.osgi.framework.BundleContext;
 @RunWith(Arquillian.class)
 @Ignore("[ARQ-271] TestEnricher should be called in @BeforeClass")
 public class ARQ271BeforeClassTestCase {
+
     @Inject
     public static BundleContext context;
 
@@ -61,7 +61,6 @@ public class ARQ271BeforeClassTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(OSGiTestHelper.class);
                 return builder.openStream();
             }
         });
@@ -73,7 +72,7 @@ public class ARQ271BeforeClassTestCase {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 
     @AfterClass
@@ -81,7 +80,7 @@ public class ARQ271BeforeClassTestCase {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 
     @Test
@@ -89,6 +88,6 @@ public class ARQ271BeforeClassTestCase {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 }

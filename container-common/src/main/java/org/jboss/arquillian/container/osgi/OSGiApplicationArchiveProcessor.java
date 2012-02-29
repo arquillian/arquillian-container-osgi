@@ -23,7 +23,7 @@ package org.jboss.arquillian.container.osgi;
 
 import java.util.jar.Manifest;
 
-import org.jboss.osgi.testing.OSGiManifestBuilder;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 
 /**
  * Generates the test bundle.

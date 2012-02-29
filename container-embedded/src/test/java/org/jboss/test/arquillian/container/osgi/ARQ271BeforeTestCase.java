@@ -25,12 +25,12 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.testing.OSGiManifestBuilder;
-import org.jboss.osgi.testing.OSGiTestHelper;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +59,6 @@ public class ARQ271BeforeTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(OSGiTestHelper.class);
                 return builder.openStream();
             }
         });
@@ -71,7 +70,7 @@ public class ARQ271BeforeTestCase {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 
     @After
@@ -79,7 +78,7 @@ public class ARQ271BeforeTestCase {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 
     @Test
@@ -87,6 +86,6 @@ public class ARQ271BeforeTestCase {
         assertNotNull("BundleContext injected", context);
         assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
         assertNotNull("Bundle injected", bundle);
-        OSGiTestHelper.assertBundleState(Bundle.RESOLVED, bundle.getState());
+        assertEquals(Bundle.RESOLVED, bundle.getState());
     }
 }

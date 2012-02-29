@@ -32,8 +32,8 @@ import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
-import org.jboss.osgi.spi.util.BundleInfo;
-import org.jboss.osgi.testing.OSGiManifestBuilder;
+import org.jboss.osgi.spi.BundleInfo;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
@@ -106,7 +106,6 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
 
         // Add common test imports
         builder.addImportPackages("org.jboss.arquillian.container.test.api", "org.jboss.arquillian.junit", "org.jboss.arquillian.osgi", "org.jboss.arquillian.test.api");
-        builder.addImportPackages("org.jboss.osgi.testing");
         builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
         builder.addImportPackages("org.junit", "org.junit.runner", "javax.inject", "org.osgi.framework");
 

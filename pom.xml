@@ -28,15 +28,14 @@
     <!-- Properties -->
     <properties>
         <version.arquillian_core>1.0.0.CR7</version.arquillian_core>
-        <version.junit_junit>4.8.1</version.junit_junit>
         <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
-        <version.jboss_osgi_framework>1.1.0</version.jboss_osgi_framework>
-        <version.jboss_osgi_resolver>1.0.10</version.jboss_osgi_resolver>
-        <version.jboss_osgi_spi>2.0.3</version.jboss_osgi_spi>
-        <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
-        <version.osgi>4.2.0</version.osgi>
         <version.jboss_logging>3.1.0.CR2</version.jboss_logging>
         <version.jboss_logmanager>1.2.0.GA</version.jboss_logmanager>
+        <version.jboss_osgi_framework>1.1.7</version.jboss_osgi_framework>
+        <version.jboss_osgi_spi>3.0.0</version.jboss_osgi_spi>
+        <version.jboss_osgi_vfs>1.0.6</version.jboss_osgi_vfs>
+        <version.junit_junit>4.8.1</version.junit_junit>
+        <version.osgi>4.2.0</version.osgi>
 
         <!-- must be in sync with what is defined in arquillian-parent POM -->
         <version.shrinkwrap_shrinkwrap>1.0.0-cr-1</version.shrinkwrap_shrinkwrap>
@@ -68,11 +67,6 @@
                 <groupId>org.jboss.osgi.framework</groupId>
                 <artifactId>jbosgi-framework-core</artifactId>
                 <version>${version.jboss_osgi_framework}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.osgi.resolver</groupId>
-                <artifactId>jbosgi-resolver-felix</artifactId>
-                <version>${version.jboss_osgi_resolver}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
