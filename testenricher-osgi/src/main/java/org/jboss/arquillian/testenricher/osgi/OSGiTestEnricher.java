@@ -18,13 +18,13 @@ package org.jboss.arquillian.testenricher.osgi;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.osgi.StartLevelAware;
 import org.jboss.arquillian.test.spi.TestEnricher;
-import org.jboss.logging.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
@@ -58,13 +58,13 @@ import org.osgi.service.startlevel.StartLevel;
 public class OSGiTestEnricher implements TestEnricher {
 
     // Provide logging
-    private static final Logger log = Logger.getLogger(OSGiTestEnricher.class);
+    private static final Logger log = Logger.getLogger(OSGiTestEnricher.class.getName());
 
     public void enrich(Object testCase) {
 
         BundleContext bundleContext = getBundleContext();
         if (bundleContext == null) {
-            log.debugf("System bundle context not available");
+            log.fine("System bundle context not available");
             return;
         }
 
@@ -90,7 +90,7 @@ public class OSGiTestEnricher implements TestEnricher {
                     int bundleStartLevel = method.getAnnotation(StartLevelAware.class).startLevel();
                     StartLevel startLevel = getStartLevel();
                     Bundle bundle = getBundle(testCase);
-                    log.debugf("Setting bundle start level of %s to: %d", bundle, bundleStartLevel);
+                    log.fine("Setting bundle start level of " + bundle + " to: " + bundleStartLevel);
                     startLevel.setBundleStartLevel(bundle, bundleStartLevel);
                 }
             }
@@ -104,7 +104,7 @@ public class OSGiTestEnricher implements TestEnricher {
     private void injectBundleContext(Object testCase, Field field) {
         try {
             BundleContext context = getBundleContext();
-            log.debugf("Injecting bundle context: %s", context);
+            log.fine("Injecting bundle context: " + context);
             field.set(testCase, context);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject BundleContext", ex);
@@ -114,7 +114,7 @@ public class OSGiTestEnricher implements TestEnricher {
     private void injectBundle(Object testCase, Field field) {
         try {
             Bundle bundle = getBundle(testCase);
-            log.debugf("Injecting bundle: %s", bundle);
+            log.fine("Injecting bundle: " + bundle);
             field.set(testCase, bundle);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject Bundle", ex);
@@ -124,7 +124,7 @@ public class OSGiTestEnricher implements TestEnricher {
     private void injectPackageAdmin(Object testCase, Field field) {
         try {
             PackageAdmin packageAdmin = getPackageAdmin();
-            log.debugf("Injecting PackageAdmin: %s", packageAdmin);
+            log.fine("Injecting PackageAdmin: " + packageAdmin);
             field.set(testCase, packageAdmin);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject PackageAdmin", ex);
@@ -134,7 +134,7 @@ public class OSGiTestEnricher implements TestEnricher {
     private void injectStartLevel(Object testCase, Field field) {
         try {
             StartLevel startLevel = getStartLevel();
-            log.debugf("Injecting StartLevel: %s", startLevel);
+            log.fine("Injecting StartLevel: " + startLevel);
             field.set(testCase, startLevel);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject StartLevel", ex);

@@ -21,9 +21,8 @@
  */
 package org.jboss.arquillian.osgi;
 
-// $Id$
-
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -32,7 +31,6 @@ import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
-import org.jboss.logging.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -49,7 +47,7 @@ import org.osgi.framework.ServiceReference;
  */
 public class ArquillianBundleActivator implements BundleActivator {
     // Provide logging
-    private static Logger log = Logger.getLogger(ArquillianBundleActivator.class);
+    private static Logger log = Logger.getLogger(ArquillianBundleActivator.class.getName());
 
     private JMXTestRunner testRunner;
 
@@ -98,7 +96,7 @@ public class ArquillianBundleActivator implements BundleActivator {
         ServiceReference sref = context.getServiceReference(MBeanServer.class.getName());
         if (sref != null) {
             MBeanServer mbeanServer = (MBeanServer) context.getService(sref);
-            log.debug("Found MBeanServer fom service: " + mbeanServer.getDefaultDomain());
+            log.fine("Found MBeanServer fom service: " + mbeanServer.getDefaultDomain());
             return mbeanServer;
         }
 
@@ -111,15 +109,15 @@ public class ArquillianBundleActivator implements BundleActivator {
 
         ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
         if (serverArr.size() > 1)
-            log.warn("Multiple MBeanServer instances: " + serverArr);
+            log.warning("Multiple MBeanServer instances: " + serverArr);
 
         if (serverArr.size() > 0) {
             mbeanServer = serverArr.get(0);
-            log.debug("Found MBeanServer: " + mbeanServer.getDefaultDomain());
+            log.fine("Found MBeanServer: " + mbeanServer.getDefaultDomain());
         }
 
         if (mbeanServer == null) {
-            log.debug("No MBeanServer, create one ...");
+            log.fine("No MBeanServer, create one ...");
             mbeanServer = MBeanServerFactory.createMBeanServer();
         }
 

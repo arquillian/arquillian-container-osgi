@@ -20,6 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
@@ -35,7 +37,6 @@ import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.logging.Logger;
 import org.jboss.osgi.spi.framework.OSGiBootstrap;
 import org.jboss.osgi.spi.framework.OSGiBootstrapProvider;
 import org.jboss.shrinkwrap.api.Archive;
@@ -58,7 +59,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
  */
 public class EmbeddedDeployableContainer implements DeployableContainer<EmbeddedContainerConfiguration> {
     // Provide logging
-    private static final Logger log = Logger.getLogger(EmbeddedDeployableContainer.class);
+    private static final Logger log = Logger.getLogger(EmbeddedDeployableContainer.class.getName());
 
     @Inject
     @ContainerScoped
@@ -160,7 +161,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
                     bundle.uninstall();
             }
         } catch (BundleException ex) {
-            log.error("Cannot undeploy: " + archive, ex);
+            log.log(Level.SEVERE, "Cannot undeploy: " + archive, ex);
         }
     }
 
@@ -200,7 +201,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
             return bundle;
         } catch (BundleException ex) {
-            log.error("Cannot install/start bundle: " + bundleFile, ex);
+            log.log(Level.SEVERE, "Cannot install/start bundle: " + bundleFile, ex);
         }
         return null;
     }
@@ -210,15 +211,15 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
         ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
         if (serverArr.size() > 1)
-            log.warnf("Multiple MBeanServer instances: %s", serverArr);
+            log.warning("Multiple MBeanServer instances: " + serverArr);
 
         if (serverArr.size() > 0) {
             mbeanServer = serverArr.get(0);
-            log.debugf("Found MBeanServer:%s ", mbeanServer.getDefaultDomain());
+            log.fine("Found MBeanServer: " + mbeanServer.getDefaultDomain());
         }
 
         if (mbeanServer == null) {
-            log.debugf("No MBeanServer, create one ...");
+            log.fine("No MBeanServer, create one ...");
             mbeanServer = MBeanServerFactory.createMBeanServer();
         }
 
