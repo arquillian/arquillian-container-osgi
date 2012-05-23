@@ -6,7 +6,6 @@
         <groupId>org.jboss.arquillian.osgi</groupId>
         <artifactId>arquillian-osgi-parent</artifactId>
         <version>1.0.3-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <!-- Model Version -->
