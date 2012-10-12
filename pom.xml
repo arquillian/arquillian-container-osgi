@@ -27,7 +27,7 @@
 
     <!-- Properties -->
     <properties>
-        <version.arquillian_core>1.0.1.Final-SNAPSHOT</version.arquillian_core>
+        <version.arquillian_core>1.0.2.Final</version.arquillian_core>
         <version.javax.inject_javax.inject>1</version.javax.inject_javax.inject>
         <version.jboss_logmanager>1.2.0.GA</version.jboss_logmanager>
         <version.jboss_osgi_framework>1.3.0.Final</version.jboss_osgi_framework>
