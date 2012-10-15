@@ -19,10 +19,9 @@ package org.jboss.test.arquillian.container.osgi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -31,20 +30,20 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 
 /**
- * [ARQ-193] Create auxillary OSGi test bundle
+ * Test bundle with implicit test package imports
  *
  * @author thomas.diesler@jboss.com
  * @since 31-Aug-2010
  */
 @RunWith(Arquillian.class)
-public class ARQ193GeneratedTestCase {
+public class ImplicitTestPackageImportsTestCase {
     @Deployment
     public static Archive<?> createDeployment() {
         return ShrinkWrap.create(JavaArchive.class, "empty-bundle");
     }
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Test
     public void testBundleInjection() throws Exception {
@@ -55,7 +54,7 @@ public class ARQ193GeneratedTestCase {
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
         assertEquals("empty-bundle", bundle.getSymbolicName());
-        bundle.loadClass(ARQ193GeneratedTestCase.class.getName());
+        bundle.loadClass(ImplicitTestPackageImportsTestCase.class.getName());
 
         bundle.stop();
         assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());

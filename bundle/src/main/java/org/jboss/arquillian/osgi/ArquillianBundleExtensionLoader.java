@@ -35,7 +35,6 @@ import org.osgi.framework.BundleReference;
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Thomas.Diesler@jboss.com
- * @version $Revision: $
  */
 public class ArquillianBundleExtensionLoader implements ExtensionLoader {
     @Override
@@ -44,9 +43,7 @@ public class ArquillianBundleExtensionLoader implements ExtensionLoader {
 
         ClassLoader classLoader = ArquillianBundleExtensionLoader.class.getClassLoader();
         if (classLoader instanceof BundleReference) {
-            // If this ExtensionLoader is used in the context of the installed bundle
-            // use a hard coded list of extensions
-
+            // If this ExtensionLoader is used in the context of the installed bundle use a hard coded list of extensions
             result = new ArrayList<LoadableExtension>();
             result.add(new ContainerTestRemoteExtension());
             result.add(new OSGiEnricherRemoteExtension());

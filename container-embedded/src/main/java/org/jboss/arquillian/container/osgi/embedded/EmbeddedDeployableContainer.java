@@ -58,24 +58,25 @@ import org.osgi.service.packageadmin.PackageAdmin;
  * @author thomas.diesler@jboss.com
  */
 public class EmbeddedDeployableContainer implements DeployableContainer<EmbeddedContainerConfiguration> {
+
     // Provide logging
     private static final Logger log = Logger.getLogger(EmbeddedDeployableContainer.class.getName());
 
     @Inject
     @ContainerScoped
-    private InstanceProducer<Framework> frameworkInst;
+    private InstanceProducer<Framework> frameworkProducer;
 
     @Inject
     @ContainerScoped
-    private InstanceProducer<BundleContext> bundleContextInst;
+    private InstanceProducer<BundleContext> bundleContextProducer;
 
     @Inject
     @DeploymentScoped
-    private InstanceProducer<Bundle> bundleInst;
+    private InstanceProducer<Bundle> bundleProducer;
 
     @Inject
     @ContainerScoped
-    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
+    private InstanceProducer<MBeanServerConnection> mbeanServerProducer;
 
     @Override
     public Class<EmbeddedContainerConfiguration> getConfigurationClass() {
@@ -90,17 +91,17 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
     @Override
     public void setup(EmbeddedContainerConfiguration configuration) {
         OSGiBootstrapProvider provider = OSGiBootstrap.getBootstrapProvider();
-        frameworkInst.set(provider.getFramework());
+        frameworkProducer.set(provider.getFramework());
 
         MBeanServerConnection mbeanServer = getMBeanServerConnection();
-        mbeanServerInst.set(mbeanServer);
+        mbeanServerProducer.set(mbeanServer);
     }
 
     public void start() throws LifecycleException {
         try {
-            Framework framework = frameworkInst.get();
+            Framework framework = frameworkProducer.get();
             framework.start();
-            bundleContextInst.set(framework.getBundleContext());
+            bundleContextProducer.set(framework.getBundleContext());
 
             Bundle[] bundles = framework.getBundleContext().getBundles();
             if (getInstalledBundle(bundles, "arquillian-osgi-bundle") == null) {
@@ -115,7 +116,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
     public void stop() throws LifecycleException {
         try {
-            Framework framework = frameworkInst.get();
+            Framework framework = frameworkProducer.get();
             framework.stop();
             framework.waitForStop(3000);
         } catch (RuntimeException rte) {
@@ -132,7 +133,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             exporter.exportTo(baos);
 
-            BundleContext context = bundleContextInst.get();
+            BundleContext context = bundleContextProducer.get();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
             Bundle bundle = context.installBundle(archive.getName(), inputStream);
 
@@ -141,7 +142,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             if (pa.resolveBundles(new Bundle[] { bundle }) == false)
                 throw new IllegalStateException("Cannot resolve test bundle - see framework log");
 
-            bundleInst.set(bundle);
+            bundleProducer.set(bundle);
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception ex) {
@@ -149,12 +150,12 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
         }
 
         return new ProtocolMetaData()
-                 .addContext(new JMXContext(mbeanServerInst.get()));
+                 .addContext(new JMXContext(mbeanServerProducer.get()));
     }
 
     public void undeploy(Archive<?> archive) throws DeploymentException {
         try {
-            Bundle bundle = bundleInst.get();
+            Bundle bundle = bundleProducer.get();
             if (bundle != null) {
                 int state = bundle.getState();
                 if (state != Bundle.UNINSTALLED)
@@ -194,7 +195,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
         File bundleFile = resolved[0];
         try {
-            BundleContext sysContext = bundleContextInst.get();
+            BundleContext sysContext = bundleContextProducer.get();
             Bundle bundle = sysContext.installBundle(bundleFile.toURI().toString());
             if (startBundle == true)
                 bundle.start();

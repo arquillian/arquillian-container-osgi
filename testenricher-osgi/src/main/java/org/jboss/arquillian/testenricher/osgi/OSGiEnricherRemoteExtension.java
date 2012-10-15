@@ -19,20 +19,25 @@ package org.jboss.arquillian.testenricher.osgi;
 
 import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
 import org.jboss.arquillian.test.spi.TestEnricher;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
  * OSGiRemoteContainerExtension
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
- * @version $Revision: $
+ * @author thomas.diesler@jboss.com
  */
 public class OSGiEnricherRemoteExtension implements RemoteLoadableExtension {
+
     @Override
     public void register(ExtensionBuilder builder) {
         // Don't load the OSGiTestEnricher unless the OSGi classes can be found at runtime
         if(Validate.classExists("org.osgi.framework.Bundle")) {
            builder.service(TestEnricher.class, OSGiTestEnricher.class);
+           builder.service(ResourceProvider.class, BundleContextProvider.class);
+           builder.service(ResourceProvider.class, StartLevelProvider.class);
+           builder.service(ResourceProvider.class, PackageAdminProvider.class);
+           builder.service(ResourceProvider.class, BundleProvider.class);
         }
     }
-
 }

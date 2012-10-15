@@ -20,6 +20,7 @@ package org.jboss.arquillian.testenricher.osgi;
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.test.spi.TestEnricher;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 
 /**
  * OSGiEnricherExtension
@@ -32,6 +33,9 @@ public class OSGiEnricherExtension implements LoadableExtension {
     public void register(ExtensionBuilder builder) {
         builder.service(TestEnricher.class, OSGiTestEnricher.class);
         builder.service(AuxiliaryArchiveAppender.class, OSGiAuxiliaryArchiveAppender.class);
+        builder.service(ResourceProvider.class, BundleContextProvider.class);
+        builder.service(ResourceProvider.class, StartLevelProvider.class);
+        builder.service(ResourceProvider.class, PackageAdminProvider.class);
+        builder.service(ResourceProvider.class, BundleProvider.class);
     }
-
 }

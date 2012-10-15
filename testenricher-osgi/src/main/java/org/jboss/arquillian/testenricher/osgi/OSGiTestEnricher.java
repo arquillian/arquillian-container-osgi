@@ -62,7 +62,7 @@ public class OSGiTestEnricher implements TestEnricher {
 
     public void enrich(Object testCase) {
 
-        BundleContext bundleContext = getBundleContext();
+        BundleContext bundleContext = BundleContextProvider.getBundleContext();
         if (bundleContext == null) {
             log.fine("System bundle context not available");
             return;
@@ -103,8 +103,8 @@ public class OSGiTestEnricher implements TestEnricher {
 
     private void injectBundleContext(Object testCase, Field field) {
         try {
-            BundleContext context = getBundleContext();
-            log.fine("Injecting bundle context: " + context);
+            BundleContext context = BundleContextProvider.getBundleContext();
+            log.warning("Deprecated @Inject BundleContext, use @ArquillianResource BundleContext");
             field.set(testCase, context);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject BundleContext", ex);
@@ -114,7 +114,7 @@ public class OSGiTestEnricher implements TestEnricher {
     private void injectBundle(Object testCase, Field field) {
         try {
             Bundle bundle = getBundle(testCase);
-            log.fine("Injecting bundle: " + bundle);
+            log.warning("Deprecated @Inject Bundle, use @ArquillianResource Bundle");
             field.set(testCase, bundle);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject Bundle", ex);
@@ -124,7 +124,7 @@ public class OSGiTestEnricher implements TestEnricher {
     private void injectPackageAdmin(Object testCase, Field field) {
         try {
             PackageAdmin packageAdmin = getPackageAdmin();
-            log.fine("Injecting PackageAdmin: " + packageAdmin);
+            log.warning("Deprecated @Inject PackageAdmin, use @ArquillianResource PackageAdmin");
             field.set(testCase, packageAdmin);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject PackageAdmin", ex);
@@ -134,7 +134,7 @@ public class OSGiTestEnricher implements TestEnricher {
     private void injectStartLevel(Object testCase, Field field) {
         try {
             StartLevel startLevel = getStartLevel();
-            log.fine("Injecting StartLevel: " + startLevel);
+            log.warning("Deprecated @Inject StartLevel, use @ArquillianResource StartLevel");
             field.set(testCase, startLevel);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject StartLevel", ex);
@@ -142,14 +142,14 @@ public class OSGiTestEnricher implements TestEnricher {
     }
 
     private PackageAdmin getPackageAdmin() {
-        BundleContext context = getBundleContext();
+        BundleContext context = BundleContextProvider.getBundleContext();
         ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
         PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
         return packageAdmin;
     }
 
     private StartLevel getStartLevel() {
-        BundleContext context = getBundleContext();
+        BundleContext context = BundleContextProvider.getBundleContext();
         ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
         StartLevel startLevel = (StartLevel) context.getService(sref);
         return startLevel;
@@ -158,7 +158,6 @@ public class OSGiTestEnricher implements TestEnricher {
     private Bundle getBundle(Object testCase) {
         // [ARQ-459] Allow TestRunner to TestEnricher communication
         Bundle bundle = BundleAssociation.getBundle();
-
         if (bundle == null) {
             ClassLoader classLoader = testCase.getClass().getClassLoader();
             if (classLoader instanceof BundleReference) {
@@ -167,21 +166,5 @@ public class OSGiTestEnricher implements TestEnricher {
             }
         }
         return bundle;
-    }
-
-    private BundleContext getBundleContext() {
-
-        // [ARQ-459] Allow TestRunner to TestEnricher communication
-        BundleContext bundleContext = BundleContextAssociation.getBundleContext();
-
-        if (bundleContext == null) {
-            ClassLoader classLoader = OSGiTestEnricher.class.getClassLoader();
-            if (classLoader instanceof BundleReference) {
-                BundleReference bref = (BundleReference) classLoader;
-                bundleContext = bref.getBundle().getBundleContext();
-                bundleContext = bundleContext.getBundle(0).getBundleContext();
-            }
-        }
-        return bundleContext;
     }
 }
