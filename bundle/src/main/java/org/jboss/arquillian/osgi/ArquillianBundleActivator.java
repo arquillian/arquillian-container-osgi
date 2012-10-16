@@ -38,7 +38,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * This is the Arquillian {@link BundleActivator}.
@@ -125,11 +124,10 @@ public class ArquillianBundleActivator implements BundleActivator {
 
     private Bundle getTestBundle(BundleContext syscontext, Class<?> testClass, String methodName) {
         Bundle bundle = ((BundleReference) testClass.getClassLoader()).getBundle();
-        PackageAdmin packageAdmin = getPackageAdmin(syscontext);
         for (Method method : testClass.getMethods()) {
             OperateOnDeployment opon = method.getAnnotation(OperateOnDeployment.class);
             if (opon != null && methodName.equals(method.getName())) {
-                for (Bundle aux : packageAdmin.getBundles(null, null)) {
+                for (Bundle aux : syscontext.getBundles()) {
                     if (aux.getLocation().equals(opon.value())) {
                         bundle = aux;
                         break;
@@ -138,10 +136,5 @@ public class ArquillianBundleActivator implements BundleActivator {
             }
         }
         return bundle;
-    }
-
-    private PackageAdmin getPackageAdmin(BundleContext syscontext) {
-        ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
-        return (PackageAdmin) syscontext.getService(sref);
     }
 }

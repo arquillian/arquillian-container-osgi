@@ -48,9 +48,6 @@ public class SimpleBundleTestCase {
     @ArquillianResource
     BundleContext context;
 
-    @ArquillianResource
-    Bundle bundle;
-
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
@@ -75,7 +72,7 @@ public class SimpleBundleTestCase {
     }
 
     @Test
-    public void testBundleInjection() throws Exception {
+    public void testBundleInjection(@ArquillianResource Bundle bundle) throws Exception {
         // Assert that the bundle is injected
         assertNotNull("Bundle injected", bundle);
 

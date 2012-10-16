@@ -74,7 +74,7 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         Set<Class<?>> classes = new HashSet<Class<?>>();
         classes.add(javaClass);
         Class<?> superclass = javaClass.getSuperclass();
-        while (superclass != null) {
+        while (superclass != Object.class) {
             classes.add(superclass);
             superclass = superclass.getSuperclass();
         }

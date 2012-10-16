@@ -30,6 +30,8 @@
         <version.jboss.arquillian.core>1.0.2.Final</version.jboss.arquillian.core>
         <version.javax.inject>1</version.javax.inject>
         <version.jboss.logmanager>1.4.0.Beta1</version.jboss.logmanager>
+        <version.jboss.osgi.equinox>3.5.2.SP1</version.jboss.osgi.equinox>
+        <version.jboss.osgi.felix>3.0.4</version.jboss.osgi.felix>
         <version.jboss.osgi.framework>2.0.0.CR37</version.jboss.osgi.framework>
         <version.jboss.osgi.spi>3.2.0.CR1</version.jboss.osgi.spi>
         <version.junit>4.8.1</version.junit>
@@ -60,6 +62,22 @@
                 <groupId>org.jboss.osgi.framework</groupId>
                 <artifactId>jbosgi-framework-core</artifactId>
                 <version>${version.jboss.osgi.framework}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.osgi.equinox</groupId>
+                <artifactId>jboss-osgi-equinox</artifactId>
+                <version>${version.jboss.osgi.equinox}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.osgi.felix</groupId>
+                <artifactId>jboss-osgi-felix</artifactId>
+                <version>${version.jboss.osgi.felix}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.osgi</groupId>
+                        <artifactId>jboss-osgi-spi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logmanager</groupId>
@@ -115,23 +133,11 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <failIfNoTests>false</failIfNoTests>
-                    <systemPropertyVariables>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <test.archive.directory>${project.build.directory}/test-libs</test.archive.directory>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-
-            <!-- Maven Release Plugin Configuration -->
-            <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <pushChanges>false</pushChanges>
                     <localCheckout>true</localCheckout>
+                    <pushChanges>false</pushChanges>
                 </configuration>
             </plugin>
         </plugins>
