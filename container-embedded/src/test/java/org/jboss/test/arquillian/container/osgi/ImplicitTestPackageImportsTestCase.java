@@ -25,6 +25,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.test.arquillian.container.osgi.bundle.ImplicitTestPackageImportsBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -36,14 +37,15 @@ import org.osgi.framework.Bundle;
  * @since 31-Aug-2010
  */
 @RunWith(Arquillian.class)
-public class ImplicitTestPackageImportsTestCase {
+public class ImplicitTestPackageImportsTestCase extends ImplicitTestPackageImportsBase {
+
+    @ArquillianResource
+    Bundle bundle;
+
     @Deployment
     public static Archive<?> createDeployment() {
         return ShrinkWrap.create(JavaArchive.class, "empty-bundle");
     }
-
-    @ArquillianResource
-    Bundle bundle;
 
     @Test
     public void testBundleInjection() throws Exception {

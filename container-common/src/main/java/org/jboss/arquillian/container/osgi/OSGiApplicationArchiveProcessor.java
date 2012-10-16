@@ -31,6 +31,7 @@ import org.jboss.osgi.spi.OSGiManifestBuilder;
  * @author Thomas.Diesler@jboss.com
  */
 public class OSGiApplicationArchiveProcessor extends AbstractOSGiApplicationArchiveProcessor {
+
     @Override
     protected Manifest createBundleManifest(String symbolicName) {
         final OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();

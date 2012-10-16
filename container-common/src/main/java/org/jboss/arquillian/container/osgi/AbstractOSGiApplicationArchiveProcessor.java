@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -68,12 +70,23 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         if (ClassContainer.class.isAssignableFrom(appArchive.getClass()) == false)
             throw new IllegalArgumentException("ClassContainer expected: " + appArchive);
 
+        // Get the test class and its super classes
         Class<?> javaClass = testClass.getJavaClass();
+        Set<Class<?>> classes = new HashSet<Class<?>>();
+        classes.add(javaClass);
+        Class<?> superclass = javaClass.getSuperclass();
+        while (superclass != null) {
+            classes.add(superclass);
+            superclass = superclass.getSuperclass();
+        }
 
-        // Check if the application archive already contains the test class
-        String path = javaClass.getName().replace('.', '/') + ".class";
-        if (appArchive.contains(path) == false)
-            ((ClassContainer<?>) appArchive).addClass(javaClass);
+        // Check if the application archive already contains the test classes
+        for (Class<?> clazz : classes) {
+            String path = clazz.getName().replace('.', '/') + ".class";
+            if (appArchive.contains(path) == false) {
+                ((ClassContainer<?>) appArchive).addClass(clazz);
+            }
+        }
 
         final OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
         Attributes attributes = manifest.getMainAttributes();
