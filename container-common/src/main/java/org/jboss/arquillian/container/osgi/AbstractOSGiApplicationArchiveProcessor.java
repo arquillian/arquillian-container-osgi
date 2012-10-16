@@ -34,8 +34,7 @@ import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
-import org.jboss.osgi.spi.BundleInfo;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
@@ -176,7 +175,7 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
     private void assertValidBundleArchive(Archive<?> archive) {
         try {
             Manifest manifest = getBundleManifest(archive);
-            BundleInfo.validateBundleManifest(manifest);
+            OSGiManifestBuilder.validateBundleManifest(manifest);
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception ex) {

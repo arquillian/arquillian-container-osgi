@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.arquillian.protocol.osgi.OSGiDeploymentPackager;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -51,7 +51,7 @@ public class OSGiDeploymentPackagerTestCase {
             }
         });
 
-        Archive<?> result = new OSGiDeploymentPackager().generateDeployment(new TestDeployment(archive, new ArrayList<Archive<?>>()),
+        Archive<?> result = new OSGiDeploymentPackager().generateDeployment(new TestDeployment(null, archive, new ArrayList<Archive<?>>()),
                 new ArrayList<ProtocolArchiveProcessor>());
         assertNotNull("Result archive not null", result);
     }
@@ -66,7 +66,7 @@ public class OSGiDeploymentPackagerTestCase {
             }
         });
         try {
-            new OSGiDeploymentPackager().generateDeployment(new TestDeployment(archive, new ArrayList<Archive<?>>()), new ArrayList<ProtocolArchiveProcessor>());
+            new OSGiDeploymentPackager().generateDeployment(new TestDeployment(null, archive, new ArrayList<Archive<?>>()), new ArrayList<ProtocolArchiveProcessor>());
             fail("RuntimeException expected");
         } catch (RuntimeException ex) {
             // expected
