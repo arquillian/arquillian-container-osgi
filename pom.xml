@@ -14,7 +14,7 @@
     <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.osgi</groupId>
     <artifactId>arquillian-osgi-parent</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3.CR1</version>
     <packaging>pom</packaging>
     <name>Arquillian OSGi</name>
     <description>OSGi Framework integrations for the Arquillian Project</description>
@@ -173,7 +173,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
