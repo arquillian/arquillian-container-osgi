@@ -24,7 +24,7 @@ import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.test.spi.annotation.ClassScoped;
+import org.jboss.arquillian.test.spi.annotation.TestScoped;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.osgi.framework.Bundle;
 
@@ -41,7 +41,7 @@ public class BundleProvider implements ResourceProvider {
     private AtomicBoolean initialized = new AtomicBoolean();
 
     @Inject
-    @ClassScoped
+    @TestScoped
     private InstanceProducer<Bundle> bundleProducer;
 
     @Inject

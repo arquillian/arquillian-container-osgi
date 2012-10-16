@@ -21,12 +21,14 @@
  */
 package org.jboss.arquillian.osgi;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
@@ -36,6 +38,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * This is the Arquillian {@link BundleActivator}.
@@ -53,9 +56,8 @@ public class ArquillianBundleActivator implements BundleActivator {
 
     public void start(final BundleContext context) throws Exception {
 
-        final BundleContext sysContext = context.getBundle(0).getBundleContext();
+        final BundleContext syscontext = context.getBundle(0).getBundleContext();
         final TestClassLoader testClassLoader = new TestClassLoader() {
-
             @Override
             public Class<?> loadTestClass(String className) throws ClassNotFoundException {
                 Bundle arqBundle = context.getBundle();
@@ -66,19 +68,16 @@ public class ArquillianBundleActivator implements BundleActivator {
         // Register the JMXTestRunner
         MBeanServer mbeanServer = getMBeanServer(context);
         testRunner = new JMXTestRunner(testClassLoader) {
-
             @Override
             public byte[] runTestMethod(String className, String methodName) {
-                Bundle bundle = null;
+                Class<?> testClass;
                 try {
-                    Class<?> testClass = testClassLoader.loadTestClass(className);
-                    BundleReference bundleRef = (BundleReference) testClass.getClassLoader();
-                    bundle = bundleRef.getBundle();
-                } catch (ClassNotFoundException e) {
-                    // ignore
+                    testClass = testClassLoader.loadTestClass(className);
+                } catch (ClassNotFoundException ex) {
+                    throw new IllegalStateException(ex);
                 }
-                BundleAssociation.setBundle(bundle);
-                BundleContextAssociation.setBundleContext(sysContext);
+                BundleAssociation.setBundle(getTestBundle(syscontext, testClass, methodName));
+                BundleContextAssociation.setBundleContext(syscontext);
                 return super.runTestMethod(className, methodName);
             }
         };
@@ -122,5 +121,27 @@ public class ArquillianBundleActivator implements BundleActivator {
         }
 
         return mbeanServer;
+    }
+
+    private Bundle getTestBundle(BundleContext syscontext, Class<?> testClass, String methodName) {
+        Bundle bundle = ((BundleReference) testClass.getClassLoader()).getBundle();
+        PackageAdmin packageAdmin = getPackageAdmin(syscontext);
+        for (Method method : testClass.getMethods()) {
+            OperateOnDeployment opon = method.getAnnotation(OperateOnDeployment.class);
+            if (opon != null && methodName.equals(method.getName())) {
+                for (Bundle aux : packageAdmin.getBundles(null, null)) {
+                    if (aux.getLocation().equals(opon.value())) {
+                        bundle = aux;
+                        break;
+                    }
+                }
+            }
+        }
+        return bundle;
+    }
+
+    private PackageAdmin getPackageAdmin(BundleContext syscontext) {
+        ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
+        return (PackageAdmin) syscontext.getService(sref);
     }
 }

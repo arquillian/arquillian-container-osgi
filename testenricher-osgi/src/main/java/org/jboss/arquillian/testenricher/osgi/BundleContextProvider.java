@@ -17,14 +17,12 @@
 package org.jboss.arquillian.testenricher.osgi;
 
 import java.lang.annotation.Annotation;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDeploymentAwareProvider;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
@@ -39,10 +37,8 @@ import org.osgi.framework.BundleReference;
  */
 public class BundleContextProvider implements ResourceProvider {
 
-    private AtomicBoolean initialized = new AtomicBoolean();
-
     @Inject
-    @ApplicationScoped
+    @SuiteScoped
     private InstanceProducer<BundleContext> bundleContextProducer;
 
     @Inject
@@ -60,8 +56,9 @@ public class BundleContextProvider implements ResourceProvider {
     }
 
     private void initialize() {
-        if (initialized.compareAndSet(false, true)) {
-            bundleContextProducer.set(getBundleContext());
+        BundleContext context = getBundleContext();
+        if (context != null) {
+            bundleContextProducer.set(context);
         }
     }
 

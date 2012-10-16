@@ -20,7 +20,6 @@ package org.jboss.test.arquillian.container.osgi.bundle;
  * A simple service.
  *
  * @author thomas.diesler@jboss.com
- * @version $Revision: $
  */
 public interface SimpleService {
     Integer sum(Integer... values);

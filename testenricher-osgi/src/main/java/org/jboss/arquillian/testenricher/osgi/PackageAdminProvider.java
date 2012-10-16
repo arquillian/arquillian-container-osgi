@@ -17,14 +17,12 @@
 package org.jboss.arquillian.testenricher.osgi;
 
 import java.lang.annotation.Annotation;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDeploymentAwareProvider;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -40,10 +38,8 @@ import org.osgi.service.packageadmin.PackageAdmin;
  */
 public class PackageAdminProvider implements ResourceProvider {
 
-    private AtomicBoolean initialized = new AtomicBoolean();
-
     @Inject
-    @ApplicationScoped
+    @SuiteScoped
     private InstanceProducer<PackageAdmin> packageAdminProducer;
 
     @Inject
@@ -61,14 +57,19 @@ public class PackageAdminProvider implements ResourceProvider {
     }
 
     private void initialize() {
-        if (initialized.compareAndSet(false, true)) {
             BundleContext syscontext = BundleContextProvider.getBundleContext();
-            packageAdminProducer.set(getPackageAdmin(syscontext));
-        }
+            PackageAdmin service = getPackageAdmin(syscontext);
+            if (service != null) {
+                packageAdminProducer.set(service);
+            }
     }
 
     private PackageAdmin getPackageAdmin(BundleContext syscontext) {
-        ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
-        return (PackageAdmin) syscontext.getService(sref);
+        PackageAdmin result = null;
+        if (syscontext != null) {
+            ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
+            result = (PackageAdmin) syscontext.getService(sref);
+        }
+        return result;
     }
 }

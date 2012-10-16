@@ -17,33 +17,28 @@
 package org.jboss.arquillian.testenricher.osgi;
 
 import java.lang.annotation.Annotation;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDeploymentAwareProvider;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.test.spi.annotation.SuiteScoped;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
- * {@link OperatesOnDeploymentAwareProvider} implementation to
- * provide {@link ManagementClient} injection to {@link ArquillianResource}-
- * annotated fields.
+ * {@link OperatesOnDeploymentAwareProvider} implementation to provide {@link ManagementClient} injection to
+ * {@link ArquillianResource}- annotated fields.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 15-Oct-2012
  */
 public class StartLevelProvider implements ResourceProvider {
 
-    private AtomicBoolean initialized = new AtomicBoolean();
-
     @Inject
-    @ApplicationScoped
+    @SuiteScoped
     private InstanceProducer<StartLevel> startLevelProducer;
 
     @Inject
@@ -61,14 +56,19 @@ public class StartLevelProvider implements ResourceProvider {
     }
 
     private void initialize() {
-        if (initialized.compareAndSet(false, true)) {
-            BundleContext syscontext = BundleContextProvider.getBundleContext();
-            startLevelProducer.set(getStartLevel(syscontext));
+        BundleContext syscontext = BundleContextProvider.getBundleContext();
+        StartLevel service = getStartLevel(syscontext);
+        if (service != null) {
+            startLevelProducer.set(service);
         }
     }
 
     private StartLevel getStartLevel(BundleContext syscontext) {
-        ServiceReference sref = syscontext.getServiceReference(StartLevel.class.getName());
-        return (StartLevel) syscontext.getService(sref);
+        StartLevel result = null;
+        if (syscontext != null) {
+            ServiceReference sref = syscontext.getServiceReference(StartLevel.class.getName());
+            result = (StartLevel) syscontext.getService(sref);
+        }
+        return result;
     }
 }

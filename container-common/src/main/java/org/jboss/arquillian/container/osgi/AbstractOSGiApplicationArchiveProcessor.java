@@ -110,7 +110,7 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
             builder.addManifestHeader(key, value);
         }
 
-        // Export the test class package
+        // Export the test class package otherwise the arq-bundle cannot load the test class
         builder.addExportPackages(javaClass);
 
         // Add the imports required by the test class
