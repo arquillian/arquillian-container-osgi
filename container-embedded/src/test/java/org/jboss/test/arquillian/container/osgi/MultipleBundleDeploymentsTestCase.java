@@ -31,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
@@ -54,10 +53,19 @@ public class MultipleBundleDeploymentsTestCase {
         // The default deployment is needed if we don't want to @RunAsClient
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests");
         archive.addClasses(SimpleService.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PackageAdmin.class);
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 
-    @Deployment(name = BUNDLE_A)
+    @Deployment(name = BUNDLE_A, testable = false)
     public static Archive<?> deploymentA() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
         archive.addClasses(SimpleService.class);
@@ -73,7 +81,7 @@ public class MultipleBundleDeploymentsTestCase {
         return archive;
     }
 
-    @Deployment(name = BUNDLE_B)
+    @Deployment(name = BUNDLE_B, testable = false)
     public static Archive<?> deploymentB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B);
         archive.setManifest(new Asset() {
@@ -90,20 +98,10 @@ public class MultipleBundleDeploymentsTestCase {
 
     @Test
     public void testBundleDeployments() throws Exception {
-
         Bundle bundleA = packageAdmin.getBundles(BUNDLE_A, null)[0];
         Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
 
-        Class<?> testClassA = bundleA.loadClass(MultipleBundleDeploymentsTestCase.class.getName());
-        ClassLoader classLoaderA = testClassA.getClassLoader();
-        Assert.assertEquals(BUNDLE_A, ((BundleReference)classLoaderA).getBundle().getSymbolicName());
-
         Bundle bundleB = packageAdmin.getBundles(BUNDLE_B, null)[0];
         Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleB.getState());
-        bundleB.loadClass(MultipleBundleDeploymentsTestCase.class.getName());
-
-        Class<?> testClassB = bundleB.loadClass(MultipleBundleDeploymentsTestCase.class.getName());
-        ClassLoader classLoaderB = testClassB.getClassLoader();
-        Assert.assertEquals(BUNDLE_B, ((BundleReference)classLoaderB).getBundle().getSymbolicName());
     }
 }

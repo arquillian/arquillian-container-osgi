@@ -46,14 +46,20 @@ public class OperateOnDeploymentTestCase {
     static final String BUNDLE_A = "bundle-a";
     static final String BUNDLE_B = "bundle-b";
 
-    @ArquillianResource
-    PackageAdmin packageAdmin;
-
     @Deployment
     public static Archive<?> deployment() {
         // The default deployment is needed if we don't want to @RunAsClient
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests");
         archive.addClasses(SimpleService.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PackageAdmin.class);
+                return builder.openStream();
+            }
+        });
         return archive;
     }
 

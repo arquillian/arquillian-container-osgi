@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Test {@link PackageAdmin} injection
@@ -43,21 +42,20 @@ import org.osgi.service.startlevel.StartLevel;
 @RunWith(Arquillian.class)
 public class PackageAdminInjectionTestCase {
 
-    @ArquillianResource
-    Bundle bundle;
+    private static final String BUNDLE_A = "packageadmin-bundle";
 
     @ArquillianResource
     PackageAdmin packageAdmin;
 
     @Deployment
     public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq466-bundle");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(StartLevel.class);
+                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
@@ -65,14 +63,14 @@ public class PackageAdminInjectionTestCase {
     }
 
     @Test
-    public void testPackageAdmin() throws Exception {
+    public void testPackageAdmin(@ArquillianResource Bundle bundle) throws Exception {
 
         assertNotNull("PackageAdmin injected", packageAdmin);
 
         assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-        assertEquals("arq466-bundle", bundle.getSymbolicName());
+        assertEquals(BUNDLE_A, bundle.getSymbolicName());
 
-        Bundle[] bundles = packageAdmin.getBundles("arq466-bundle", null);
+        Bundle[] bundles = packageAdmin.getBundles(BUNDLE_A, null);
         assertNotNull("Bundles not null", bundles);
         assertEquals("One bundle found", 1, bundles.length);
         assertEquals(bundle, bundles[0]);

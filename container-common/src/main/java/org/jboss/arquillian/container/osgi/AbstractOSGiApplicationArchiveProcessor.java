@@ -22,9 +22,6 @@
 package org.jboss.arquillian.container.osgi;
 
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -113,9 +110,6 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         // Export the test class package otherwise the arq-bundle cannot load the test class
         builder.addExportPackages(javaClass);
 
-        // Add the imports required by the test class
-        addImportsForClass(builder, javaClass);
-
         // Add common test imports
         builder.addImportPackages("org.jboss.arquillian.container.test.api", "org.jboss.arquillian.junit", "org.jboss.arquillian.osgi", "org.jboss.arquillian.test.api");
         builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
@@ -128,48 +122,6 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
                 return builder.openStream();
             }
         }, JarFile.MANIFEST_NAME);
-    }
-
-    private void addImportsForClass(OSGiManifestBuilder builder, Class<?> javaClass) {
-        // Interfaces
-        for (Class<?> interf : javaClass.getInterfaces()) {
-            addImportPackage(builder, interf);
-        }
-        // Annotations
-        for (Annotation anno : javaClass.getDeclaredAnnotations()) {
-            addImportPackage(builder, anno.annotationType());
-        }
-        // Declared fields
-        for (Field field : javaClass.getDeclaredFields()) {
-            Class<?> type = field.getType();
-            addImportPackage(builder, type);
-        }
-        // Declared methods
-        for (Method method : javaClass.getDeclaredMethods()) {
-            Class<?> returnType = method.getReturnType();
-            if (returnType != Void.TYPE)
-                addImportPackage(builder, returnType);
-            for (Class<?> paramType : method.getParameterTypes())
-                addImportPackage(builder, paramType);
-        }
-        // Declared classes
-        for (Class<?> declaredClass : javaClass.getDeclaredClasses()) {
-            addImportsForClass(builder, declaredClass);
-        }
-    }
-
-    private void addImportPackage(OSGiManifestBuilder builder, Class<?> type) {
-        if (type.isArray())
-            type = type.getComponentType();
-
-        if (type.isPrimitive() == false && type.getName().startsWith("java.") == false)
-            builder.addImportPackages(type);
-
-        for (Annotation anno : type.getDeclaredAnnotations()) {
-            Class<?> anType = anno.annotationType();
-            if (anType.getName().startsWith("java.") == false)
-                builder.addImportPackages(anType);
-        }
     }
 
     private void assertValidBundleArchive(Archive<?> archive) {
