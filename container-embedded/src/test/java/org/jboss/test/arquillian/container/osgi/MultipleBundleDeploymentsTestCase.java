@@ -31,7 +31,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
  * Test multiple bundle deployments
@@ -46,7 +47,7 @@ public class MultipleBundleDeploymentsTestCase {
     static final String BUNDLE_B = "bundle-b";
 
     @ArquillianResource
-    PackageAdmin packageAdmin;
+    BundleContext context;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -54,11 +55,12 @@ public class MultipleBundleDeploymentsTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests");
         archive.addClasses(SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(PackageAdmin.class);
+                builder.addImportPackages(FrameworkWiring.class);
                 return builder.openStream();
             }
         });
@@ -70,6 +72,7 @@ public class MultipleBundleDeploymentsTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
         archive.addClasses(SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -85,6 +88,7 @@ public class MultipleBundleDeploymentsTestCase {
     public static Archive<?> deploymentB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -98,10 +102,10 @@ public class MultipleBundleDeploymentsTestCase {
 
     @Test
     public void testBundleDeployments() throws Exception {
-        Bundle bundleA = packageAdmin.getBundles(BUNDLE_A, null)[0];
+        Bundle bundleA = context.getBundle(BUNDLE_A);
         Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
 
-        Bundle bundleB = packageAdmin.getBundles(BUNDLE_B, null)[0];
+        Bundle bundleB = context.getBundle(BUNDLE_B);
         Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleB.getState());
     }
 }

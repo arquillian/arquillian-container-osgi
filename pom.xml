@@ -32,10 +32,10 @@
         <version.jboss.logmanager>1.4.0.Beta1</version.jboss.logmanager>
         <version.jboss.osgi.equinox>3.5.2.SP1</version.jboss.osgi.equinox>
         <version.jboss.osgi.felix>3.0.4</version.jboss.osgi.felix>
-        <version.jboss.osgi.framework>2.0.0.CR39</version.jboss.osgi.framework>
-        <version.jboss.osgi.spi>3.2.0.CR1</version.jboss.osgi.spi>
+        <version.jboss.osgi.framework>3.0.0.Alpha4</version.jboss.osgi.framework>
+        <version.jboss.osgi.spi>4.0.0.Alpha2</version.jboss.osgi.spi>
         <version.junit>4.8.1</version.junit>
-        <version.osgi>4.2.0</version.osgi>
+        <version.osgi>5.0.0</version.osgi>
 
         <!-- must be in sync with what is defined in arquillian-parent POM -->
         <version.jboss.shrinkwrap>1.0.0</version.jboss.shrinkwrap>

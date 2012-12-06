@@ -28,9 +28,7 @@ import org.jboss.arquillian.test.spi.TestEnricher;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.startlevel.StartLevel;
+import org.osgi.framework.startlevel.BundleStartLevel;
 
 /**
  * The OSGi TestEnricher
@@ -44,12 +42,6 @@ import org.osgi.service.startlevel.StartLevel;
  *
  *    @Inject
  *    Bundle bundle;
- *
- *    @Inject
- *    StartLevel startLevel;
- *
- *    @Inject
- *    PackageAdmin packageAdmin;
  * </code>
  * </pre>
  *
@@ -60,6 +52,7 @@ public class OSGiTestEnricher implements TestEnricher {
     // Provide logging
     private static final Logger log = Logger.getLogger(OSGiTestEnricher.class.getName());
 
+    @Override
     public void enrich(Object testCase) {
 
         BundleContext bundleContext = BundleContextProvider.getBundleContext();
@@ -75,10 +68,6 @@ public class OSGiTestEnricher implements TestEnricher {
                     injectBundleContext(testCase, field);
                 } else if (field.getType().isAssignableFrom(Bundle.class)) {
                     injectBundle(testCase, field);
-                } else if (field.getType().isAssignableFrom(PackageAdmin.class)) {
-                    injectPackageAdmin(testCase, field);
-                } else if (field.getType().isAssignableFrom(StartLevel.class)) {
-                    injectStartLevel(testCase, field);
                 }
             }
         }
@@ -88,15 +77,16 @@ public class OSGiTestEnricher implements TestEnricher {
                 Deployment andep = method.getAnnotation(Deployment.class);
                 if (andep.managed() && andep.testable() && method.isAnnotationPresent(StartLevelAware.class)) {
                     int bundleStartLevel = method.getAnnotation(StartLevelAware.class).startLevel();
-                    StartLevel startLevel = getStartLevel();
                     Bundle bundle = getBundle(testCase);
                     log.fine("Setting bundle start level of " + bundle + " to: " + bundleStartLevel);
-                    startLevel.setBundleStartLevel(bundle, bundleStartLevel);
+                    BundleStartLevel startLevel = bundle.adapt(BundleStartLevel.class);
+                    startLevel.setStartLevel(bundleStartLevel);
                 }
             }
         }
     }
 
+    @Override
     public Object[] resolve(Method method) {
         return null;
     }
@@ -119,40 +109,6 @@ public class OSGiTestEnricher implements TestEnricher {
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Cannot inject Bundle", ex);
         }
-    }
-
-    private void injectPackageAdmin(Object testCase, Field field) {
-        try {
-            PackageAdmin packageAdmin = getPackageAdmin();
-            log.warning("Deprecated @Inject PackageAdmin, use @ArquillianResource PackageAdmin");
-            field.set(testCase, packageAdmin);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException("Cannot inject PackageAdmin", ex);
-        }
-    }
-
-    private void injectStartLevel(Object testCase, Field field) {
-        try {
-            StartLevel startLevel = getStartLevel();
-            log.warning("Deprecated @Inject StartLevel, use @ArquillianResource StartLevel");
-            field.set(testCase, startLevel);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException("Cannot inject StartLevel", ex);
-        }
-    }
-
-    private PackageAdmin getPackageAdmin() {
-        BundleContext context = BundleContextProvider.getBundleContext();
-        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
-        return packageAdmin;
-    }
-
-    private StartLevel getStartLevel() {
-        BundleContext context = BundleContextProvider.getBundleContext();
-        ServiceReference sref = context.getServiceReference(StartLevel.class.getName());
-        StartLevel startLevel = (StartLevel) context.getService(sref);
-        return startLevel;
     }
 
     private Bundle getBundle(Object testCase) {

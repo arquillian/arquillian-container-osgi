@@ -17,7 +17,6 @@
 package org.jboss.test.arquillian.container.osgi;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
@@ -39,10 +38,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
-import org.osgi.service.startlevel.StartLevel;
+import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 
 /**
- * Test {@link StartLevel} injection
+ * Test {@link StartLevelAware}
  *
  * @author thomas.diesler@jboss.com
  * @since 07-Jun-2011
@@ -56,19 +56,17 @@ public class StartLevelInjectionTestCase {
     @ArquillianResource
     BundleContext context;
 
-    @ArquillianResource
-    StartLevel startLevel;
-
     @Deployment
     @StartLevelAware(startLevel = 3)
     public static JavaArchive create() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "start-level-bundle");
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(StartLevel.class);
+                builder.addImportPackages(FrameworkStartLevel.class);
                 return builder.openStream();
             }
         });
@@ -78,14 +76,15 @@ public class StartLevelInjectionTestCase {
     @Test
     public void testStartLevel() throws Exception {
 
-        assertNotNull("StartLevel injected", startLevel);
-        int initialStartLevel = startLevel.getInitialBundleStartLevel();
+        FrameworkStartLevel fwStartLevel = context.getBundle().adapt(FrameworkStartLevel.class);
+        int initialStartLevel = fwStartLevel.getInitialBundleStartLevel();
         assertEquals("Initial bundle start level", 1, initialStartLevel);
 
         assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
         assertEquals("start-level-bundle", bundle.getSymbolicName());
 
-        int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
+        BundleStartLevel bStartLevel = bundle.adapt(BundleStartLevel.class);
+        int bundleStartLevel = bStartLevel.getStartLevel();
         assertEquals("Bundle start level", 3, bundleStartLevel);
 
         try {
@@ -103,12 +102,13 @@ public class StartLevelInjectionTestCase {
         // Change the frameworkj start level and wait for the changed event
         final CountDownLatch latch = new CountDownLatch(1);
         context.addFrameworkListener(new FrameworkListener() {
+            @Override
             public void frameworkEvent(FrameworkEvent event) {
                 if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED)
                     latch.countDown();
             }
         });
-        startLevel.setStartLevel(3);
+        fwStartLevel.setStartLevel(3);
         latch.await(3, TimeUnit.SECONDS);
 
         // The bundle should now be started

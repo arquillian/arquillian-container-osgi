@@ -32,7 +32,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Test multiple bundle deployments
@@ -52,11 +51,11 @@ public class OperateOnDeploymentTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests");
         archive.addClasses(SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
@@ -68,6 +67,7 @@ public class OperateOnDeploymentTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
         archive.addClasses(SimpleService.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -83,6 +83,7 @@ public class OperateOnDeploymentTestCase {
     public static Archive<?> deploymentB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());

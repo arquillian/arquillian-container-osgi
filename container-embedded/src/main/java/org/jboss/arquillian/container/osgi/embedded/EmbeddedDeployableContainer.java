@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,9 +45,8 @@ import org.jboss.shrinkwrap.resolver.api.maven.filter.StrictFilter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
  * OSGi embedded container
@@ -60,7 +60,6 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
 
     private Framework framework;
     private BundleContext syscontext;
-    private PackageAdmin packageAdmin;
     private MBeanServerConnection mbeanServer;
     private Bundle arqBundle;
 
@@ -81,12 +80,11 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
         mbeanServer = getMBeanServerConnection();
     }
 
+    @Override
     public void start() throws LifecycleException {
         try {
             framework.start();
             syscontext = framework.getBundleContext();
-            ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
-            packageAdmin = (PackageAdmin) syscontext.getService(sref);
 
             Bundle[] bundles = syscontext.getBundles();
             arqBundle = getInstalledBundle(bundles, "arquillian-osgi-bundle");
@@ -100,6 +98,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
         }
     }
 
+    @Override
     public void stop() throws LifecycleException {
         try {
             framework.stop();
@@ -111,6 +110,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
         }
     }
 
+    @Override
     public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException {
         try {
             // Export the bundle bytes
@@ -121,7 +121,8 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
             Bundle bundle = syscontext.installBundle(archive.getName(), inputStream);
 
-            if (packageAdmin.resolveBundles(new Bundle[] { bundle }) == false)
+            FrameworkWiring frameworkWiring = syscontext.getBundle().adapt(FrameworkWiring.class);
+            if (frameworkWiring.resolveBundles(Arrays.asList(bundle)) == false)
                 throw new IllegalStateException("Cannot resolve test bundle - see framework log");
 
         } catch (RuntimeException rte) {
@@ -133,6 +134,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
         return new ProtocolMetaData().addContext(new JMXContext(mbeanServer));
     }
 
+    @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
         try {
             for (Bundle aux : syscontext.getBundles()) {
