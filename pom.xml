@@ -29,10 +29,8 @@
     <properties>
         <version.jboss.arquillian.core>1.0.2.Final</version.jboss.arquillian.core>
         <version.javax.inject>1</version.javax.inject>
-        <version.jboss.logmanager>1.4.0.Beta1</version.jboss.logmanager>
-        <version.jboss.osgi.equinox>3.5.2.SP1</version.jboss.osgi.equinox>
-        <version.jboss.osgi.felix>3.0.4</version.jboss.osgi.felix>
-        <version.jboss.osgi.framework>3.0.0.Alpha4</version.jboss.osgi.framework>
+        <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
+        <version.jboss.osgi.framework>3.0.0.CR5-SNAPSHOT</version.jboss.osgi.framework>
         <version.jboss.osgi.spi>4.0.0.Alpha2</version.jboss.osgi.spi>
         <version.junit>4.8.1</version.junit>
         <version.osgi>5.0.0</version.osgi>
@@ -62,22 +60,6 @@
                 <groupId>org.jboss.osgi.framework</groupId>
                 <artifactId>jbosgi-framework-core</artifactId>
                 <version>${version.jboss.osgi.framework}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.osgi.equinox</groupId>
-                <artifactId>jboss-osgi-equinox</artifactId>
-                <version>${version.jboss.osgi.equinox}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.osgi.felix</groupId>
-                <artifactId>jboss-osgi-felix</artifactId>
-                <version>${version.jboss.osgi.felix}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.osgi</groupId>
-                        <artifactId>jboss-osgi-spi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logmanager</groupId>
