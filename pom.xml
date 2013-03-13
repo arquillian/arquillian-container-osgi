@@ -30,7 +30,7 @@
         <version.jboss.arquillian.core>1.0.2.Final</version.jboss.arquillian.core>
         <version.javax.inject>1</version.javax.inject>
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
-        <version.jboss.osgi.framework>3.0.0.CR5-SNAPSHOT</version.jboss.osgi.framework>
+        <version.jboss.osgi.framework>3.0.0.CR5</version.jboss.osgi.framework>
         <version.jboss.osgi.spi>4.0.0.Alpha2</version.jboss.osgi.spi>
         <version.junit>4.8.1</version.junit>
         <version.osgi>5.0.0</version.osgi>

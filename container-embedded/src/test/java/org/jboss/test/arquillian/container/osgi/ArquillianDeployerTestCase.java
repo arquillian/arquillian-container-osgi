@@ -16,8 +16,6 @@
  */
 package org.jboss.test.arquillian.container.osgi;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.InputStream;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -28,10 +26,12 @@ import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 
 /**
  * Test for the {@link Deployer}
@@ -42,7 +42,8 @@ import org.osgi.framework.BundleContext;
 @RunWith(Arquillian.class)
 public class ArquillianDeployerTestCase {
 
-    private static final String BUNDLE_NAME = "test-bundle";
+    private static final String GOOD_BUNDLE = "good-bundle";
+    private static final String BAD_BUNDLE = "bad-bundle";
 
     @Deployment
     public static JavaArchive create() {
@@ -57,30 +58,96 @@ public class ArquillianDeployerTestCase {
 
     @Test
     public void testInstallBundleFromArchive() throws Exception {
-        InputStream input = deployer.getDeployment(BUNDLE_NAME);
-        Bundle bundle = context.installBundle(BUNDLE_NAME, input);
+        InputStream input = deployer.getDeployment(GOOD_BUNDLE);
+        Bundle bundle = context.installBundle(GOOD_BUNDLE, input);
+        try {
+            Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+            Assert.assertEquals(GOOD_BUNDLE, bundle.getSymbolicName());
 
-        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-        assertEquals(BUNDLE_NAME, bundle.getSymbolicName());
+            bundle.start();
+            Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
-        bundle.start();
-        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-
-        bundle.stop();
-        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-
-        bundle.uninstall();
-        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+            bundle.stop();
+            Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        } finally {
+            bundle.uninstall();
+            Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+        }
     }
 
-    @Deployment(name = BUNDLE_NAME, managed = false, testable = false)
-    public static JavaArchive getTestArchive() {
+    @Test
+    public void testDeployBundle() throws Exception {
+        deployer.deploy(GOOD_BUNDLE);
+        Bundle bundle = null;
+        try {
+            for (Bundle aux : context.getBundles()) {
+                if (GOOD_BUNDLE.equals(aux.getSymbolicName())) {
+                    bundle = aux;
+                    break;
+                }
+            }
+            Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+
+            bundle.start();
+            Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+            bundle.stop();
+            Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        } finally {
+            deployer.undeploy(GOOD_BUNDLE);
+            Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+        }
+    }
+
+    @Test
+    public void testDeployBadBundle() throws Exception {
+        deployer.deploy(BAD_BUNDLE);
+        Bundle bundle = null;
+        try {
+            for (Bundle aux : context.getBundles()) {
+                if (BAD_BUNDLE.equals(aux.getSymbolicName())) {
+                    bundle = aux;
+                    break;
+                }
+            }
+            Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+
+            try {
+                bundle.start();
+                Assert.fail("BundleException expected");
+            } catch (BundleException ex) {
+                // expected
+            }
+            Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+        } finally {
+            deployer.undeploy(BAD_BUNDLE);
+            Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+        }
+    }
+
+    @Deployment(name = GOOD_BUNDLE, managed = false, testable = false)
+    public static JavaArchive getGoodBundle() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(BUNDLE_NAME);
+                builder.addBundleSymbolicName(GOOD_BUNDLE);
                 builder.addBundleManifestVersion(2);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BAD_BUNDLE, managed = false, testable = false)
+    public static JavaArchive getBadBundle() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
+        archive.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(BAD_BUNDLE);
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackage("org.acme.foo");
                 return builder.openStream();
             }
         });

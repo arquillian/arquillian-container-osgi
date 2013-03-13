@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,7 +45,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
-import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
  * OSGi embedded container
@@ -119,11 +117,7 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
             exporter.exportTo(baos);
 
             ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
-            Bundle bundle = syscontext.installBundle(archive.getName(), inputStream);
-
-            FrameworkWiring frameworkWiring = syscontext.getBundle().adapt(FrameworkWiring.class);
-            if (frameworkWiring.resolveBundles(Arrays.asList(bundle)) == false)
-                throw new IllegalStateException("Cannot resolve test bundle - see framework log");
+            syscontext.installBundle(archive.getName(), inputStream);
 
         } catch (RuntimeException rte) {
             throw rte;

@@ -48,7 +48,7 @@ import org.osgi.framework.startlevel.FrameworkStartLevel;
  * @since 07-Jun-2011
  */
 @RunWith(Arquillian.class)
-public class StartLevelInjectionTestCase {
+public class StartLevelAwareTestCase {
 
     @ArquillianResource
     Bundle bundle;
