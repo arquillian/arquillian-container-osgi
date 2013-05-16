@@ -16,32 +16,29 @@
  */
 package org.jboss.arquillian.testenricher.osgi;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.osgi.StartLevelAware;
 import org.jboss.arquillian.test.spi.TestEnricher;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.startlevel.BundleStartLevel;
 
 /**
  * The OSGi TestEnricher
  *
- * The enricher supports the injection of the system BundleContext and the test Bundle.
+ * The enricher supports start level aware bundle deployments.
  *
  * <pre>
  * <code>
- *    @Inject
- *    BundleContext context;
- *
- *    @Inject
- *    Bundle bundle;
+    @Deployment
+    @StartLevelAware(startLevel = 3)
+    public static JavaArchive create() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "start-level-bundle");
+        ...
+    }
  * </code>
  * </pre>
  *
@@ -55,23 +52,8 @@ public class OSGiTestEnricher implements TestEnricher {
     @Override
     public void enrich(Object testCase) {
 
-        BundleContext bundleContext = BundleContextProvider.getBundleContext();
-        if (bundleContext == null) {
-            log.fine("System bundle context not available");
-            return;
-        }
-
-        Class<? extends Object> testClass = testCase.getClass();
-        for (Field field : testClass.getDeclaredFields()) {
-            if (field.isAnnotationPresent(Inject.class)) {
-                if (field.getType().isAssignableFrom(BundleContext.class)) {
-                    injectBundleContext(testCase, field);
-                } else if (field.getType().isAssignableFrom(Bundle.class)) {
-                    injectBundle(testCase, field);
-                }
-            }
-        }
         // Process {@link StartLevelAware} on the {@link Deployment}
+        Class<? extends Object> testClass = testCase.getClass();
         for (Method method : testClass.getDeclaredMethods()) {
             if (method.isAnnotationPresent(Deployment.class)) {
                 Deployment andep = method.getAnnotation(Deployment.class);
@@ -89,26 +71,6 @@ public class OSGiTestEnricher implements TestEnricher {
     @Override
     public Object[] resolve(Method method) {
         return null;
-    }
-
-    private void injectBundleContext(Object testCase, Field field) {
-        try {
-            BundleContext context = BundleContextProvider.getBundleContext();
-            log.warning("Deprecated @Inject BundleContext, use @ArquillianResource BundleContext");
-            field.set(testCase, context);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException("Cannot inject BundleContext", ex);
-        }
-    }
-
-    private void injectBundle(Object testCase, Field field) {
-        try {
-            Bundle bundle = getBundle(testCase);
-            log.warning("Deprecated @Inject Bundle, use @ArquillianResource Bundle");
-            field.set(testCase, bundle);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException("Cannot inject Bundle", ex);
-        }
     }
 
     private Bundle getBundle(Object testCase) {

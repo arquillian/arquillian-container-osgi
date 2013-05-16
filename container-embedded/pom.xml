@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     Set these VM properties in your IDE debugger
+    
     -Djava.util.logging.manager=org.jboss.logmanager.LogManager
     -Dtest.archive.directory=${workspace_loc:arquillian-container-osgi-embedded}/target/test-libs 
 -->

@@ -31,7 +31,7 @@ public class OSGiEnricherRemoteExtension implements RemoteLoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        // Don't load the OSGiTestEnricher unless the OSGi classes can be found at runtime
+        // Don't load the OSGi resource providers unless the OSGi classes can be found at runtime
         if(Validate.classExists("org.osgi.framework.Bundle")) {
            builder.service(TestEnricher.class, OSGiTestEnricher.class);
            builder.service(ResourceProvider.class, BundleContextProvider.class);
