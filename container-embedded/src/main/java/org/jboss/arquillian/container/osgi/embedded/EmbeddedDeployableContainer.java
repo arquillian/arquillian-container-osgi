@@ -33,8 +33,6 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
-import org.jboss.osgi.spi.framework.OSGiBootstrap;
-import org.jboss.osgi.spi.framework.OSGiBootstrapProvider;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
@@ -72,9 +70,8 @@ public class EmbeddedDeployableContainer implements DeployableContainer<Embedded
     }
 
     @Override
-    public void setup(EmbeddedContainerConfiguration configuration) {
-        OSGiBootstrapProvider provider = OSGiBootstrap.getBootstrapProvider();
-        framework = provider.getFramework();
+    public void setup(EmbeddedContainerConfiguration conf) {
+        framework = conf.getFrameworkFactory().newFramework(conf.getFrameworkConfiguration());
         mbeanServer = getMBeanServerConnection();
     }
 

@@ -36,9 +36,9 @@ import org.junit.Test;
  * OSGiDeploymentPackagerTestCase
  *
  * @author thomas.diesler@jboss.com
- * @version $Revision: $
  */
 public class OSGiDeploymentPackagerTestCase {
+    
     @Test
     public void testValidBundle() throws Exception {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);

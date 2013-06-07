@@ -37,10 +37,14 @@
             <artifactId>arquillian-protocol-jmx</artifactId>
         </dependency>
 
-        <!-- org.jboss.osgi -->
         <dependency>
-            <groupId>org.jboss.osgi.spi</groupId>
-            <artifactId>jbosgi-spi</artifactId>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.metadata</groupId>
+            <artifactId>jbosgi-metadata</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -33,10 +33,9 @@
             <artifactId>arquillian-container-test-spi</artifactId>
         </dependency>
 
-        <!-- org.jboss.osgi -->
         <dependency>
-            <groupId>org.jboss.osgi.spi</groupId>
-            <artifactId>jbosgi-spi</artifactId>
+            <groupId>org.jboss.osgi.metadata</groupId>
+            <artifactId>jbosgi-metadata</artifactId>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
