@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <!-- Parent -->
     <parent>
@@ -8,14 +10,12 @@
         <version>8</version>
     </parent>
 
-    <!-- Model Version -->
-    <modelVersion>4.0.0</modelVersion>
-
-    <!-- Artifact Configuration -->
     <groupId>org.jboss.arquillian.osgi</groupId>
     <artifactId>arquillian-osgi-parent</artifactId>
-    <version>2.0.0.CR4-SNAPSHOT</version>
     <packaging>pom</packaging>
+
+    <version>2.0.0.CR4-SNAPSHOT</version>
+
     <name>Arquillian OSGi</name>
     <description>OSGi Framework integrations for the Arquillian Project</description>
 
@@ -27,12 +27,12 @@
 
     <!-- Properties -->
     <properties>
+        <version.apache.felix>4.2.1</version.apache.felix>
         <version.jboss.arquillian.core>1.0.2.Final</version.jboss.arquillian.core>
-        <version.javax.inject>1</version.javax.inject>
         <version.jboss.logging>3.1.2.GA</version.jboss.logging>
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
         <version.jboss.osgi.framework>3.0.0.CR14</version.jboss.osgi.framework>
-        <version.jboss.osgi.metadata>3.0.0.CR1</version.jboss.osgi.metadata>
+        <version.jboss.osgi.metadata>3.0.0.CR2-SNAPSHOT</version.jboss.osgi.metadata>
         <version.junit>4.8.1</version.junit>
         <version.osgi>5.0.0</version.osgi>
 
@@ -42,6 +42,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.framework</artifactId>
+                <version>${version.apache.felix}</version>
+            </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
@@ -66,11 +71,6 @@
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
                 <version>${version.osgi}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>${version.javax.inject}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -168,11 +168,11 @@
     </build>
 
     <modules>
-        <module>testenricher-osgi</module>
-        <module>protocol-osgi</module>
+        <module>protocol</module>
+        <module>testenricher</module>
         <module>bundle</module>
-        <module>container-common</module>
-        <module>container-embedded</module>
+        <module>container</module>
+        <module>itests</module>
     </modules>
 
 </project>

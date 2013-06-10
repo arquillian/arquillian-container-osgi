@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Set these VM properties in your IDE debugger
+    
+    -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+    -Dtest.archive.directory=${workspace_loc:arquillian-container-osgi-embedded}/target/test-libs 
+    -Djboss.osgi.framework.properties=src/test/resources/jbosgi-framework.properties
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent -->
+    <parent>
+        <groupId>org.jboss.arquillian.osgi</groupId>
+        <artifactId>arquillian-osgi-container</artifactId>
+        <version>2.0.0.CR4-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-container-osgi-embedded</artifactId>
+    <name>Arquillian OSGi Container Embedded</name>
+    
+    <description>OSGi Embedded Container integration</description>
+
+    <!-- Dependencies -->
+    <dependencies>
+
+        <!-- org.jboss.arquillian -->
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.testenricher</groupId>
+            <artifactId>arquillian-testenricher-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.metadata</groupId>
+            <artifactId>jbosgi-metadata</artifactId>
+        </dependency>
+
+        <!-- Provided Dependencies -->
+        <dependency>
+            <groupId>org.jboss.arquillian.osgi</groupId>
+            <artifactId>arquillian-osgi-bundle</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging-api</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+    
+    <!-- Build -->
+    <build>
+        <plugins>
+        </plugins>
+    </build>
+    
+</project>
