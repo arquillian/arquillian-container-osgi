@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.jboss.arquillian.testenricher</groupId>
-    <artifactId>arquillian-testenricher-osgi</artifactId>
+    <artifactId>arquillian-osgi-testenricher</artifactId>
     <name>Arquillian OSGi Enricher</name>
     <description>OSGi Test Enricher</description>
 

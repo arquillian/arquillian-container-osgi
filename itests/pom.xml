@@ -33,7 +33,7 @@
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
-            <artifactId>arquillian-container-osgi-embedded</artifactId>
+            <artifactId>arquillian-osgi-embedded</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
