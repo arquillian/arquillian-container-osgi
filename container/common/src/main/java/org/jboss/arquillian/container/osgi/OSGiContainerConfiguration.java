@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.embedded;
+package org.jboss.arquillian.container.osgi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,15 +31,15 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
 import org.osgi.framework.launch.FrameworkFactory;
 
 /**
- * OSGi embedded configuration
+ * OSGi container configuration
  *
  * @author thomas.diesler@jboss.com
  */
-public class EmbeddedContainerConfiguration implements ContainerConfiguration {
+public class OSGiContainerConfiguration implements ContainerConfiguration {
 
-    private Map<String, String> frameworkConfiguration = new HashMap<String, String>();
-    private String frameworkProperties;
+    private final Map<String, String> frameworkConfiguration = new HashMap<String, String>();
     private FrameworkFactory frameworkFactory;
+    private String frameworkProperties;
 
     @Override
     public void validate() throws ConfigurationException {

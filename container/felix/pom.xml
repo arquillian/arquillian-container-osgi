@@ -18,21 +18,25 @@
     </parent>
 
     <groupId>org.jboss.arquillian.container</groupId>
-    <artifactId>arquillian-osgi-embedded</artifactId>
-    <name>Arquillian OSGi Container Embedded</name>
+    <artifactId>arquillian-osgi-felix</artifactId>
+    <name>Arquillian OSGi Container Felix</name>
     
-    <description>OSGi Embedded Container integration</description>
+    <description>OSGi Felix Container integration</description>
     
     <!-- Dependencies -->
     <dependencies>
 
         <dependency>
-            <groupId>org.jboss.osgi.framework</groupId>
-            <artifactId>jbosgi-framework-core</artifactId>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.main</artifactId>
             <scope>provided</scope>
         </dependency>
         
-        <!-- org.jboss.arquillian -->
         <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
             <artifactId>arquillian-container-spi</artifactId>
@@ -53,8 +57,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.osgi.metadata</groupId>
-            <artifactId>jbosgi-metadata</artifactId>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -74,5 +78,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
 </project>

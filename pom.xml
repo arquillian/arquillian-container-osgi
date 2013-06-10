@@ -32,7 +32,7 @@
         <version.jboss.logging>3.1.2.GA</version.jboss.logging>
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
         <version.jboss.osgi.framework>3.0.0.CR14</version.jboss.osgi.framework>
-        <version.jboss.osgi.metadata>3.0.0.CR2-SNAPSHOT</version.jboss.osgi.metadata>
+        <version.jboss.osgi.metadata>3.0.0.CR1</version.jboss.osgi.metadata>
         <version.junit>4.8.1</version.junit>
         <version.osgi>5.0.0</version.osgi>
 
@@ -45,6 +45,11 @@
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.framework</artifactId>
+                <version>${version.apache.felix}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>org.apache.felix.main</artifactId>
                 <version>${version.apache.felix}</version>
             </dependency>
             <dependency>
@@ -172,7 +177,6 @@
         <module>testenricher</module>
         <module>bundle</module>
         <module>container</module>
-        <module>itests</module>
     </modules>
 
 </project>
