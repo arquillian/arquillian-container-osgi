@@ -18,6 +18,7 @@ package org.jboss.arquillian.container.osgi;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.Level;
@@ -36,6 +37,9 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaD
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
+import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
+import org.jboss.shrinkwrap.resolver.api.maven.filter.StrictFilter;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -47,10 +51,10 @@ import org.osgi.framework.launch.FrameworkFactory;
  *
  * @author thomas.diesler@jboss.com
  */
-public abstract class OSGiDeployableContainer<T extends OSGiContainerConfiguration> implements DeployableContainer<T> {
+public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContainerConfiguration> implements DeployableContainer<T> {
 
     // Provide logging
-    private static final Logger log = Logger.getLogger(OSGiDeployableContainer.class.getName());
+    private static final Logger log = Logger.getLogger(AbstractEmbeddedDeployableContainer.class.getName());
 
     private Framework framework;
     private BundleContext syscontext;
@@ -82,6 +86,19 @@ public abstract class OSGiDeployableContainer<T extends OSGiContainerConfigurati
             syscontext = framework.getBundleContext();
         } catch (BundleException ex) {
             throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
+        }
+    }
+
+    protected void installArquillianBundle() throws LifecycleException {
+        Bundle arqBundle = getInstalledBundle("arquillian-osgi-bundle");
+        if (arqBundle == null) {
+            try {
+                // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
+                String arqVersion = AbstractEmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
+                arqBundle = installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
+            } catch (BundleException ex) {
+                throw new LifecycleException("Cannot install arquillian-osgi-bundle", ex);
+            }
         }
     }
 
@@ -149,6 +166,36 @@ public abstract class OSGiDeployableContainer<T extends OSGiContainerConfigurati
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
         throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
+    }
+
+    private Bundle getInstalledBundle(String symbolicName) {
+        for (Bundle aux : syscontext.getBundles()) {
+            if (symbolicName.equals(aux.getSymbolicName()))
+                return aux;
+        }
+        return null;
+    }
+
+    private Bundle installBundle(String groupId, String artifactId, String version, boolean startBundle) throws BundleException {
+        String filespec = groupId + ":" + artifactId + ":jar:" + version;
+        MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class);
+        File[] resolved = resolver.artifact(filespec).resolveAsFiles(new StrictFilter());
+        if (resolved == null || resolved.length == 0)
+            throw new BundleException("Cannot obtain maven artifact: " + filespec);
+        if (resolved.length > 1)
+            throw new BundleException("Multiple maven artifacts for: " + filespec);
+
+        File bundleFile = resolved[0];
+        try {
+            Bundle bundle = syscontext.installBundle(bundleFile.toURI().toString());
+            if (startBundle == true)
+                bundle.start();
+
+            return bundle;
+        } catch (BundleException ex) {
+            log.log(Level.SEVERE, "Cannot install/start bundle: " + bundleFile, ex);
+        }
+        return null;
     }
 
     private MBeanServerConnection getMBeanServerConnection() {

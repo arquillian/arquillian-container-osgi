@@ -22,7 +22,7 @@ import java.util.Map;
 import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.main.AutoProcessor;
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
-import org.jboss.arquillian.container.osgi.OSGiDeployableContainer;
+import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.launch.Framework;
@@ -33,7 +33,7 @@ import org.osgi.framework.launch.FrameworkFactory;
  *
  * @author thomas.diesler@jboss.com
  */
-public class FelixDeployableContainer extends OSGiDeployableContainer<OSGiContainerConfiguration> {
+public class FelixDeployableContainer extends AbstractEmbeddedDeployableContainer<OSGiContainerConfiguration> {
 
     @Override
     public Class<OSGiContainerConfiguration> getConfigurationClass() {
@@ -58,10 +58,14 @@ public class FelixDeployableContainer extends OSGiDeployableContainer<OSGiContai
     @SuppressWarnings("static-access")
     public void start() throws LifecycleException {
         super.start();
+
+        // Process the auto install settings
         AutoProcessor processor = new AutoProcessor();
         Map<String, String> config = getConfiguration();
         BundleContext syscontext = getSystemContext();
         processor.process(config, syscontext);
+
+        installArquillianBundle();
     }
 
 }
