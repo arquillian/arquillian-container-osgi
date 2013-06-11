@@ -35,6 +35,12 @@
             <artifactId>org.apache.felix.main</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>4.3.0</version><!--$NO-MVN-MAN-VER$-->
+            <scope>provided</scope>
+        </dependency>
         
         <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
