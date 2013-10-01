@@ -17,12 +17,14 @@
 package org.jboss.arquillian.testenricher.osgi;
 
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.osgi.StartLevelAware;
 import org.jboss.arquillian.test.spi.TestEnricher;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.startlevel.BundleStartLevel;
 
@@ -58,11 +60,19 @@ public class OSGiTestEnricher implements TestEnricher {
             if (method.isAnnotationPresent(Deployment.class)) {
                 Deployment andep = method.getAnnotation(Deployment.class);
                 if (andep.managed() && andep.testable() && method.isAnnotationPresent(StartLevelAware.class)) {
-                    int bundleStartLevel = method.getAnnotation(StartLevelAware.class).startLevel();
+                    StartLevelAware startLevelAware = method.getAnnotation(StartLevelAware.class);
+                    int bundleStartLevel = startLevelAware.startLevel();
                     Bundle bundle = getBundle(testCase);
                     log.fine("Setting bundle start level of " + bundle + " to: " + bundleStartLevel);
                     BundleStartLevel startLevel = bundle.adapt(BundleStartLevel.class);
                     startLevel.setStartLevel(bundleStartLevel);
+                    if (startLevelAware.autostart()) {
+                        try {
+                            bundle.start();
+                        } catch (BundleException ex) {
+                            log.log(Level.SEVERE, ex.getMessage(), ex);
+                        }
+                    }
                 }
             }
         }

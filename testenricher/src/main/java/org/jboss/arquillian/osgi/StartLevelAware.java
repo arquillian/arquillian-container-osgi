@@ -19,6 +19,11 @@ import java.lang.annotation.Target;
 public @interface StartLevelAware {
 
     /**
+     * Defines whether the bundle should start automatically
+     */
+    boolean autostart() default false;
+
+    /**
      * Defines the start level for this bundle deployment.
      */
     int startLevel() default 1;
