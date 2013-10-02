@@ -61,16 +61,18 @@ public class OSGiTestEnricher implements TestEnricher {
                 Deployment andep = method.getAnnotation(Deployment.class);
                 if (andep.managed() && andep.testable() && method.isAnnotationPresent(StartLevelAware.class)) {
                     StartLevelAware startLevelAware = method.getAnnotation(StartLevelAware.class);
-                    int bundleStartLevel = startLevelAware.startLevel();
                     Bundle bundle = getBundle(testCase);
-                    log.fine("Setting bundle start level of " + bundle + " to: " + bundleStartLevel);
-                    BundleStartLevel startLevel = bundle.adapt(BundleStartLevel.class);
-                    startLevel.setStartLevel(bundleStartLevel);
-                    if (startLevelAware.autostart()) {
-                        try {
-                            bundle.start();
-                        } catch (BundleException ex) {
-                            log.log(Level.SEVERE, ex.getMessage(), ex);
+                    if (bundle != null) {
+                        int bundleStartLevel = startLevelAware.startLevel();
+                        log.fine("Setting bundle start level of " + bundle + " to: " + bundleStartLevel);
+                        BundleStartLevel startLevel = bundle.adapt(BundleStartLevel.class);
+                        startLevel.setStartLevel(bundleStartLevel);
+                        if (startLevelAware.autostart()) {
+                            try {
+                                bundle.start();
+                            } catch (BundleException ex) {
+                                log.log(Level.SEVERE, ex.getMessage(), ex);
+                            }
                         }
                     }
                 }
