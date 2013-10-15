@@ -58,8 +58,8 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
     private Framework framework;
     private BundleContext syscontext;
-    private Map<String, String> configuration;
     private MBeanServerConnection mbeanServer;
+    private OSGiContainerConfiguration configuration;
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -67,10 +67,14 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     }
 
     @Override
-    public void setup(T conf) {
-        configuration = conf.getFrameworkConfiguration();
-        framework = createFramework(conf);
-        mbeanServer = getMBeanServerConnection();
+    public void setup(T configuration) {
+        this.configuration = configuration;
+        this.framework = createFramework(configuration);
+        this.mbeanServer = getMBeanServerConnection();
+    }
+
+    protected OSGiContainerConfiguration getContainerConfiguration() {
+        return configuration;
     }
 
     protected Framework createFramework(T conf) {
@@ -79,10 +83,18 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         return factory.newFramework(config);
     }
 
+    protected void startFramework() throws BundleException {
+        framework.start();
+    }
+
+    protected void stopFramework() throws BundleException {
+        framework.stop();
+    }
+
     @Override
     public void start() throws LifecycleException {
         try {
-            framework.start();
+            startFramework();
             syscontext = framework.getBundleContext();
         } catch (BundleException ex) {
             throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
@@ -95,15 +107,14 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
             try {
                 // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
                 String arqVersion = AbstractEmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
+                if (arqVersion == null) {
+                    arqVersion = System.getProperty("project.version");
+                }
                 arqBundle = installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
             } catch (BundleException ex) {
                 throw new LifecycleException("Cannot install arquillian-osgi-bundle", ex);
             }
         }
-    }
-
-    public Map<String, String> getConfiguration() {
-        return configuration;
     }
 
     public BundleContext getSystemContext() {
@@ -113,7 +124,7 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     @Override
     public void stop() throws LifecycleException {
         try {
-            framework.stop();
+            stopFramework();
             framework.waitForStop(3000);
         } catch (RuntimeException rte) {
             throw rte;

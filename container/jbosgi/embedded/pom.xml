@@ -3,7 +3,7 @@
     Set these VM properties in your IDE debugger
     
     -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-    -Dtest.archive.directory=${workspace_loc:arquillian-container-osgi-embedded}/target/test-libs 
+    -Dtest.archive.directory=${workspace_loc:arquillian-osgi-jbosgi-embedded}/target/test-libs 
     -Djboss.osgi.framework.properties=src/test/resources/jbosgi-framework.properties
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -12,15 +12,13 @@
     <!-- Parent -->
     <parent>
         <groupId>org.jboss.arquillian.osgi</groupId>
-        <artifactId>arquillian-osgi-container</artifactId>
+        <artifactId>arquillian-osgi-jbosgi</artifactId>
         <version>2.1.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.arquillian.container</groupId>
-    <artifactId>arquillian-osgi-embedded</artifactId>
-    <name>Arquillian OSGi Container Embedded</name>
+    <artifactId>arquillian-osgi-jbosgi-embedded</artifactId>
+    <name>Arquillian OSGi :: Container :: JBoss :: Embedded</name>
     
-    <description>OSGi Embedded Container integration</description>
     
     <!-- Dependencies -->
     <dependencies>
@@ -37,17 +35,17 @@
             <artifactId>arquillian-container-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.container</groupId>
-            <artifactId>arquillian-container-osgi</artifactId>
+            <groupId>org.jboss.arquillian.osgi</groupId>
+            <artifactId>arquillian-osgi-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.testenricher</groupId>
+            <groupId>org.jboss.arquillian.osgi</groupId>
             <artifactId>arquillian-osgi-testenricher</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.protocol</groupId>
+            <groupId>org.jboss.arquillian.osgi</groupId>
             <artifactId>arquillian-osgi-protocol</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -10,8 +10,8 @@
         <version>2.1.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>arquillian-osgi-felix</artifactId>
-    <name>Arquillian OSGi :: Container :: Felix</name>
+    <artifactId>arquillian-osgi-karaf</artifactId>
+    <name>Arquillian OSGi :: Container :: Karaf</name>
     <packaging>pom</packaging>
 
 	<modules>
@@ -28,4 +28,5 @@
             </plugin>
 		</plugins>
 	</build>
+
 </project>

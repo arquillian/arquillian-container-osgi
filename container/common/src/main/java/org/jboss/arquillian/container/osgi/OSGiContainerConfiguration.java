@@ -43,20 +43,20 @@ public class OSGiContainerConfiguration implements ContainerConfiguration {
 
     @Override
     public void validate() throws ConfigurationException {
-        if (frameworkProperties == null)
-            throw new ConfigurationException("Cannot obtain frameworkProperties");
 
         // Get the framework configuration
-        File file = new File(frameworkProperties);
-        try {
-            FileInputStream input = new FileInputStream(file);
-            Properties props = new Properties();
-            props.load(input);
-            for (String key : props.stringPropertyNames()) {
-                frameworkConfiguration.put(key, props.getProperty(key));
+        if (frameworkProperties != null) {
+            File file = new File(frameworkProperties);
+            try {
+                FileInputStream input = new FileInputStream(file);
+                Properties props = new Properties();
+                props.load(input);
+                for (String key : props.stringPropertyNames()) {
+                    frameworkConfiguration.put(key, props.getProperty(key));
+                }
+            } catch (IOException ex) {
+                throw new ConfigurationException("Cannot read: " + file.getAbsolutePath());
             }
-        } catch (IOException ex) {
-            throw new ConfigurationException("Cannot read: " + file.getAbsolutePath());
         }
 
         // Get the {@link FrameworkFactory}

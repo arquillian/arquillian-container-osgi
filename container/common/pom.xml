@@ -9,9 +9,8 @@
         <version>2.1.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.arquillian.container</groupId>
-    <artifactId>arquillian-container-osgi</artifactId>
-    <name>Arquillian OSGi Container Common</name>
+    <artifactId>arquillian-osgi-common</artifactId>
+    <name>Arquillian OSGi :: Container :: Common</name>
 
     <!-- Properties -->
     <properties>
@@ -60,4 +59,14 @@
         </dependency>
     </dependencies>
 
+	<build>
+		<plugins>
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <configLocation>${basedir}/../../checkstyle.xml</configLocation>
+                </configuration>
+            </plugin>
+		</plugins>
+	</build>
 </project>
