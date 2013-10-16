@@ -18,7 +18,6 @@ package org.jboss.arquillian.container.osgi.embedded;
 
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 
 /**
  * OSGi embedded container
@@ -30,11 +29,5 @@ public class EmbeddedDeployableContainer extends AbstractEmbeddedDeployableConta
     @Override
     public Class<OSGiContainerConfiguration> getConfigurationClass() {
         return OSGiContainerConfiguration.class;
-    }
-
-    @Override
-    public void start() throws LifecycleException {
-        super.start();
-        installArquillianBundle();
     }
 }

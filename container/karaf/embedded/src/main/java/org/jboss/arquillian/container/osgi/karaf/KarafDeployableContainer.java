@@ -18,7 +18,7 @@ package org.jboss.arquillian.container.osgi.karaf;
 
 import org.apache.karaf.main.Main;
 import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 
@@ -55,21 +55,16 @@ public class KarafDeployableContainer extends AbstractEmbeddedDeployableContaine
     }
 
     @Override
-    protected void startFramework() throws BundleException {
-        // do nothing
+    protected BundleContext startFramework() throws BundleException {
+        return karaf.getFramework().getBundleContext();
     }
 
     @Override
     protected void stopFramework() throws BundleException {
-        // do nothing
-    }
-
-    @Override
-    public void stop() throws LifecycleException {
         try {
             karaf.destroy();
         } catch (Exception ex) {
-            throw new LifecycleException("Cannot stop Karaf", ex);
+            throw new BundleException("Cannot stop Karaf", ex);
         }
     }
 }

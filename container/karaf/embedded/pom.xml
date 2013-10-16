@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     Set these VM properties in your IDE debugger
-    
-    -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-    -Dtest.archive.directory=${workspace_loc:arquillian-container-osgi-embedded}/target/test-libs 
-    -Djboss.osgi.framework.properties=src/test/resources/jbosgi-framework.properties
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -19,6 +15,12 @@
     <artifactId>arquillian-osgi-karaf-embedded</artifactId>
     <name>Arquillian OSGi :: Container :: Karaf :: Embedded</name>
 
+    <!-- Properties -->
+    <properties>
+        <karaf.felix.version>4.0.3</karaf.felix.version>
+        <karaf.home>${project.build.directory}/apache-karaf-${version.apache.karaf}</karaf.home>
+    </properties>
+    
     <!-- Dependencies -->
     <dependencies>
 		<dependency>
@@ -43,8 +45,9 @@
         
         <!-- Provided Dependencies -->
         <dependency>
-            <groupId>org.jboss.osgi.framework</groupId>
-            <artifactId>jbosgi-framework-core</artifactId>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>${karaf.felix.version}</version> <!--$NO-MVN-MAN-VER$-->
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -59,42 +62,40 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 	<build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
 		<plugins>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>process-test-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<copy todir="${project.build.directory}">
-									<fileset dir="${basedir}" includes="karaf/**"/>
-								</copy>
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>unpack-karaf</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.apache.karaf</groupId>
+                                    <artifactId>apache-karaf</artifactId>
+                                    <version>${version.apache.karaf}</version>
+                                    <classifier>minimal</classifier>
+                                    <type>tar.gz</type>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-arquillian-bundle</id>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>copy</goal>
@@ -102,19 +103,36 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.jboss.osgi.framework</groupId>
-                                    <artifactId>jbosgi-framework-aggregated</artifactId>
-                                    <version>${version.jboss.osgi.framework}</version>
-                                    <classifier>all</classifier>
-                                    <outputDirectory>${project.build.directory}/karaf/framework</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
                                     <groupId>org.jboss.arquillian.osgi</groupId>
                                     <artifactId>arquillian-osgi-bundle</artifactId>
                                     <version>${project.version}</version>
-                                    <outputDirectory>${project.build.directory}/karaf/system/org/jboss/arquillian/osgi</outputDirectory>
+                                    <outputDirectory>${karaf.home}/system/org/jboss/arquillian/osgi</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo file="${karaf.home}/etc/startup.properties" append="true">
+#
+# Arquillian OSGi Integration
+# 
+org/jboss/arquillian/osgi/arquillian-osgi-bundle-${project.version}.jar=40
+                                </echo>
+                                <echo file="${karaf.home}/etc/custom.properties" append="true">
+org.osgi.framework.storage.clean=onFirstInit
+                                </echo>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
@@ -124,9 +142,6 @@
                 <configuration>
                     <argLine>${surefire.system.args}</argLine>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <systemPropertyVariables>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 		</plugins>

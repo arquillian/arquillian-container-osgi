@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,9 +42,11 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.util.tracker.BundleTracker;
 
 /**
  * OSGi deployable container
@@ -81,8 +85,13 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         return factory.newFramework(config);
     }
 
-    protected void startFramework() throws BundleException {
+    protected Framework getFramework() {
+        return framework;
+    }
+
+    protected BundleContext startFramework() throws BundleException {
         framework.start();
+        return framework.getBundleContext();
     }
 
     protected void stopFramework() throws BundleException {
@@ -90,12 +99,36 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     }
 
     @Override
-    public void start() throws LifecycleException {
+    public final void start() throws LifecycleException {
         try {
-            startFramework();
-            syscontext = framework.getBundleContext();
+            syscontext = startFramework();
         } catch (BundleException ex) {
             throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
+        }
+
+        installArquillianBundle();
+
+        // Wait for the arquillian-osgi-bundle to become ACTIVE
+        final CountDownLatch latch = new CountDownLatch(1);
+        BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(syscontext, Bundle.ACTIVE, null) {
+            @Override
+            public Bundle addingBundle(Bundle bundle, BundleEvent event) {
+                super.addingBundle(bundle, event);
+                if ("arquillian-osgi-bundle".equals(bundle.getSymbolicName())) {
+                    latch.countDown();
+                }
+                return bundle;
+            }
+
+        };
+        tracker.open();
+
+        try {
+            if (!latch.await(30, TimeUnit.SECONDS)) {
+                throw new LifecycleException("Framework startup timeout");
+            }
+        } catch (InterruptedException ex) {
+            throw new LifecycleException("Framework startup interupted", ex);
         }
     }
 
@@ -120,7 +153,7 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     }
 
     @Override
-    public void stop() throws LifecycleException {
+    public final void stop() throws LifecycleException {
         try {
             stopFramework();
             framework.waitForStop(3000);

@@ -4,7 +4,7 @@
 
 	<container qualifier="jboss" default="true">
 		<configuration>
-			<property name="karafHome">target/karaf</property>
+			<property name="karafHome">target/apache-karaf-${version.apache.karaf}</property>
 		</configuration>
 	</container>
 </arquillian>

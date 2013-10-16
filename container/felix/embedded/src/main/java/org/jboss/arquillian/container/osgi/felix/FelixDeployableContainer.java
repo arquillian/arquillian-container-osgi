@@ -23,7 +23,8 @@ import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.main.AutoProcessor;
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
@@ -54,16 +55,13 @@ public class FelixDeployableContainer extends AbstractEmbeddedDeployableContaine
     }
 
     @Override
-    @SuppressWarnings("static-access")
-    public void start() throws LifecycleException {
-        super.start();
+    protected BundleContext startFramework() throws BundleException {
+        BundleContext bundleContext = super.startFramework();
 
         // Process the auto install settings
-        AutoProcessor processor = new AutoProcessor();
         Map<String, String> config = getContainerConfiguration().getFrameworkConfiguration();
-        processor.process(config, getSystemContext());
+        AutoProcessor.process(config, bundleContext);
 
-        installArquillianBundle();
+        return bundleContext;
     }
-
 }

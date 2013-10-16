@@ -61,10 +61,9 @@ public class OSGiContainerConfiguration implements ContainerConfiguration {
 
         // Get the {@link FrameworkFactory}
         Iterator<FrameworkFactory> factories = ServiceLoader.load(FrameworkFactory.class).iterator();
-        if (!factories.hasNext())
-            throw new ConfigurationException("Cannot obtain " + FrameworkFactory.class.getName() + " service");
-
-        frameworkFactory = factories.next();
+        if (factories.hasNext()) {
+            frameworkFactory = factories.next();
+        }
     }
 
     public String getFrameworkProperties() {
