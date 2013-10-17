@@ -18,6 +18,8 @@ package org.jboss.arquillian.container.osgi.felix;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.felix.framework.Logger;
 import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.main.AutoProcessor;
 import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
@@ -26,8 +28,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * FelixDeployableContainer
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FelixDeployableContainer extends AbstractEmbeddedDeployableContainer<OSGiContainerConfiguration> {
 
-    final Logger log = LoggerFactory.getLogger(FelixDeployableContainer.class.getPackage().getName());
+    private final Logger logger = new FelixLogger();
 
     @Override
     public Class<OSGiContainerConfiguration> getConfigurationClass() {
@@ -50,7 +50,7 @@ public class FelixDeployableContainer extends AbstractEmbeddedDeployableContaine
         // Add the logger if not given
         Map config = new HashMap(conf.getFrameworkConfiguration());
         if (config.get(FelixConstants.LOG_LOGGER_PROP) == null) {
-            config.put(FelixConstants.LOG_LOGGER_PROP, new FelixLogger());
+            config.put(FelixConstants.LOG_LOGGER_PROP, logger);
         }
 
         FrameworkFactory factory = conf.getFrameworkFactory();
@@ -66,5 +66,28 @@ public class FelixDeployableContainer extends AbstractEmbeddedDeployableContaine
         AutoProcessor.process(config, bundleContext);
 
         return bundleContext;
+    }
+
+    @Override
+    protected ContainerLogger getLogger() {
+        return new AbstractContainerLogger() {
+            @Override
+            public void log(Level level, String message, Throwable th) {
+                switch (level) {
+                case DEBUG:
+                    logger.log(Logger.LOG_DEBUG, message, th);
+                    break;
+                case INFO:
+                    logger.log(Logger.LOG_INFO, message, th);
+                    break;
+                case WARN:
+                    logger.log(Logger.LOG_WARNING, message, th);
+                    break;
+                case ERROR:
+                    logger.log(Logger.LOG_ERROR, message, th);
+                    break;
+                }
+            }
+        };
     }
 }

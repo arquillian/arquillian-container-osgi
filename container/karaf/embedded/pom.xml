@@ -42,6 +42,10 @@
             <artifactId>arquillian-osgi-testenricher</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
         
         <!-- Provided Dependencies -->
         <dependency>
@@ -149,7 +153,9 @@ org.osgi.framework.storage.clean=onFirstInit
                 <configuration>
                     <argLine>${surefire.system.args}</argLine>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    <log4j.configuration>file://${basedir}/src/test/resources/logging.properties</log4j.configuration>
+                    <systemPropertyVariables>
+                        <log4j.configuration>file://${basedir}/src/test/resources/logging.properties</log4j.configuration>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 		</plugins>

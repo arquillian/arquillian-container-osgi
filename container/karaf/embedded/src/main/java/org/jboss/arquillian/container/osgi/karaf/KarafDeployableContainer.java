@@ -21,6 +21,8 @@ import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * KarafDeployableContainer
@@ -28,6 +30,8 @@ import org.osgi.framework.launch.Framework;
  * @author thomas.diesler@jboss.com
  */
 public class KarafDeployableContainer extends AbstractEmbeddedDeployableContainer<KarafContainerConfiguration> {
+
+    static final Logger logger = LoggerFactory.getLogger(KarafDeployableContainer.class.getPackage().getName());
 
     private Main karaf;
 
@@ -66,5 +70,28 @@ public class KarafDeployableContainer extends AbstractEmbeddedDeployableContaine
         } catch (Exception ex) {
             throw new BundleException("Cannot stop Karaf", ex);
         }
+    }
+
+    @Override
+    protected ContainerLogger getLogger() {
+        return new AbstractContainerLogger() {
+            @Override
+            public void log(Level level, String message, Throwable th) {
+                switch (level) {
+                case DEBUG:
+                    logger.debug(message, th);
+                    break;
+                case INFO:
+                    logger.info(message, th);
+                    break;
+                case WARN:
+                    logger.warn(message, th);
+                    break;
+                case ERROR:
+                    logger.error(message, th);
+                    break;
+                }
+            }
+        };
     }
 }

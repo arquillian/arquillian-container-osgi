@@ -1,1 +1,1 @@
-org.jboss.arquillian.container.osgi.embedded.EmbeddedContainerExtension
+org.jboss.arquillian.osgi.jbosgi.JBOSGiEmbeddedContainerExtension

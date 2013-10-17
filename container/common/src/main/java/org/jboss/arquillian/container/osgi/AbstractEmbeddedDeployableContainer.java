@@ -46,8 +46,6 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.util.tracker.BundleTracker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * OSGi deployable container
@@ -56,8 +54,34 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContainerConfiguration> implements DeployableContainer<T> {
 
-    final Logger log = LoggerFactory.getLogger(AbstractEmbeddedDeployableContainer.class.getPackage().getName());
+    public interface ContainerLogger {
 
+        enum Level {
+            DEBUG, INFO, WARN, ERROR
+        }
+
+        void debug(String message);
+
+        void debug(String message, Throwable th);
+
+        void info(String message);
+
+        void info(String message, Throwable th);
+
+        void error(String message);
+
+        void error(String message, Throwable th);
+
+        void warn(String message);
+
+        void warn(String message, Throwable th);
+
+        void log(Level level, String message);
+
+        void log(Level level, String message, Throwable th);
+    }
+
+    private ContainerLogger log;
     private Framework framework;
     private BundleContext syscontext;
     private MBeanServerConnection mbeanServer;
@@ -71,12 +95,24 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     @Override
     public void setup(T configuration) {
         this.configuration = configuration;
+        this.log = getLogger();
         this.framework = createFramework(configuration);
         this.mbeanServer = getMBeanServerConnection();
     }
 
     protected OSGiContainerConfiguration getContainerConfiguration() {
         return configuration;
+    }
+
+    protected ContainerLogger getLogger() {
+        return new AbstractContainerLogger() {
+            @Override
+            public void log(Level level, String message, Throwable th) {
+                System.out.println(message);
+                if (th != null)
+                    th.printStackTrace();
+            }
+        };
     }
 
     protected Framework createFramework(T conf) {
@@ -191,6 +227,7 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
             String location = archive.getName();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+            log.info("Installing bundle: " + location);
             installBundle(location, inputStream);
 
         } catch (RuntimeException rte) {
@@ -205,7 +242,10 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
         try {
-            Bundle bundle = syscontext.getBundle(archive.getName());
+            String location = archive.getName();
+            log.info("Uninstalling bundle: " + location);
+
+            Bundle bundle = syscontext.getBundle(location);
             if (bundle != null && bundle.getState() != Bundle.UNINSTALLED) {
                 uninstallBundle(bundle);
             }
@@ -248,8 +288,10 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
             throw new BundleException("Multiple maven artifacts for: " + filespec);
         }
 
+        String location = bundleFile.toURI().toString();
+        log.info("Installing bundle: " + location);
         try {
-            Bundle bundle = syscontext.installBundle(bundleFile.toURI().toString());
+            Bundle bundle = installBundle(location, null);
             if (startBundle == true)
                 bundle.start();
 
@@ -279,4 +321,53 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
         return mbeanServer;
     }
+
+    public abstract static class AbstractContainerLogger implements ContainerLogger {
+
+        @Override
+        public void debug(String message) {
+            log(Level.DEBUG, message, null);
+        }
+
+        @Override
+        public void debug(String message, Throwable th) {
+            log(Level.DEBUG, message, th);
+        }
+
+        @Override
+        public void info(String message) {
+            log(Level.INFO, message, null);
+        }
+
+        @Override
+        public void info(String message, Throwable th) {
+            log(Level.INFO, message, th);
+        }
+
+        @Override
+        public void warn(String message) {
+            log(Level.WARN, message, null);
+        }
+
+        @Override
+        public void warn(String message, Throwable th) {
+            log(Level.WARN, message, th);
+        }
+
+        @Override
+        public void error(String message) {
+            log(Level.ERROR, message, null);
+        }
+
+        @Override
+        public void error(String message, Throwable th) {
+            log(Level.ERROR, message, th);
+        }
+
+        @Override
+        public void log(Level level, String message) {
+            log(level, message, null);
+        }
+    }
+
 }

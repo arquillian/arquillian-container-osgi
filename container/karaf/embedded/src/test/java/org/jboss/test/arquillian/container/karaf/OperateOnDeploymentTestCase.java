@@ -93,7 +93,6 @@ public class OperateOnDeploymentTestCase {
     @Test
     @OperateOnDeployment(BUNDLE_A)
     public void testBundleA(@ArquillianResource Bundle bundle) throws Exception {
-        Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
         Assert.assertEquals(BUNDLE_A, bundle.getLocation());
         Assert.assertEquals(BUNDLE_A, bundle.getSymbolicName());
     }
@@ -101,7 +100,6 @@ public class OperateOnDeploymentTestCase {
     @Test
     @OperateOnDeployment(BUNDLE_B)
     public void testBundleB(@ArquillianResource Bundle bundle) throws Exception {
-        Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
         Assert.assertEquals(BUNDLE_B, bundle.getLocation());
         Assert.assertEquals(BUNDLE_B, bundle.getSymbolicName());
     }

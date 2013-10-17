@@ -14,20 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.embedded;
+package org.jboss.arquillian.osgi.jbosgi;
 
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
+import org.jboss.logging.Logger;
 
 /**
  * OSGi embedded container
  *
  * @author thomas.diesler@jboss.com
  */
-public class EmbeddedDeployableContainer extends AbstractEmbeddedDeployableContainer<OSGiContainerConfiguration> {
+public class JBOSGiEmbeddedDeployableContainer extends AbstractEmbeddedDeployableContainer<OSGiContainerConfiguration> {
+
+    private final Logger logger = Logger.getLogger(JBOSGiEmbeddedDeployableContainer.class.getPackage().getName());
 
     @Override
     public Class<OSGiContainerConfiguration> getConfigurationClass() {
         return OSGiContainerConfiguration.class;
+    }
+
+    @Override
+    protected ContainerLogger getLogger() {
+        return new AbstractContainerLogger() {
+            @Override
+            public void log(Level level, String message, Throwable th) {
+                switch (level) {
+                case DEBUG:
+                    logger.debug(message, th);
+                    break;
+                case INFO:
+                    logger.info(message, th);
+                    break;
+                case WARN:
+                    logger.warn(message, th);
+                    break;
+                case ERROR:
+                    logger.error(message, th);
+                    break;
+                }
+            }
+        };
     }
 }
