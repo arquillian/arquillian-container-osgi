@@ -18,15 +18,16 @@ package org.jboss.arquillian.container.osgi.felix;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.main.AutoProcessor;
-import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
+import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * FelixDeployableContainer
@@ -34,6 +35,8 @@ import org.osgi.framework.launch.FrameworkFactory;
  * @author thomas.diesler@jboss.com
  */
 public class FelixDeployableContainer extends AbstractEmbeddedDeployableContainer<OSGiContainerConfiguration> {
+
+    final Logger log = LoggerFactory.getLogger(FelixDeployableContainer.class.getPackage().getName());
 
     @Override
     public Class<OSGiContainerConfiguration> getConfigurationClass() {

@@ -19,12 +19,11 @@ package org.jboss.arquillian.container.osgi;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
@@ -47,6 +46,8 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.util.tracker.BundleTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * OSGi deployable container
@@ -55,8 +56,7 @@ import org.osgi.util.tracker.BundleTracker;
  */
 public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContainerConfiguration> implements DeployableContainer<T> {
 
-    // Provide logging
-    private static final Logger log = Logger.getLogger(AbstractEmbeddedDeployableContainer.class.getName());
+    final Logger log = LoggerFactory.getLogger(AbstractEmbeddedDeployableContainer.class.getPackage().getName());
 
     private Framework framework;
     private BundleContext syscontext;
@@ -81,6 +81,8 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
     protected Framework createFramework(T conf) {
         FrameworkFactory factory = conf.getFrameworkFactory();
+        if (factory == null)
+            throw new IllegalStateException("Cannot obtain " + FrameworkFactory.class.getName());
         Map<String, String> config = conf.getFrameworkConfiguration();
         return factory.newFramework(config);
     }
@@ -98,8 +100,19 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         framework.stop();
     }
 
+    protected Bundle installBundle(String location, InputStream inputStream) throws BundleException {
+        return syscontext.installBundle(location, inputStream);
+    }
+
+    protected void uninstallBundle(Bundle bundle) throws BundleException {
+        bundle.uninstall();
+    }
+
     @Override
     public final void start() throws LifecycleException {
+
+        log.debug("Starting OSGi embedded container: " + getClass().getName());
+
         try {
             syscontext = startFramework();
         } catch (BundleException ex) {
@@ -130,6 +143,8 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         } catch (InterruptedException ex) {
             throw new LifecycleException("Framework startup interupted", ex);
         }
+
+        log.info("Started OSGi embedded container: " + getClass().getName());
     }
 
     protected void installArquillianBundle() throws LifecycleException {
@@ -139,7 +154,7 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
                 // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
                 String arqVersion = AbstractEmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
                 if (arqVersion == null) {
-                    arqVersion = System.getProperty("project.version");
+                    arqVersion = System.getProperty("arquillian.osgi.version");
                 }
                 arqBundle = installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
             } catch (BundleException ex) {
@@ -174,8 +189,9 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             exporter.exportTo(baos);
 
+            String location = archive.getName();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
-            syscontext.installBundle(archive.getName(), inputStream);
+            installBundle(location, inputStream);
 
         } catch (RuntimeException rte) {
             throw rte;
@@ -189,14 +205,12 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
         try {
-            for (Bundle aux : syscontext.getBundles()) {
-                if (aux.getLocation().equals(archive.getName()) && aux.getState() != Bundle.UNINSTALLED) {
-                    aux.uninstall();
-                    break;
-                }
+            Bundle bundle = syscontext.getBundle(archive.getName());
+            if (bundle != null && bundle.getState() != Bundle.UNINSTALLED) {
+                uninstallBundle(bundle);
             }
         } catch (BundleException ex) {
-            log.log(Level.SEVERE, "Cannot undeploy: " + archive, ex);
+            log.warn("Cannot undeploy: " + archive, ex);
         }
     }
 
@@ -220,13 +234,20 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
     private Bundle installBundle(String groupId, String artifactId, String version, boolean startBundle) throws BundleException {
         String filespec = groupId + ":" + artifactId + ":jar:" + version;
-        File[] resolved = Maven.resolver().resolve(filespec).withTransitivity().asFile();
+        File[] resolved = Maven.resolver().resolve(filespec).withoutTransitivity().asFile();
         if (resolved == null || resolved.length == 0)
             throw new BundleException("Cannot obtain maven artifact: " + filespec);
-        if (resolved.length > 1)
-            throw new BundleException("Multiple maven artifacts for: " + filespec);
 
-        File bundleFile = resolved[0];
+        File bundleFile;
+        if (resolved.length == 1) {
+            bundleFile = resolved[0];
+        } else if (version.endsWith("SNAPSHOT")) {
+            // [TODO] process multiple snapshots
+            throw new BundleException("Multiple maven artifacts for: " + filespec);
+        } else {
+            throw new BundleException("Multiple maven artifacts for: " + filespec);
+        }
+
         try {
             Bundle bundle = syscontext.installBundle(bundleFile.toURI().toString());
             if (startBundle == true)
@@ -234,7 +255,7 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
             return bundle;
         } catch (BundleException ex) {
-            log.log(Level.SEVERE, "Cannot install/start bundle: " + bundleFile, ex);
+            log.error("Cannot install/start bundle: " + bundleFile, ex);
         }
         return null;
     }
@@ -244,15 +265,15 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
         ArrayList<MBeanServer> serverArr = MBeanServerFactory.findMBeanServer(null);
         if (serverArr.size() > 1)
-            log.warning("Multiple MBeanServer instances: " + serverArr);
+            log.warn("Multiple MBeanServer instances: " + serverArr);
 
         if (serverArr.size() > 0) {
             mbeanServer = serverArr.get(0);
-            log.fine("Found MBeanServer: " + mbeanServer.getDefaultDomain());
+            log.debug("Found MBeanServer: " + mbeanServer.getDefaultDomain());
         }
 
         if (mbeanServer == null) {
-            log.fine("No MBeanServer, create one ...");
+            log.debug("No MBeanServer, create one ...");
             mbeanServer = MBeanServerFactory.createMBeanServer();
         }
 

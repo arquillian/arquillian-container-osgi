@@ -27,7 +27,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.test.arquillian.container.osgi.bundle.SimpleService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +48,6 @@ public class OperateOnDeploymentTestCase {
     public static Archive<?> deployment() {
         // The default deployment is needed if we don't want to @RunAsClient
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests");
-        archive.addClasses(SimpleService.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -65,14 +63,12 @@ public class OperateOnDeploymentTestCase {
     @Deployment(name = BUNDLE_A)
     public static Archive<?> deploymentA() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
-        archive.addClasses(SimpleService.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addExportPackages(SimpleService.class);
                 return builder.openStream();
             }
         });
@@ -88,7 +84,6 @@ public class OperateOnDeploymentTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(SimpleService.class);
                 return builder.openStream();
             }
         });

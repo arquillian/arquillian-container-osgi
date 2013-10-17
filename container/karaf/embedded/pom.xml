@@ -62,6 +62,11 @@
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 	<build>
@@ -95,7 +100,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-arquillian-bundle</id>
+                        <id>copy-bundles</id>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>copy</goal>
@@ -106,7 +111,7 @@
                                     <groupId>org.jboss.arquillian.osgi</groupId>
                                     <artifactId>arquillian-osgi-bundle</artifactId>
                                     <version>${project.version}</version>
-                                    <outputDirectory>${karaf.home}/system/org/jboss/arquillian/osgi</outputDirectory>
+                                    <outputDirectory>${karaf.home}/system/org/jboss/arquillian/osgi/arquillian-osgi-bundle/${project.version}</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -127,9 +132,11 @@
 #
 # Arquillian OSGi Integration
 # 
-org/jboss/arquillian/osgi/arquillian-osgi-bundle-${project.version}.jar=40
+org/jboss/arquillian/osgi/arquillian-osgi-bundle/${project.version}/arquillian-osgi-bundle-${project.version}.jar=40
                                 </echo>
+                                
                                 <echo file="${karaf.home}/etc/custom.properties" append="true">
+# Clean the persitent bundle store on Framework INIT                                
 org.osgi.framework.storage.clean=onFirstInit
                                 </echo>
                             </target>
@@ -142,6 +149,7 @@ org.osgi.framework.storage.clean=onFirstInit
                 <configuration>
                     <argLine>${surefire.system.args}</argLine>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <log4j.configuration>file://${basedir}/src/test/resources/logging.properties</log4j.configuration>
                 </configuration>
             </plugin>
 		</plugins>

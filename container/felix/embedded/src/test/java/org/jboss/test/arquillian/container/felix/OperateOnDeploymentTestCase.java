@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.test.arquillian.container.osgi;
+package org.jboss.test.arquillian.container.felix;
 
 import java.io.InputStream;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -30,8 +31,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
  * Test multiple bundle deployments
@@ -40,13 +39,10 @@ import org.osgi.framework.wiring.FrameworkWiring;
  * @since 16-Oct-2012
  */
 @RunWith(Arquillian.class)
-public class MultipleBundleDeploymentsTestCase {
+public class OperateOnDeploymentTestCase {
 
     static final String BUNDLE_A = "bundle-a";
     static final String BUNDLE_B = "bundle-b";
-
-    @ArquillianResource
-    BundleContext context;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -58,14 +54,13 @@ public class MultipleBundleDeploymentsTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(FrameworkWiring.class);
                 return builder.openStream();
             }
         });
         return archive;
     }
 
-    @Deployment(name = BUNDLE_A, testable = false)
+    @Deployment(name = BUNDLE_A)
     public static Archive<?> deploymentA() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
         archive.setManifest(new Asset() {
@@ -80,7 +75,7 @@ public class MultipleBundleDeploymentsTestCase {
         return archive;
     }
 
-    @Deployment(name = BUNDLE_B, testable = false)
+    @Deployment(name = BUNDLE_B)
     public static Archive<?> deploymentB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B);
         archive.setManifest(new Asset() {
@@ -96,11 +91,18 @@ public class MultipleBundleDeploymentsTestCase {
     }
 
     @Test
-    public void testBundleDeployments() throws Exception {
-        Bundle bundleA = context.getBundle(BUNDLE_A);
-        Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
+    @OperateOnDeployment(BUNDLE_A)
+    public void testBundleA(@ArquillianResource Bundle bundle) throws Exception {
+        Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+        Assert.assertEquals(BUNDLE_A, bundle.getLocation());
+        Assert.assertEquals(BUNDLE_A, bundle.getSymbolicName());
+    }
 
-        Bundle bundleB = context.getBundle(BUNDLE_B);
-        Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleB.getState());
+    @Test
+    @OperateOnDeployment(BUNDLE_B)
+    public void testBundleB(@ArquillianResource Bundle bundle) throws Exception {
+        Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+        Assert.assertEquals(BUNDLE_B, bundle.getLocation());
+        Assert.assertEquals(BUNDLE_B, bundle.getSymbolicName());
     }
 }

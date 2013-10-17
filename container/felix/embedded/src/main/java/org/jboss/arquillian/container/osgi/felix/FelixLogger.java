@@ -21,15 +21,16 @@
  */
 package org.jboss.arquillian.container.osgi.felix;
 
-import org.jboss.logging.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An integration with the Felix Logger.
  *
  * This Logger gets registered with the Felix framework and
- * delegates framework log messages to jboss-logging.
+ * delegates framework log messages to slf4j.
  *
  * @author thomas.diesler@jboss.com
  * @since 04-Mar-2009
@@ -37,7 +38,7 @@ import org.osgi.framework.ServiceReference;
 public class FelixLogger extends org.apache.felix.framework.Logger {
 
     // Provide logging
-    private static final Logger log = Logger.getLogger(FelixLogger.class);
+    private final Logger log = LoggerFactory.getLogger(FelixLogger.class.getPackage().getName());
 
     public FelixLogger() {
         setLogLevel(LOG_DEBUG);

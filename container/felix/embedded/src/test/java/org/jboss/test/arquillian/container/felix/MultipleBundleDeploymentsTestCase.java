@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.test.arquillian.container.osgi;
+package org.jboss.test.arquillian.container.felix;
 
 import java.io.InputStream;
 
@@ -98,9 +98,9 @@ public class MultipleBundleDeploymentsTestCase {
     @Test
     public void testBundleDeployments() throws Exception {
         Bundle bundleA = context.getBundle(BUNDLE_A);
-        Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
+        Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
 
         Bundle bundleB = context.getBundle(BUNDLE_B);
-        Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleB.getState());
+        Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleB.getState());
     }
 }

@@ -23,6 +23,9 @@ package org.jboss.arquillian.osgi;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
@@ -37,7 +40,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
-import org.osgi.framework.ServiceReference;
 
 /**
  * This is the Arquillian {@link BundleActivator}.
@@ -52,20 +54,42 @@ public class ArquillianBundleActivator implements BundleActivator {
     private static Logger log = Logger.getLogger(ArquillianBundleActivator.class.getName());
 
     private JMXTestRunner testRunner;
+    private long arqBundleId;
 
     public void start(final BundleContext context) throws Exception {
 
+        arqBundleId = context.getBundle().getBundleId();
+
         final BundleContext syscontext = context.getBundle(0).getBundleContext();
         final TestClassLoader testClassLoader = new TestClassLoader() {
+
             @Override
             public Class<?> loadTestClass(String className) throws ClassNotFoundException {
-                Bundle arqBundle = context.getBundle();
-                return arqBundle.loadClass(className);
+                String namePath = className.replace('.', '/') + ".class";
+
+                // Get all installed bundles and remove some
+                List<Bundle> bundles = new ArrayList<Bundle>(Arrays.asList(syscontext.getBundles()));
+                Iterator<Bundle> iterator = bundles.iterator();
+                while(iterator.hasNext()) {
+                    Bundle aux = iterator.next();
+                    if (aux.getBundleId() <= arqBundleId || aux.getState() == Bundle.UNINSTALLED) {
+                        iterator.remove();
+                    }
+                }
+
+                // Load the the test class from the bundle that contains the entry
+                for (Bundle aux : bundles) {
+                    if (aux.getEntry(namePath) != null) {
+                        return aux.loadClass(className);
+                    }
+                }
+
+                throw new ClassNotFoundException("Test '" + className + "' not found in: " + bundles);
             }
         };
 
         // Register the JMXTestRunner
-        MBeanServer mbeanServer = getMBeanServer(context);
+        MBeanServer mbeanServer = findOrCreateMBeanServer();
         testRunner = new JMXTestRunner(testClassLoader) {
             @Override
             public byte[] runTestMethod(String className, String methodName) {
@@ -85,21 +109,8 @@ public class ArquillianBundleActivator implements BundleActivator {
 
     public void stop(BundleContext context) throws Exception {
         // Unregister the JMXTestRunner
-        MBeanServer mbeanServer = getMBeanServer(context);
+        MBeanServer mbeanServer = findOrCreateMBeanServer();
         testRunner.unregisterMBean(mbeanServer);
-    }
-
-    private MBeanServer getMBeanServer(BundleContext context) {
-        // Check if the MBeanServer is registered as an OSGi service
-        ServiceReference sref = context.getServiceReference(MBeanServer.class.getName());
-        if (sref != null) {
-            MBeanServer mbeanServer = (MBeanServer) context.getService(sref);
-            log.fine("Found MBeanServer fom service: " + mbeanServer.getDefaultDomain());
-            return mbeanServer;
-        }
-
-        // Find or create the MBeanServer
-        return findOrCreateMBeanServer();
     }
 
     private MBeanServer findOrCreateMBeanServer() {
