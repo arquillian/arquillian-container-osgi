@@ -37,6 +37,7 @@ import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Constants;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
@@ -81,6 +82,18 @@ public class ArquillianBundleActivator implements BundleActivator {
                 for (Bundle aux : bundles) {
                     if (aux.getEntry(namePath) != null) {
                         return aux.loadClass(className);
+                    }
+                }
+
+                // Load the the test class from bundle that defines a Bundle-ClassPath
+                for (Bundle aux : bundles) {
+                    String bundlecp = aux.getHeaders().get(Constants.BUNDLE_CLASSPATH);
+                    if (bundlecp != null) {
+                        try {
+                            return aux.loadClass(className);
+                        } catch (ClassNotFoundException ex) {
+                            // ignore
+                        }
                     }
                 }
 

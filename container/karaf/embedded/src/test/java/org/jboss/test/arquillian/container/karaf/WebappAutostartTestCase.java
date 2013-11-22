@@ -27,7 +27,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -39,18 +39,19 @@ import org.osgi.framework.Bundle;
  * @since 01-Oct-2011
  */
 @RunWith(Arquillian.class)
-public class AutostartTestCase {
+public class WebappAutostartTestCase {
 
     @Deployment
     @StartLevelAware(autostart = true)
-    public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "autostart.jar");
+    public static WebArchive create() {
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, "autostart.war");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
+                builder.addBundleClasspath("WEB-INF/classes");
                 return builder.openStream();
             }
         });
