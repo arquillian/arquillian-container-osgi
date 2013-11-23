@@ -9,7 +9,8 @@
         <version>2.1.0.CR2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>arquillian-osgi-testenricher</artifactId>
+    <groupId>org.jboss.arquillian.testenricher</groupId>
+    <artifactId>arquillian-testenricher-osgi</artifactId>
     <name>Arquillian OSGi :: Enricher</name>
 
     <!-- Dependencies -->

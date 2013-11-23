@@ -10,12 +10,12 @@
 
     <!-- Parent -->
     <parent>
-        <groupId>org.jboss.arquillian.osgi</groupId>
-	    <artifactId>arquillian-osgi-felix</artifactId>
+        <groupId>org.jboss.arquillian.container</groupId>
+        <artifactId>arquillian-container-felix</artifactId>
         <version>2.1.0.CR2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>arquillian-osgi-felix-embedded</artifactId>
+    <artifactId>arquillian-container-felix-embedded</artifactId>
     <name>Arquillian OSGi :: Container :: Felix :: Embedded</name>
     
     <!-- Dependencies -->
@@ -37,18 +37,18 @@
             <artifactId>arquillian-container-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.osgi</groupId>
-            <artifactId>arquillian-osgi-common</artifactId>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-osgi</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.osgi</groupId>
-            <artifactId>arquillian-osgi-testenricher</artifactId>
+            <groupId>org.jboss.arquillian.testenricher</groupId>
+            <artifactId>arquillian-testenricher-osgi</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.osgi</groupId>
-            <artifactId>arquillian-osgi-protocol</artifactId>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-osgi</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -4,12 +4,12 @@
 
     <!-- Parent -->
     <parent>
-        <groupId>org.jboss.arquillian.osgi</groupId>
-        <artifactId>arquillian-osgi-container</artifactId>
+        <groupId>org.jboss.arquillian.container</groupId>
+        <artifactId>arquillian-container-osgi-parent</artifactId>
         <version>2.1.0.CR2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>arquillian-osgi-common</artifactId>
+    <artifactId>arquillian-container-osgi</artifactId>
     <name>Arquillian OSGi :: Container :: Common</name>
 
     <!-- Properties -->

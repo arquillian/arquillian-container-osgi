@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArch
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -66,6 +67,8 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         if (ClassContainer.class.isAssignableFrom(appArchive.getClass()) == false)
             throw new IllegalArgumentException("ClassContainer expected: " + appArchive);
 
+        //System.out.println(appArchive.toString(true));
+
         // Get the test class and its super classes
         Class<?> javaClass = testClass.getJavaClass();
         Set<Class<?>> classes = new HashSet<Class<?>>();
@@ -77,10 +80,19 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         }
 
         // Check if the application archive already contains the test classes
-        for (Class<?> clazz : classes) {
-            String path = clazz.getName().replace('.', '/') + ".class";
-            if (appArchive.contains(path) == false) {
-                ((ClassContainer<?>) appArchive).addClass(clazz);
+        if (!appArchive.getName().endsWith(".war")) {
+            for (Class<?> clazz : classes) {
+                boolean testClassFound = false;
+                String path = clazz.getName().replace('.', '/') + ".class";
+                for (ArchivePath auxpath : appArchive.getContent().keySet()) {
+                    if (auxpath.toString().endsWith(path)) {
+                        testClassFound = true;
+                        break;
+                    }
+                }
+                if (testClassFound == false) {
+                    ((ClassContainer<?>) appArchive).addClass(clazz);
+                }
             }
         }
 

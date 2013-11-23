@@ -41,8 +41,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.osgi</groupId>
-            <artifactId>arquillian-osgi-testenricher</artifactId>
+            <groupId>org.jboss.arquillian.testenricher</groupId>
+            <artifactId>arquillian-testenricher-osgi</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -94,7 +94,7 @@
                             arquillian-container-test-spi;inline=false,
                             arquillian-junit-core;inline=false,
                             arquillian-junit-container;inline=false,
-                            arquillian-osgi-testenricher;inline=false,
+                            arquillian-testenricher-osgi;inline=false,
                             arquillian-protocol-jmx;inline=false,
                             shrinkwrap-api;inline=false,
                             shrinkwrap-impl-base;inline=false,

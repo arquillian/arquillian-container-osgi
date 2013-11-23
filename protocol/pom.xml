@@ -10,7 +10,8 @@
         <version>2.1.0.CR2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>arquillian-osgi-protocol</artifactId>
+    <groupId>org.jboss.arquillian.protocol</groupId>
+    <artifactId>arquillian-protocol-osgi</artifactId>
     
     <name>Arquillian OSGi :: Protocol</name>
 

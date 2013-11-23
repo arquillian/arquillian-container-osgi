@@ -9,7 +9,8 @@
         <version>2.1.0.CR2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>arquillian-osgi-container</artifactId>
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-container-osgi-parent</artifactId>
     <packaging>pom</packaging>
     
     <name>Arquillian OSGi :: Container</name>
