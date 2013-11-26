@@ -31,7 +31,7 @@ public class FelixContainerExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(DeployableContainer.class, FelixDeployableContainer.class);
+        builder.service(DeployableContainer.class, FelixEmbeddedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
     }
 

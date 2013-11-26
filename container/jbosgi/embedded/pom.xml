@@ -2,8 +2,8 @@
 <!-- 
     Set these VM properties in your IDE debugger
     
-    -Dtest.archive.directory=${workspace_loc:arquillian-osgi-jbosgi-embedded}/target/test-libs 
-    -Dlog4j.configuration=file://${workspace_loc:arquillian-osgi-jbosgi-embedded}/src/test/resources/logging.properties
+    -Dtest.archive.directory=${workspace_loc:arquillian-container-jbosgi-embedded}/target/test-libs 
+    -Dlog4j.configuration=file://${workspace_loc:arquillian-container-jbosgi-embedded}/src/test/resources/logging.properties
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>

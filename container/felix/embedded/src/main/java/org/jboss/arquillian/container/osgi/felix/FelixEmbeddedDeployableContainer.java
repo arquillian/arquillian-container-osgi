@@ -22,7 +22,7 @@ import java.util.Map;
 import org.apache.felix.framework.Logger;
 import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.main.AutoProcessor;
-import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
+import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -34,7 +34,7 @@ import org.osgi.framework.launch.FrameworkFactory;
  *
  * @author thomas.diesler@jboss.com
  */
-public class FelixDeployableContainer extends AbstractEmbeddedDeployableContainer<OSGiContainerConfiguration> {
+public class FelixEmbeddedDeployableContainer extends EmbeddedDeployableContainer<OSGiContainerConfiguration> {
 
     private final Logger logger = new FelixLogger();
 

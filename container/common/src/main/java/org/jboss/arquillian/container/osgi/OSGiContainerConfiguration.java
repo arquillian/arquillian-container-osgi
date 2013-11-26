@@ -40,6 +40,8 @@ public class OSGiContainerConfiguration implements ContainerConfiguration {
     private final Map<String, String> frameworkConfiguration = new HashMap<String, String>();
     private FrameworkFactory frameworkFactory;
     private String frameworkProperties;
+    private boolean awaitBeginningStartLevel;
+    private String bootstrapCompleteService;
 
     @Override
     public void validate() throws ConfigurationException {
@@ -72,6 +74,22 @@ public class OSGiContainerConfiguration implements ContainerConfiguration {
 
     public void setFrameworkProperties(String frameworkProperties) {
         this.frameworkProperties = frameworkProperties;
+    }
+
+    public Boolean isAwaitBeginningStartLevel() {
+        return awaitBeginningStartLevel;
+    }
+
+    public void setAwaitBeginningStartLevel(Boolean awaitBeginningStartLevel) {
+        this.awaitBeginningStartLevel = awaitBeginningStartLevel;
+    }
+
+    public String getBootstrapCompleteService() {
+        return bootstrapCompleteService;
+    }
+
+    public void setBootstrapCompleteService(String bootstrapCompleteService) {
+        this.bootstrapCompleteService = bootstrapCompleteService;
     }
 
     public FrameworkFactory getFrameworkFactory() {

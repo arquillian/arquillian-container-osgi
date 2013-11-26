@@ -17,7 +17,7 @@
 package org.jboss.arquillian.osgi.jbosgi;
 
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
-import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
+import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
 import org.jboss.logging.Logger;
 
 /**
@@ -25,9 +25,9 @@ import org.jboss.logging.Logger;
  *
  * @author thomas.diesler@jboss.com
  */
-public class JBOSGiEmbeddedDeployableContainer extends AbstractEmbeddedDeployableContainer<OSGiContainerConfiguration> {
+public class JBossEmbeddedDeployableContainer extends EmbeddedDeployableContainer<OSGiContainerConfiguration> {
 
-    private final Logger logger = Logger.getLogger(JBOSGiEmbeddedDeployableContainer.class.getPackage().getName());
+    private final Logger logger = Logger.getLogger(JBossEmbeddedDeployableContainer.class.getPackage().getName());
 
     @Override
     public Class<OSGiContainerConfiguration> getConfigurationClass() {

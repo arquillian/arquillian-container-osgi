@@ -23,10 +23,6 @@
     
     <!-- Dependencies -->
     <dependencies>
-		<dependency>
-			<groupId>org.apache.karaf</groupId>
-			<artifactId>org.apache.karaf.main</artifactId>
-		</dependency>
         <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
             <artifactId>arquillian-container-osgi</artifactId>
@@ -49,12 +45,6 @@
         
         <!-- Provided Dependencies -->
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.framework</artifactId>
-            <version>${karaf.felix.version}</version> <!--$NO-MVN-MAN-VER$-->
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
@@ -71,6 +61,19 @@
             <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Add last because it embedds all sorts of osgi APIs -->
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>${karaf.felix.version}</version> <!--$NO-MVN-MAN-VER$-->
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.karaf</groupId>
+            <artifactId>org.apache.karaf.main</artifactId>
+        </dependency>
+        
     </dependencies>
 
 	<build>

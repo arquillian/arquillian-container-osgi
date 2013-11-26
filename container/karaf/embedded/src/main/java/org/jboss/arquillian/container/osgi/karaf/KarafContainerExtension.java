@@ -31,7 +31,7 @@ public class KarafContainerExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(DeployableContainer.class, KarafDeployableContainer.class);
+        builder.service(DeployableContainer.class, KarafEmbeddedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
     }
 

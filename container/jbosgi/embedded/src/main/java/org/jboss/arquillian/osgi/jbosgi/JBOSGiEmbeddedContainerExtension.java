@@ -32,7 +32,7 @@ public class JBOSGiEmbeddedContainerExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(DeployableContainer.class, JBOSGiEmbeddedDeployableContainer.class);
+        builder.service(DeployableContainer.class, JBossEmbeddedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
     }
 

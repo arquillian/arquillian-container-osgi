@@ -43,16 +43,22 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.util.tracker.BundleTracker;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * OSGi deployable container
  *
  * @author thomas.diesler@jboss.com
  */
-public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContainerConfiguration> implements DeployableContainer<T> {
+public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfiguration> implements DeployableContainer<T> {
 
     public interface ContainerLogger {
 
@@ -145,10 +151,8 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
     }
 
     @Override
-    public final void start() throws LifecycleException {
-
+    public void start() throws LifecycleException {
         log.debug("Starting OSGi embedded container: " + getClass().getName());
-
         try {
             syscontext = startFramework();
         } catch (BundleException ex) {
@@ -158,6 +162,21 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         installArquillianBundle();
 
         // Wait for the arquillian-osgi-bundle to become ACTIVE
+        awaitArquillianBundleActive(syscontext);
+
+        // Wait for the framework to reach the beginning start level
+        if (configuration.isAwaitBeginningStartLevel())
+            awaitFrameworkBeginningStartLevel(syscontext);
+
+        // Wait for a bootstarap complete marker service to become available
+        String bootstrapCompleteService = configuration.getBootstrapCompleteService();
+        if (bootstrapCompleteService != null)
+            awaitFrameworkBeginningStartLevel(syscontext);
+
+        log.info("Started OSGi embedded container: " + getClass().getName());
+    }
+
+    public static void awaitArquillianBundleActive(BundleContext syscontext) throws LifecycleException {
         final CountDownLatch latch = new CountDownLatch(1);
         BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(syscontext, Bundle.ACTIVE, null) {
             @Override
@@ -171,7 +190,6 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
 
         };
         tracker.open();
-
         try {
             if (!latch.await(30, TimeUnit.SECONDS)) {
                 throw new LifecycleException("Framework startup timeout");
@@ -179,8 +197,62 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         } catch (InterruptedException ex) {
             throw new LifecycleException("Framework startup interupted", ex);
         }
+    }
 
-        log.info("Started OSGi embedded container: " + getClass().getName());
+    public static void awaitFrameworkBeginningStartLevel(BundleContext syscontext) {
+        String beginningStartLevelProp = syscontext.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL);
+        if (beginningStartLevelProp != null) {
+            final CountDownLatch latch = new CountDownLatch(1);
+            final Integer beginningStartLevel = Integer.parseInt(beginningStartLevelProp);
+            final FrameworkStartLevel fwrkStartLevel = syscontext.getBundle().adapt(FrameworkStartLevel.class);
+            FrameworkListener listener = new FrameworkListener() {
+                @Override
+                public void frameworkEvent(FrameworkEvent event) {
+                    if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+                        int startLevel = fwrkStartLevel.getStartLevel();
+                        if (startLevel == beginningStartLevel) {
+                            latch.countDown();
+                        }
+                    }
+                }
+            };
+            syscontext.addFrameworkListener(listener);
+            try {
+                int startLevel = fwrkStartLevel.getStartLevel();
+                if (startLevel < beginningStartLevel) {
+                    try {
+                        if (!latch.await(30, TimeUnit.SECONDS))
+                            throw new IllegalStateException("Giving up waiting to reach start level: " + beginningStartLevel);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                }
+            } finally {
+                syscontext.removeFrameworkListener(listener);
+            }
+        }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static void awaitBootstrapCompleteService(BundleContext syscontext, String serviceName) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        ServiceTracker<?, ?> tracker = new ServiceTracker(syscontext, serviceName, null) {
+            @Override
+            public Object addingService(ServiceReference sref) {
+                Object service = super.addingService(sref);
+                latch.countDown();
+                return service;
+            }
+        };
+        tracker.open();
+        try {
+            if (!latch.await(30, TimeUnit.SECONDS))
+                throw new IllegalStateException("Giving up waiting for bootstrap service: " + serviceName);
+        } catch (InterruptedException e) {
+            // ignore
+        } finally {
+            tracker.close();
+        }
     }
 
     protected void installArquillianBundle() throws LifecycleException {
@@ -188,7 +260,7 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         if (arqBundle == null) {
             try {
                 // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
-                String arqVersion = AbstractEmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
+                String arqVersion = EmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
                 if (arqVersion == null) {
                     arqVersion = System.getProperty("arquillian.osgi.version");
                 }
@@ -199,12 +271,8 @@ public abstract class AbstractEmbeddedDeployableContainer<T extends OSGiContaine
         }
     }
 
-    public BundleContext getSystemContext() {
-        return syscontext;
-    }
-
     @Override
-    public final void stop() throws LifecycleException {
+    public void stop() throws LifecycleException {
         try {
             stopFramework();
             framework.waitForStop(3000);

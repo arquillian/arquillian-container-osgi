@@ -17,7 +17,7 @@
 package org.jboss.arquillian.container.osgi.karaf;
 
 import org.apache.karaf.main.Main;
-import org.jboss.arquillian.container.osgi.AbstractEmbeddedDeployableContainer;
+import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
@@ -25,13 +25,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * KarafDeployableContainer
+ * KarafEmbeddedDeployableContainer
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafDeployableContainer extends AbstractEmbeddedDeployableContainer<KarafContainerConfiguration> {
+public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContainer<KarafContainerConfiguration> {
 
-    static final Logger logger = LoggerFactory.getLogger(KarafDeployableContainer.class.getPackage().getName());
+    static final Logger LOGGER = LoggerFactory.getLogger(KarafEmbeddedDeployableContainer.class.getPackage().getName());
 
     private Main karaf;
 
@@ -60,7 +60,8 @@ public class KarafDeployableContainer extends AbstractEmbeddedDeployableContaine
 
     @Override
     protected BundleContext startFramework() throws BundleException {
-        return karaf.getFramework().getBundleContext();
+        Framework framework = karaf.getFramework();
+        return framework.getBundleContext();
     }
 
     @Override
@@ -79,16 +80,16 @@ public class KarafDeployableContainer extends AbstractEmbeddedDeployableContaine
             public void log(Level level, String message, Throwable th) {
                 switch (level) {
                 case DEBUG:
-                    logger.debug(message, th);
+                    LOGGER.debug(message, th);
                     break;
                 case INFO:
-                    logger.info(message, th);
+                    LOGGER.info(message, th);
                     break;
                 case WARN:
-                    logger.warn(message, th);
+                    LOGGER.warn(message, th);
                     break;
                 case ERROR:
-                    logger.error(message, th);
+                    LOGGER.error(message, th);
                     break;
                 }
             }
