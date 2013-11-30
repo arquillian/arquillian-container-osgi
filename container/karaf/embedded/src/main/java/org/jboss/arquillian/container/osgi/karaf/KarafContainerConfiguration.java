@@ -26,6 +26,7 @@ import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 public class KarafContainerConfiguration extends OSGiContainerConfiguration {
 
     private String karafHome;
+    private Integer karafBeginningStartLevel;
 
     public String getKarafHome() {
         return karafHome;
@@ -33,5 +34,13 @@ public class KarafContainerConfiguration extends OSGiContainerConfiguration {
 
     public void setKarafHome(String karafHome) {
         this.karafHome = karafHome;
+    }
+
+    public Integer getKarafBeginningStartLevel() {
+        return karafBeginningStartLevel;
+    }
+
+    public void setKarafBeginningStartLevel(Integer startLevel) {
+        this.karafBeginningStartLevel = startLevel;
     }
 }

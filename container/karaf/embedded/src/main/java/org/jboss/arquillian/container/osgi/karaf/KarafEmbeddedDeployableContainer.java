@@ -16,11 +16,18 @@
  */
 package org.jboss.arquillian.container.osgi.karaf;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.karaf.main.Main;
 import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.launch.Framework;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +45,11 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
     @Override
     public Class<KarafContainerConfiguration> getConfigurationClass() {
         return KarafContainerConfiguration.class;
+    }
+
+    @Override
+    protected KarafContainerConfiguration getContainerConfiguration() {
+        return (KarafContainerConfiguration) super.getContainerConfiguration();
     }
 
     @Override
@@ -74,6 +86,16 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
     }
 
     @Override
+    protected void awaitArquillianBundleActive(BundleContext syscontext) throws LifecycleException {
+        super.awaitArquillianBundleActive(syscontext);
+        KarafContainerConfiguration config = getContainerConfiguration();
+        Integer beginningStartLevel = config.getKarafBeginningStartLevel();
+        if (beginningStartLevel != null) {
+            awaitKarafBeginningStartLevel(syscontext, beginningStartLevel);
+        }
+    }
+
+    @Override
     protected ContainerLogger getLogger() {
         return new AbstractContainerLogger() {
             @Override
@@ -94,5 +116,35 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
                 }
             }
         };
+    }
+
+    protected void awaitKarafBeginningStartLevel(final BundleContext syscontext, final Integer beginningStartLevel) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final FrameworkStartLevel fwrkStartLevel = syscontext.getBundle().adapt(FrameworkStartLevel.class);
+        FrameworkListener listener = new FrameworkListener() {
+            @Override
+            public void frameworkEvent(FrameworkEvent event) {
+                if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
+                    int startLevel = fwrkStartLevel.getStartLevel();
+                    if (startLevel == beginningStartLevel) {
+                        latch.countDown();
+                    }
+                }
+            }
+        };
+        syscontext.addFrameworkListener(listener);
+        try {
+            int startLevel = fwrkStartLevel.getStartLevel();
+            if (startLevel < beginningStartLevel) {
+                try {
+                    if (!latch.await(30, TimeUnit.SECONDS))
+                        throw new IllegalStateException("Giving up waiting to reach start level: " + beginningStartLevel);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+        } finally {
+            syscontext.removeFrameworkListener(listener);
+        }
     }
 }

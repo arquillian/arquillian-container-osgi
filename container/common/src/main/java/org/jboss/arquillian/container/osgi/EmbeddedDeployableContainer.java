@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
@@ -43,13 +44,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -164,77 +161,57 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         // Wait for the arquillian-osgi-bundle to become ACTIVE
         awaitArquillianBundleActive(syscontext);
 
-        // Wait for the framework to reach the beginning start level
-        if (configuration.isAwaitBeginningStartLevel())
-            awaitFrameworkBeginningStartLevel(syscontext);
-
         // Wait for a bootstarap complete marker service to become available
-        String bootstrapCompleteService = configuration.getBootstrapCompleteService();
-        if (bootstrapCompleteService != null)
-            awaitFrameworkBeginningStartLevel(syscontext);
+        String completeService = configuration.getBootstrapCompleteService();
+        if (completeService != null)
+            awaitBootstrapCompleteService(syscontext, completeService);
 
         log.info("Started OSGi embedded container: " + getClass().getName());
     }
 
-    public static void awaitArquillianBundleActive(BundleContext syscontext) throws LifecycleException {
+    protected void awaitArquillianBundleActive(BundleContext syscontext) throws LifecycleException {
         final CountDownLatch latch = new CountDownLatch(1);
-        BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(syscontext, Bundle.ACTIVE, null) {
+        final AtomicReference<Bundle> bundleRef = new AtomicReference<Bundle>();
+        int states = Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE;
+        BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(syscontext, states, null) {
+
             @Override
             public Bundle addingBundle(Bundle bundle, BundleEvent event) {
-                super.addingBundle(bundle, event);
                 if ("arquillian-osgi-bundle".equals(bundle.getSymbolicName())) {
+                    bundleRef.set(bundle);
+                    return bundle;
+                } else {
+                    return null;
+                }
+            }
+
+            @Override
+            public void modifiedBundle(Bundle bundle, BundleEvent event, Bundle tracked) {
+                if (event != null && event.getType() == BundleEvent.STARTED) {
                     latch.countDown();
                 }
-                return bundle;
             }
-
         };
         tracker.open();
-        try {
-            if (!latch.await(30, TimeUnit.SECONDS)) {
-                throw new LifecycleException("Framework startup timeout");
-            }
-        } catch (InterruptedException ex) {
-            throw new LifecycleException("Framework startup interupted", ex);
-        }
-    }
 
-    public static void awaitFrameworkBeginningStartLevel(BundleContext syscontext) {
-        String beginningStartLevelProp = syscontext.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL);
-        if (beginningStartLevelProp != null) {
-            final CountDownLatch latch = new CountDownLatch(1);
-            final Integer beginningStartLevel = Integer.parseInt(beginningStartLevelProp);
-            final FrameworkStartLevel fwrkStartLevel = syscontext.getBundle().adapt(FrameworkStartLevel.class);
-            FrameworkListener listener = new FrameworkListener() {
-                @Override
-                public void frameworkEvent(FrameworkEvent event) {
-                    if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
-                        int startLevel = fwrkStartLevel.getStartLevel();
-                        if (startLevel == beginningStartLevel) {
-                            latch.countDown();
-                        }
+        try {
+            Bundle arqBundle = bundleRef.get();
+            if (arqBundle == null || arqBundle.getState() != Bundle.ACTIVE) {
+                try {
+                    if (!latch.await(30, TimeUnit.SECONDS)) {
+                        throw new LifecycleException("Framework startup timeout");
                     }
+                } catch (InterruptedException ex) {
+                    throw new LifecycleException("Framework startup interupted", ex);
                 }
-            };
-            syscontext.addFrameworkListener(listener);
-            try {
-                int startLevel = fwrkStartLevel.getStartLevel();
-                if (startLevel < beginningStartLevel) {
-                    try {
-                        if (!latch.await(30, TimeUnit.SECONDS))
-                            throw new IllegalStateException("Giving up waiting to reach start level: " + beginningStartLevel);
-                    } catch (InterruptedException e) {
-                        // ignore
-                    }
-                }
-            } finally {
-                syscontext.removeFrameworkListener(listener);
             }
+        } finally {
+            tracker.close();
         }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static void awaitBootstrapCompleteService(BundleContext syscontext, String serviceName) {
+    protected void awaitBootstrapCompleteService(BundleContext syscontext, String serviceName) {
         final CountDownLatch latch = new CountDownLatch(1);
         ServiceTracker<?, ?> tracker = new ServiceTracker(syscontext, serviceName, null) {
             @Override
