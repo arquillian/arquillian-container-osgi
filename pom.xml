@@ -18,9 +18,9 @@
     <name>Arquillian OSGi</name>
 
     <scm>
-        <connection>scm:git:git://git@github.com:tdiesler/arquillian-osgi.git</connection>
-        <developerConnection>scm:git:ssh://github.com/tdiesler/arquillian-osgi.git</developerConnection>
-        <url>git://github.com/tdiesler/arquillian-osgi.git</url>
+        <connection>scm:git:git://git@github.com:arquillian/arquillian-osgi.git</connection>
+        <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-osgi.git</developerConnection>
+        <url>git://github.com/arquillian/arquillian-osgi.git</url>
     </scm>
 
     <!-- Properties -->
@@ -42,6 +42,15 @@
         <version.slf4j>1.5.11</version.slf4j>
     </properties>
 
+    <!-- Modules -->
+    <modules>
+        <module>protocol</module>
+        <module>testenricher</module>
+        <module>bundle</module>
+        <module>container</module>
+    </modules>
+
+    <!-- Dependency Management -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -150,6 +159,7 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- Plugins -->
     <build>
         <plugins>
             <plugin>
@@ -182,12 +192,23 @@
         </plugins>
     </build>
 
-    <modules>
-        <module>protocol</module>
-        <module>testenricher</module>
-        <module>bundle</module>
-        <module>container</module>
-    </modules>
-
+    <!-- Repositories -->
+    <repositories>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    
 </project>
 
