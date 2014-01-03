@@ -128,6 +128,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         }
 
         try {
+
             // Get the MBeanServerConnection
             mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
             mbeanServerInstance.set(mbeanServer);
@@ -149,15 +150,17 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
 
             // Await the beginning start level
             Integer beginningStartLevel = config.getKarafBeginningStartLevel();
-            if (beginningStartLevel != null) {
+            if (beginningStartLevel != null)
                 awaitKarafBeginningStartLevel(beginningStartLevel, 30, TimeUnit.SECONDS);
-            }
 
             // Await the bootstrap complete marker service to become available
             String completeService = config.getBootstrapCompleteService();
             if (completeService != null)
                 awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
 
+        } catch (RuntimeException rte) {
+            process.destroy();
+            throw rte;
         } catch (Exception ex) {
             process.destroy();
             throw new LifecycleException("Cannot start Karaf container", ex);
@@ -189,10 +192,24 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
     public void undeploy(Archive<?> archive) throws DeploymentException {
         BundleHandle handle = deployedBundles.remove(archive.getName());
         if (handle != null) {
+            String bundleState = null;
             try {
-                frameworkMBean.uninstallBundle(handle.getBundleId());
-            } catch (IOException ex) {
-                LOGGER.error("Cannot undeploy: " + archive.getName(), ex);
+                long bundleId = handle.getBundleId();
+                CompositeData bundleType = bundleStateMBean.getBundle(bundleId);
+                if (bundleType != null) {
+                    bundleState = (String) bundleType.get(BundleStateMBean.STATE);
+                }
+            } catch (IOException e) {
+                // ignore non-existent bundle
+                return;
+            }
+            if (bundleState != null && !bundleState.equals(BundleStateMBean.UNINSTALLED)) {
+                try {
+                    long bundleId = handle.getBundleId();
+                    frameworkMBean.uninstallBundle(bundleId);
+                } catch (IOException ex) {
+                    LOGGER.error("Cannot undeploy: " + archive.getName(), ex);
+                }
             }
         }
      }
@@ -221,8 +238,9 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
                         Thread.sleep(500);
                     }
                 }
-                LOGGER.warn("Cannot connect to Karaf", lastException);
-                throw new TimeoutException();
+                TimeoutException timeoutException = new TimeoutException();
+                timeoutException.initCause(lastException);
+                throw timeoutException;
             }
         };
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -281,30 +299,32 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         if (list.size() != 1)
             throw new IllegalStateException("Cannot obtain: " + symbolicName);
 
+        String bundleState = null;
         long bundleId = list.get(0).getBundleId();
         long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
         while (System.currentTimeMillis() < timeoutMillis) {
-            String state = bundleStateMBean.getState(bundleId);
-            if (BundleStateMBean.ACTIVE.equals(state)) {
+            bundleState = bundleStateMBean.getState(bundleId);
+            if (BundleStateMBean.ACTIVE.equals(bundleState)) {
                 return;
             } else {
                 Thread.sleep(500);
             }
         }
-        throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started");
+        throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started: " + bundleState);
     }
 
     private void awaitKarafBeginningStartLevel(final Integer beginningStartLevel, long timeout, TimeUnit unit) throws IOException, TimeoutException, InterruptedException {
+        int startLevel = 0;
         long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
         while (System.currentTimeMillis() < timeoutMillis) {
-            int startLevel = frameworkMBean.getFrameworkStartLevel();
+            startLevel = frameworkMBean.getFrameworkStartLevel();
             if (startLevel >= beginningStartLevel) {
                 return;
             } else {
                 Thread.sleep(500);
             }
         }
-        throw new TimeoutException("Beginning start level [" + beginningStartLevel + "] not reached");
+        throw new TimeoutException("Beginning start level [" + beginningStartLevel + "] not reached: " + startLevel);
     }
 
     private void awaitBootstrapCompleteService(String serviceName, long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, IOException {
