@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.test.arquillian.container.karaf;
+package org.jboss.test.arquillian.container.karaf.embedded;
 
 import static org.junit.Assert.assertEquals;
 

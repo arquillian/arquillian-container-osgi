@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.test.arquillian.container.karaf;
+package org.jboss.test.arquillian.container.karaf.embedded;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.osgi.StartLevelAware;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -31,28 +31,26 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 
 /**
- * Test the embedded OSGi framework
+ * Test {@link StartLevelAware}
  *
  * @author thomas.diesler@jboss.com
+ * @since 01-Oct-2011
  */
 @RunWith(Arquillian.class)
-public class SimpleBundleTestCase {
-
-    @ArquillianResource
-    BundleContext context;
+public class AutostartTestCase {
 
     @Deployment
-    public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test.jar");
+    @StartLevelAware(autostart = true)
+    public static JavaArchive create() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "autostart.jar");
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(Bundle.class);
                 return builder.openStream();
             }
         });
@@ -60,31 +58,11 @@ public class SimpleBundleTestCase {
     }
 
     @Test
-    public void testBundleContextInjection() throws Exception {
-        assertNotNull("BundleContext injected", context);
-        assertEquals("System Bundle ID", 0, context.getBundle().getBundleId());
-    }
+    public void testAutoStart(@ArquillianResource Bundle bundle) throws Exception {
 
-    @Test
-    public void testBundleInjection(@ArquillianResource Bundle bundle) throws Exception {
-        // Assert that the bundle is injected
-        assertNotNull("Bundle injected", bundle);
-
-        // Assert that the bundle is in state RESOLVED
-        // Note when the test bundle contains the test case it
-        // must be resolved already when this test method is called
-        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-
-        // Start the bundle
-        bundle.start();
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
-        // Assert the bundle context
-        BundleContext context = bundle.getBundleContext();
-        assertNotNull("BundleContext available", context);
-
-        // Stop the bundle
-        bundle.stop();
-        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        bundle.uninstall();
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
     }
 }

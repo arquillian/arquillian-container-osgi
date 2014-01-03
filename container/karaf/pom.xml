@@ -16,6 +16,7 @@
 
 	<modules>
 		<module>embedded</module>
+        <module>managed</module>
 	</modules>    
 
 	<build>

@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -159,22 +160,21 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         installArquillianBundle();
 
         // Wait for the arquillian-osgi-bundle to become ACTIVE
-        awaitArquillianBundleActive(syscontext);
+        awaitArquillianBundleActive(syscontext, 30, TimeUnit.SECONDS);
 
         // Wait for a bootstarap complete marker service to become available
         String completeService = configuration.getBootstrapCompleteService();
         if (completeService != null)
-            awaitBootstrapCompleteService(syscontext, completeService);
+            awaitBootstrapCompleteService(syscontext, completeService, 30, TimeUnit.SECONDS);
 
         log.info("Started OSGi embedded container: " + getClass().getName());
     }
 
-    protected void awaitArquillianBundleActive(BundleContext syscontext) throws LifecycleException {
+    protected void awaitArquillianBundleActive(BundleContext syscontext, long timeout, TimeUnit unit) throws LifecycleException {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Bundle> bundleRef = new AtomicReference<Bundle>();
         int states = Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE;
         BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(syscontext, states, null) {
-
             @Override
             public Bundle addingBundle(Bundle bundle, BundleEvent event) {
                 if ("arquillian-osgi-bundle".equals(bundle.getSymbolicName())) {
@@ -198,7 +198,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
             Bundle arqBundle = bundleRef.get();
             if (arqBundle == null || arqBundle.getState() != Bundle.ACTIVE) {
                 try {
-                    if (!latch.await(30, TimeUnit.SECONDS)) {
+                    if (!latch.await(timeout, unit)) {
                         throw new LifecycleException("Framework startup timeout");
                     }
                 } catch (InterruptedException ex) {
@@ -211,7 +211,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected void awaitBootstrapCompleteService(BundleContext syscontext, String serviceName) {
+    protected void awaitBootstrapCompleteService(BundleContext syscontext, String serviceName, long timeout, TimeUnit unit) {
         final CountDownLatch latch = new CountDownLatch(1);
         ServiceTracker<?, ?> tracker = new ServiceTracker(syscontext, serviceName, null) {
             @Override
@@ -223,7 +223,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         };
         tracker.open();
         try {
-            if (!latch.await(30, TimeUnit.SECONDS))
+            if (!latch.await(timeout, unit))
                 throw new IllegalStateException("Giving up waiting for bootstrap service: " + serviceName);
         } catch (InterruptedException e) {
             // ignore
@@ -361,7 +361,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
 
         if (mbeanServer == null) {
             log.debug("No MBeanServer, create one ...");
-            mbeanServer = MBeanServerFactory.createMBeanServer();
+            mbeanServer = ManagementFactory.getPlatformMBeanServer();
         }
 
         return mbeanServer;

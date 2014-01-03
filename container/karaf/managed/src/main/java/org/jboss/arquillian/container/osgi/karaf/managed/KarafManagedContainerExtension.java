@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.karaf;
+package org.jboss.arquillian.container.osgi.karaf.managed;
 
 import org.jboss.arquillian.container.osgi.OSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
@@ -27,11 +27,11 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafContainerExtension implements LoadableExtension {
+public class KarafManagedContainerExtension implements LoadableExtension {
 
     @Override
     public void register(ExtensionBuilder builder) {
-        builder.service(DeployableContainer.class, KarafEmbeddedDeployableContainer.class);
+        builder.service(DeployableContainer.class, KarafManagedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
     }
 

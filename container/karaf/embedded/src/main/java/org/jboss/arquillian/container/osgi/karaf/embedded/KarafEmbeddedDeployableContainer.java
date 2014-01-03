@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.karaf;
+package org.jboss.arquillian.container.osgi.karaf.embedded;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -36,24 +36,24 @@ import org.slf4j.LoggerFactory;
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContainer<KarafContainerConfiguration> {
+public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContainer<KarafEmbeddedContainerConfiguration> {
 
     static final Logger LOGGER = LoggerFactory.getLogger(KarafEmbeddedDeployableContainer.class.getPackage().getName());
 
     private Main karaf;
 
     @Override
-    public Class<KarafContainerConfiguration> getConfigurationClass() {
-        return KarafContainerConfiguration.class;
+    public Class<KarafEmbeddedContainerConfiguration> getConfigurationClass() {
+        return KarafEmbeddedContainerConfiguration.class;
     }
 
     @Override
-    protected KarafContainerConfiguration getContainerConfiguration() {
-        return (KarafContainerConfiguration) super.getContainerConfiguration();
+    protected KarafEmbeddedContainerConfiguration getContainerConfiguration() {
+        return (KarafEmbeddedContainerConfiguration) super.getContainerConfiguration();
     }
 
     @Override
-    protected Framework createFramework(KarafContainerConfiguration conf) {
+    protected Framework createFramework(KarafEmbeddedContainerConfiguration conf) {
 
         String karafHome = System.getProperty(Main.PROP_KARAF_HOME);
         if (karafHome == null && conf.getKarafHome() != null) {
@@ -86,12 +86,12 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
     }
 
     @Override
-    protected void awaitArquillianBundleActive(BundleContext syscontext) throws LifecycleException {
-        super.awaitArquillianBundleActive(syscontext);
-        KarafContainerConfiguration config = getContainerConfiguration();
+    protected void awaitArquillianBundleActive(BundleContext syscontext, long timeout, TimeUnit unit) throws LifecycleException {
+        super.awaitArquillianBundleActive(syscontext, timeout, unit);
+        KarafEmbeddedContainerConfiguration config = getContainerConfiguration();
         Integer beginningStartLevel = config.getKarafBeginningStartLevel();
         if (beginningStartLevel != null) {
-            awaitKarafBeginningStartLevel(syscontext, beginningStartLevel);
+            awaitKarafBeginningStartLevel(syscontext, beginningStartLevel, timeout, unit);
         }
     }
 
@@ -118,7 +118,7 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
         };
     }
 
-    protected void awaitKarafBeginningStartLevel(final BundleContext syscontext, final Integer beginningStartLevel) {
+    protected void awaitKarafBeginningStartLevel(final BundleContext syscontext, final Integer beginningStartLevel, long timeout, TimeUnit unit) {
         final CountDownLatch latch = new CountDownLatch(1);
         final FrameworkStartLevel fwrkStartLevel = syscontext.getBundle().adapt(FrameworkStartLevel.class);
         FrameworkListener listener = new FrameworkListener() {
@@ -137,7 +137,7 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
             int startLevel = fwrkStartLevel.getStartLevel();
             if (startLevel < beginningStartLevel) {
                 try {
-                    if (!latch.await(30, TimeUnit.SECONDS))
+                    if (!latch.await(timeout, unit))
                         throw new IllegalStateException("Giving up waiting to reach start level: " + beginningStartLevel);
                 } catch (InterruptedException e) {
                     // ignore

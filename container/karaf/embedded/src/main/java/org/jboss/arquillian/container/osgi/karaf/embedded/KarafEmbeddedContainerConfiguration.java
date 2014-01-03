@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.karaf;
+package org.jboss.arquillian.container.osgi.karaf.embedded;
+
+import java.io.File;
 
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.osgi.metadata.spi.NotNullException;
 
 /**
  * KarafContainerConfiguration
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafContainerConfiguration extends OSGiContainerConfiguration {
+public class KarafEmbeddedContainerConfiguration extends OSGiContainerConfiguration {
 
     private String karafHome;
     private Integer karafBeginningStartLevel;
@@ -42,5 +46,15 @@ public class KarafContainerConfiguration extends OSGiContainerConfiguration {
 
     public void setKarafBeginningStartLevel(Integer startLevel) {
         this.karafBeginningStartLevel = startLevel;
+    }
+
+    @Override
+    public void validate() throws ConfigurationException {
+        super.validate();
+
+        NotNullException.assertValue(karafHome, "karafHome");
+        File karafHomeDir = new File(karafHome);
+        if (!karafHomeDir.isDirectory())
+            throw new IllegalStateException("Not a valid Karaf home dir: " + karafHomeDir);
     }
 }

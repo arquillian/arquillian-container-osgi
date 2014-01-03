@@ -21,6 +21,7 @@
  */
 package org.jboss.arquillian.osgi;
 
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -140,7 +141,7 @@ public class ArquillianBundleActivator implements BundleActivator {
 
         if (mbeanServer == null) {
             log.fine("No MBeanServer, create one ...");
-            mbeanServer = MBeanServerFactory.createMBeanServer();
+            mbeanServer = ManagementFactory.getPlatformMBeanServer();
         }
 
         return mbeanServer;

@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <version>2.1.0.CR5-SNAPSHOT</version>
-    
+
     <name>Arquillian OSGi</name>
 
     <scm>
@@ -32,6 +32,8 @@
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
         <version.jboss.osgi.framework>3.0.3.Final</version.jboss.osgi.framework>
         <version.jboss.osgi.metadata>4.0.0.CR1</version.jboss.osgi.metadata>
+        <version.jboss.osgi.spi>4.0.0.Final</version.jboss.osgi.spi>
+        <version.jboss.osgi.vfs>2.0.0.Final</version.jboss.osgi.vfs>
         <version.jboss.shrinkwrap>1.1.2</version.jboss.shrinkwrap>
         <version.jboss.shrinkwrap.resolver>2.0.0</version.jboss.shrinkwrap.resolver>
         <version.junit>4.8.1</version.junit>
@@ -52,17 +54,17 @@
                 <artifactId>org.apache.felix.main</artifactId>
                 <version>${version.apache.felix.framework}</version>
             </dependency>
-			<dependency>
-				<groupId>org.apache.karaf</groupId>
-				<artifactId>org.apache.karaf.main</artifactId>
+            <dependency>
+                <groupId>org.apache.karaf</groupId>
+                <artifactId>org.apache.karaf.main</artifactId>
                 <exclusions>
                     <exclusion>
                         <groupId>org.osgi</groupId>
                         <artifactId>org.osgi.compendium</artifactId>
                     </exclusion>
                 </exclusions>
-				<version>${version.apache.karaf}</version>
-			</dependency>
+                <version>${version.apache.karaf}</version>
+            </dependency>
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
@@ -81,14 +83,24 @@
                 <version>${version.jboss.logmanager}</version>
             </dependency>
             <dependency>
+                <groupId>org.jboss.osgi.framework</groupId>
+                <artifactId>jbosgi-framework-core</artifactId>
+                <version>${version.jboss.osgi.framework}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.osgi.metadata</groupId>
                 <artifactId>jbosgi-metadata</artifactId>
                 <version>${version.jboss.osgi.metadata}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.osgi.framework</groupId>
-                <artifactId>jbosgi-framework-core</artifactId>
-                <version>${version.jboss.osgi.framework}</version>
+                <groupId>org.jboss.osgi.spi</groupId>
+                <artifactId>jbosgi-spi</artifactId>
+                <version>${version.jboss.osgi.spi}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.osgi.vfs</groupId>
+                <artifactId>jbosgi-vfs30</artifactId>
+                <version>${version.jboss.osgi.vfs}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
@@ -108,6 +120,11 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
+                <version>${version.osgi}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.enterprise</artifactId>
                 <version>${version.osgi}</version>
             </dependency>
             <dependency>

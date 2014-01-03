@@ -1,0 +1,381 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jboss.arquillian.container.osgi.karaf.managed;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
+import org.jboss.arquillian.container.spi.client.container.DeploymentException;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
+import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.osgi.spi.BundleInfo;
+import org.jboss.osgi.vfs.AbstractVFS;
+import org.jboss.osgi.vfs.VFSUtils;
+import org.jboss.osgi.vfs.VirtualFile;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.osgi.framework.BundleException;
+import org.osgi.jmx.framework.BundleStateMBean;
+import org.osgi.jmx.framework.FrameworkMBean;
+import org.osgi.jmx.framework.ServiceStateMBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * KarafManagedDeployableContainer
+ *
+ * @author thomas.diesler@jboss.com
+ */
+public class KarafManagedDeployableContainer implements DeployableContainer<KarafManagedContainerConfiguration> {
+
+    static final Logger LOGGER = LoggerFactory.getLogger(KarafManagedDeployableContainer.class.getPackage().getName());
+
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<MBeanServerConnection> mbeanServerInstance;
+
+    private final Map<String, BundleHandle> deployedBundles = new HashMap<String, BundleHandle>();
+    private KarafManagedContainerConfiguration config;
+    private FrameworkMBean frameworkMBean;
+    private BundleStateMBean bundleStateMBean;
+    private ServiceStateMBean serviceStateMBean;
+    private Process process;
+
+    @Override
+    public Class<KarafManagedContainerConfiguration> getConfigurationClass() {
+        return KarafManagedContainerConfiguration.class;
+    }
+
+    @Override
+    public ProtocolDescription getDefaultProtocol() {
+        return new ProtocolDescription("jmx-osgi");
+    }
+
+    @Override
+    public void setup(KarafManagedContainerConfiguration config) {
+        this.config = config;
+    }
+
+    @Override
+    public void start() throws LifecycleException {
+
+        // Try to connect to an already running server
+        MBeanServerConnection mbeanServer = null;
+        try {
+            mbeanServer = getMBeanServerConnection(500, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException ex) {
+            // ignore
+        }
+
+        // Start the Karaf process
+        if (mbeanServer == null) {
+            String karafHome = config.getKarafHome();
+            if (karafHome == null)
+                throw new IllegalStateException("karafHome cannot be null");
+
+            File karafHomeDir = new File(karafHome);
+            if (!karafHomeDir.isDirectory())
+                throw new IllegalStateException("Not a valid Karaf home dir: " + karafHomeDir);
+
+            String[] envp = new String[] {};
+            try {
+                process = Runtime.getRuntime().exec("bin/karaf", envp, karafHomeDir);
+            } catch (Exception ex) {
+                throw new LifecycleException("Cannot start managed Karaf container", ex);
+            }
+        }
+
+        try {
+            // Get the MBeanServerConnection
+            mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
+            mbeanServerInstance.set(mbeanServer);
+
+            // Get the FrameworkMBean
+            ObjectName oname = ObjectNameFactory.create(FrameworkMBean.OBJECTNAME + ",*");
+            frameworkMBean = getMBeanProxy(mbeanServer, oname, FrameworkMBean.class, 30, TimeUnit.SECONDS);
+
+            // Get the BundleStateMBean
+            oname = ObjectNameFactory.create(BundleStateMBean.OBJECTNAME + ",*");
+            bundleStateMBean = getMBeanProxy(mbeanServer, oname, BundleStateMBean.class, 30, TimeUnit.SECONDS);
+
+            // Get the BundleStateMBean
+            oname = ObjectNameFactory.create(ServiceStateMBean.OBJECTNAME + ",*");
+            serviceStateMBean = getMBeanProxy(mbeanServer, oname, ServiceStateMBean.class, 30, TimeUnit.SECONDS);
+
+            // Await the arquillian bundle to become active
+            awaitArquillianBundleActive(30, TimeUnit.SECONDS);
+
+            // Await the beginning start level
+            Integer beginningStartLevel = config.getKarafBeginningStartLevel();
+            if (beginningStartLevel != null) {
+                awaitKarafBeginningStartLevel(beginningStartLevel, 30, TimeUnit.SECONDS);
+            }
+
+            // Await the bootstrap complete marker service to become available
+            String completeService = config.getBootstrapCompleteService();
+            if (completeService != null)
+                awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
+
+        } catch (Exception ex) {
+            process.destroy();
+            throw new LifecycleException("Cannot start Karaf container", ex);
+        }
+    }
+
+    @Override
+    public void stop() throws LifecycleException {
+        if (process != null) {
+            process.destroy();
+        }
+    }
+
+    @Override
+    public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
+        try {
+            BundleHandle handle = installBundle(archive);
+            deployedBundles.put(archive.getName(), handle);
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception ex) {
+            throw new DeploymentException("Cannot deploy: " + archive.getName(), ex);
+        }
+        MBeanServerConnection mbeanServer = mbeanServerInstance.get();
+        return new ProtocolMetaData().addContext(new JMXContext(mbeanServer));
+    }
+
+    @Override
+    public void undeploy(Archive<?> archive) throws DeploymentException {
+        BundleHandle handle = deployedBundles.remove(archive.getName());
+        if (handle != null) {
+            try {
+                frameworkMBean.uninstallBundle(handle.getBundleId());
+            } catch (IOException ex) {
+                LOGGER.error("Cannot undeploy: " + archive.getName(), ex);
+            }
+        }
+     }
+
+    @Override
+    public void deploy(Descriptor descriptor) throws DeploymentException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void undeploy(Descriptor descriptor) throws DeploymentException {
+        throw new UnsupportedOperationException();
+    }
+
+    private MBeanServerConnection getMBeanServerConnection(final long timeout, final TimeUnit unit) throws TimeoutException {
+        Callable<MBeanServerConnection> callable = new Callable<MBeanServerConnection>() {
+            @Override
+            public MBeanServerConnection call() throws Exception {
+                IOException lastException = null;
+                long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+                while (System.currentTimeMillis() < timeoutMillis) {
+                    try {
+                        return getMBeanServerConnection();
+                    } catch (IOException ex) {
+                        lastException = ex;
+                        Thread.sleep(500);
+                    }
+                }
+                LOGGER.warn("Cannot connect to Karaf", lastException);
+                throw new TimeoutException();
+            }
+        };
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<MBeanServerConnection> future = executor.submit(callable);
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    private MBeanServerConnection getMBeanServerConnection() throws IOException {
+        String[] credentials = new String[] { config.getJmxUsername(), config.getJmxPassword() };
+        Map<String, ?> env = Collections.singletonMap(JMXConnector.CREDENTIALS, credentials);
+        JMXServiceURL serviceURL = new JMXServiceURL(config.getJmxServiceURL());
+        JMXConnector connector = JMXConnectorFactory.connect(serviceURL, env);
+        return connector.getMBeanServerConnection();
+    }
+
+    private <T> T getMBeanProxy(final MBeanServerConnection mbeanServer, final ObjectName oname, final Class<T> type, final long timeout, final TimeUnit unit) throws TimeoutException {
+        Callable<T> callable = new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                IOException lastException = null;
+                long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+                while (System.currentTimeMillis() < timeoutMillis) {
+                    Set<ObjectName> names = mbeanServer.queryNames(oname, null);
+                    if (names.size() == 1) {
+                        ObjectName instanceName = names.iterator().next();
+                        return MBeanProxy.get(mbeanServer, instanceName, type);
+                    } else {
+                        Thread.sleep(500);
+                    }
+                }
+                LOGGER.warn("Cannot connect to Karaf", lastException);
+                throw new TimeoutException();
+            }
+        };
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<T> future = executor.submit(callable);
+        try {
+            return future.get(timeout, unit);
+        } catch (TimeoutException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    private void awaitArquillianBundleActive(long timeout, TimeUnit unit) throws IOException, TimeoutException, InterruptedException {
+
+        String symbolicName = "arquillian-osgi-bundle";
+        List<BundleHandle> list = listBundles(symbolicName);
+        if (list.size() != 1)
+            throw new IllegalStateException("Cannot obtain: " + symbolicName);
+
+        long bundleId = list.get(0).getBundleId();
+        long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < timeoutMillis) {
+            String state = bundleStateMBean.getState(bundleId);
+            if (BundleStateMBean.ACTIVE.equals(state)) {
+                return;
+            } else {
+                Thread.sleep(500);
+            }
+        }
+        throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started");
+    }
+
+    private void awaitKarafBeginningStartLevel(final Integer beginningStartLevel, long timeout, TimeUnit unit) throws IOException, TimeoutException, InterruptedException {
+        long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < timeoutMillis) {
+            int startLevel = frameworkMBean.getFrameworkStartLevel();
+            if (startLevel >= beginningStartLevel) {
+                return;
+            } else {
+                Thread.sleep(500);
+            }
+        }
+        throw new TimeoutException("Beginning start level [" + beginningStartLevel + "] not reached");
+    }
+
+    private void awaitBootstrapCompleteService(String serviceName, long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, IOException {
+        long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < timeoutMillis) {
+            TabularData list = serviceStateMBean.listServices(serviceName, null);
+            if (list.size() > 0) {
+                return;
+            } else {
+                Thread.sleep(500);
+            }
+        }
+        throw new TimeoutException("Cannot obtain service: " + serviceName);
+    }
+
+    private BundleHandle installBundle(Archive<?> archive) throws BundleException, IOException {
+        VirtualFile virtualFile = toVirtualFile(archive);
+        try {
+            return installBundle(archive.getName(), virtualFile);
+        } finally {
+            VFSUtils.safeClose(virtualFile);
+        }
+    }
+
+    private VirtualFile toVirtualFile(Archive<?> archive) throws IOException {
+        ZipExporter exporter = archive.as(ZipExporter.class);
+        return AbstractVFS.toVirtualFile(archive.getName(), exporter.exportAsInputStream());
+    }
+
+    private BundleHandle installBundle(String location, VirtualFile virtualFile) throws BundleException, IOException {
+        BundleInfo info = BundleInfo.createBundleInfo(virtualFile);
+        String streamURL = info.getRoot().getStreamURL().toExternalForm();
+        long bundleId = frameworkMBean.installBundleFromURL(location, streamURL);
+        return new BundleHandle(bundleId, info.getSymbolicName());
+    }
+
+    private List<BundleHandle> listBundles(String symbolicName) throws IOException {
+        List<BundleHandle> bundleList = new ArrayList<BundleHandle>();
+        TabularData listBundles = bundleStateMBean.listBundles();
+        Iterator<?> iterator = listBundles.values().iterator();
+        while (iterator.hasNext()) {
+            CompositeData bundleType = (CompositeData) iterator.next();
+            Long bundleId = (Long) bundleType.get(BundleStateMBean.IDENTIFIER);
+            String auxName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
+            if (symbolicName == null || symbolicName.equals(auxName)) {
+                bundleList.add(new BundleHandle(bundleId, symbolicName));
+            }
+        }
+        return bundleList;
+    }
+
+    static class BundleHandle {
+        private long bundleId;
+        private String symbolicName;
+
+        BundleHandle(long bundleId, String symbolicName) {
+            this.bundleId = bundleId;
+            this.symbolicName = symbolicName;
+        }
+
+        long getBundleId() {
+            return bundleId;
+        }
+
+        String getSymbolicName() {
+            return symbolicName;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + bundleId + "]" + symbolicName;
+        }
+    }
+}
