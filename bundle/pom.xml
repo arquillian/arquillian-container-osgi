@@ -99,6 +99,7 @@
                             shrinkwrap-api;inline=false,
                             shrinkwrap-impl-base;inline=false,
                             shrinkwrap-spi;inline=false,
+                            hamcrest-core;inline=false,
                             junit;inline=false,
                         </Embed-Dependency>
                         <_exportcontents>
