@@ -109,6 +109,17 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             // ignore
         }
 
+        if (mbeanServer != null && !config.isAllowConnectingToRunningServer()) {
+            throw new LifecycleException(
+                    "The server is already running! " +
+                            "Managed containers does not support connecting to running server instances due to the " +
+                            "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
+                            "change to another type of container.\n" +
+                            "To disable this check and allow Arquillian to connect to a running server, " +
+                            "set allowConnectingToRunningServer to true in the container configuration"
+                    );
+        }
+
         // Start the Karaf process
         if (mbeanServer == null) {
             String karafHome = config.getKarafHome();
@@ -125,14 +136,18 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             } catch (Exception ex) {
                 throw new LifecycleException("Cannot start managed Karaf container", ex);
             }
-        }
-
-        try {
 
             // Get the MBeanServerConnection
-            mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
-            mbeanServerInstance.set(mbeanServer);
+            try {
+                mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
+            } catch (Exception ex) {
+                throw new LifecycleException("Cannot MBean server connection", ex);
+            }
+        }
 
+        mbeanServerInstance.set(mbeanServer);
+
+        try {
             // Get the FrameworkMBean
             ObjectName oname = ObjectNameFactory.create(FrameworkMBean.OBJECTNAME + ",*");
             frameworkMBean = getMBeanProxy(mbeanServer, oname, FrameworkMBean.class, 30, TimeUnit.SECONDS);

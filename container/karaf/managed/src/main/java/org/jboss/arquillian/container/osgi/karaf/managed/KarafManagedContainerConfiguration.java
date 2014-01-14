@@ -36,6 +36,7 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
     private String jmxPassword;
     private Integer karafBeginningStartLevel;
     private String bootstrapCompleteService;
+    private boolean allowConnectingToRunningServer;
 
     public String getKarafHome() {
         return karafHome;
@@ -83,6 +84,14 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
 
     public void setJmxPassword(String jmxPassword) {
         this.jmxPassword = jmxPassword;
+    }
+
+    public boolean isAllowConnectingToRunningServer() {
+        return allowConnectingToRunningServer;
+    }
+
+    public void setAllowConnectingToRunningServer(boolean allowConnectingToRunningServer) {
+        this.allowConnectingToRunningServer = allowConnectingToRunningServer;
     }
 
     @Override
