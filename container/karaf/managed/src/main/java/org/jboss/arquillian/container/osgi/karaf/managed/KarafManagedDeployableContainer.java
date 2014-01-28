@@ -18,6 +18,7 @@ package org.jboss.arquillian.container.osgi.karaf.managed;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -56,6 +58,7 @@ import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.osgi.framework.BundleException;
 import org.osgi.jmx.framework.BundleStateMBean;
 import org.osgi.jmx.framework.FrameworkMBean;
@@ -141,7 +144,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             try {
                 mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
             } catch (Exception ex) {
-                throw new LifecycleException("Cannot MBean server connection", ex);
+                throw new LifecycleException("Cannot obtain MBean server connection", ex);
             }
         }
 
@@ -159,6 +162,9 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             // Get the BundleStateMBean
             oname = ObjectNameFactory.create(ServiceStateMBean.OBJECTNAME + ",*");
             serviceStateMBean = getMBeanProxy(mbeanServer, oname, ServiceStateMBean.class, 30, TimeUnit.SECONDS);
+
+            // Install the arquillian bundle to become active
+            installArquillianBundle();
 
             // Await the arquillian bundle to become active
             awaitArquillianBundleActive(30, TimeUnit.SECONDS);
@@ -307,6 +313,22 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         }
     }
 
+    protected void installArquillianBundle() throws LifecycleException, IOException {
+        List<BundleHandle> bundleList = listBundles("arquillian-osgi-bundle");
+        if (bundleList.isEmpty()) {
+            try {
+                // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
+                String arqVersion = EmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
+                if (arqVersion == null) {
+                    arqVersion = System.getProperty("arquillian.osgi.version");
+                }
+                installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
+            } catch (BundleException ex) {
+                throw new LifecycleException("Cannot install arquillian-osgi-bundle", ex);
+            }
+        }
+    }
+
     private void awaitArquillianBundleActive(long timeout, TimeUnit unit) throws IOException, TimeoutException, InterruptedException {
 
         String symbolicName = "arquillian-osgi-bundle";
@@ -371,9 +393,30 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
 
     private BundleHandle installBundle(String location, VirtualFile virtualFile) throws BundleException, IOException {
         BundleInfo info = BundleInfo.createBundleInfo(virtualFile);
-        String streamURL = info.getRoot().getStreamURL().toExternalForm();
-        long bundleId = frameworkMBean.installBundleFromURL(location, streamURL);
-        return new BundleHandle(bundleId, info.getSymbolicName());
+        URL streamURL = info.getRoot().getStreamURL();
+        return installBundle(location, streamURL);
+    }
+
+    private BundleHandle installBundle(String location, URL streamURL) throws BundleException, IOException {
+        long bundleId = frameworkMBean.installBundleFromURL(location, streamURL.toExternalForm());
+        String symbolicName = bundleStateMBean.getSymbolicName(bundleId);
+        return new BundleHandle(bundleId, symbolicName);
+    }
+
+    private BundleHandle installBundle(String groupId, String artifactId, String version, boolean startBundle) throws BundleException, IOException {
+        String filespec = groupId + ":" + artifactId + ":jar:" + version;
+        File[] resolved = Maven.resolver().resolve(filespec).withoutTransitivity().asFile();
+        if (resolved == null || resolved.length == 0)
+            throw new BundleException("Cannot obtain maven artifact: " + filespec);
+        if (resolved.length > 1)
+            throw new BundleException("Multiple maven artifacts for: " + filespec);
+
+        URL fileURL = resolved[0].toURI().toURL();
+        BundleHandle handle = installBundle(filespec, fileURL);
+        if (startBundle) {
+            frameworkMBean.startBundle(handle.getBundleId());
+        }
+        return handle;
     }
 
     private List<BundleHandle> listBundles(String symbolicName) throws IOException {

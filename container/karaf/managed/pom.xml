@@ -106,23 +106,6 @@
                             </artifactItems>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>copy-bundles</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.jboss.arquillian.osgi</groupId>
-                                    <artifactId>arquillian-osgi-bundle</artifactId>
-                                    <version>${project.version}</version>
-                                    <outputDirectory>${karaf.home}/system/org/jboss/arquillian/osgi/arquillian-osgi-bundle/${project.version}</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -135,13 +118,6 @@
                         </goals>
                         <configuration>
                             <target>
-                                <echo file="${karaf.home}/etc/startup.properties" append="true">
-#
-# Arquillian OSGi Integration
-# 
-org/jboss/arquillian/osgi/arquillian-osgi-bundle/${project.version}/arquillian-osgi-bundle-${project.version}.jar=40
-                                </echo>
-                                
                                 <echo file="${karaf.home}/etc/custom.properties" append="true">
 # Clean the persitent bundle store on Framework INIT                                
 org.osgi.framework.storage.clean=onFirstInit
