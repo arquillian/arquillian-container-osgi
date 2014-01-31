@@ -133,7 +133,11 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             if (!karafHomeDir.isDirectory())
                 throw new IllegalStateException("Not a valid Karaf home dir: " + karafHomeDir);
 
-            String[] envp = new String[] {};
+            String javaArgs = config.getJavaArguments();
+            if (!javaArgs.contains("-Xmx")) {
+                javaArgs = KarafManagedContainerConfiguration.DEFAULT_JAVA_ARGUMENTS + javaArgs;
+            }
+            String[] envp = new String[] { "JAVA_OPTS=" + javaArgs };
             try {
                 process = Runtime.getRuntime().exec("bin/karaf", envp, karafHomeDir);
             } catch (Exception ex) {
@@ -144,6 +148,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             try {
                 mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
             } catch (Exception ex) {
+                destroyKarafProcess();
                 throw new LifecycleException("Cannot obtain MBean server connection", ex);
             }
         }
@@ -180,16 +185,20 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
                 awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
 
         } catch (RuntimeException rte) {
-            process.destroy();
+            destroyKarafProcess();
             throw rte;
         } catch (Exception ex) {
-            process.destroy();
+            destroyKarafProcess();
             throw new LifecycleException("Cannot start Karaf container", ex);
         }
     }
 
     @Override
     public void stop() throws LifecycleException {
+        destroyKarafProcess();
+    }
+
+    private void destroyKarafProcess() {
         if (process != null) {
             process.destroy();
         }
