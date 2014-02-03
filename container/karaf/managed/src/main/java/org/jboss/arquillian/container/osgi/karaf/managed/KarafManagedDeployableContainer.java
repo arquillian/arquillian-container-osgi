@@ -133,9 +133,9 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             if (!karafHomeDir.isDirectory())
                 throw new IllegalStateException("Not a valid Karaf home dir: " + karafHomeDir);
 
-            String javaArgs = config.getJavaArguments();
+            String javaArgs = config.getJavaVmArguments();
             if (!javaArgs.contains("-Xmx")) {
-                javaArgs = KarafManagedContainerConfiguration.DEFAULT_JAVA_ARGUMENTS + javaArgs;
+                javaArgs = KarafManagedContainerConfiguration.DEFAULT_JAVAVM_ARGUMENTS + javaArgs;
             }
             String[] envp = new String[] { "JAVA_OPTS=" + javaArgs };
             try {

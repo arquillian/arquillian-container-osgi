@@ -27,12 +27,12 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
 public class KarafManagedContainerConfiguration implements ContainerConfiguration {
 
     public static final String DEFAULT_JMX_SERVICE_URL = "service:jmx:rmi://localhost:44444/jndi/rmi://localhost:1099/karaf-root";
-    public static final String DEFAULT_JAVA_ARGUMENTS = "-Xmx512m ";
+    public static final String DEFAULT_JAVAVM_ARGUMENTS = "-Xmx512m ";
     public static final String DEFAULT_JMX_USERNAME = "karaf";
     public static final String DEFAULT_JMX_PASSWORD = "karaf";
 
     private String karafHome;
-    private String javaArguments;
+    private String javaVmArguments;
     private String jmxServiceURL;
     private String jmxUsername;
     private String jmxPassword;
@@ -48,12 +48,12 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
         this.karafHome = karafHome;
     }
 
-    public String getJavaArguments() {
-        return javaArguments;
+    public String getJavaVmArguments() {
+        return javaVmArguments;
     }
 
-    public void setJavaArguments(String javaArguments) {
-        this.javaArguments = javaArguments;
+    public void setJavaVmArguments(String javaArguments) {
+        this.javaVmArguments = javaArguments;
     }
 
     public Integer getKarafBeginningStartLevel() {
@@ -106,8 +106,8 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
 
     @Override
     public void validate() throws ConfigurationException {
-        if (javaArguments == null)
-            setJavaArguments(DEFAULT_JAVA_ARGUMENTS);
+        if (javaVmArguments == null)
+            setJavaVmArguments(DEFAULT_JAVAVM_ARGUMENTS);
         if (jmxServiceURL == null)
             setJmxServiceURL(DEFAULT_JMX_SERVICE_URL);
         if (jmxUsername == null)
