@@ -258,12 +258,12 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         Callable<MBeanServerConnection> callable = new Callable<MBeanServerConnection>() {
             @Override
             public MBeanServerConnection call() throws Exception {
-                IOException lastException = null;
+                Exception lastException = null;
                 long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
                 while (System.currentTimeMillis() < timeoutMillis) {
                     try {
                         return getMBeanServerConnection();
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         lastException = ex;
                         Thread.sleep(500);
                     }
