@@ -307,7 +307,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
                         Thread.sleep(500);
                     }
                 }
-                LOGGER.warn("Cannot connect to Karaf", lastException);
+                LOGGER.warn("Cannot get MBean proxy for type: " + type.getName(), lastException);
                 throw new TimeoutException();
             }
         };
