@@ -157,15 +157,15 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
 
         try {
             // Get the FrameworkMBean
-            ObjectName oname = ObjectNameFactory.create(FrameworkMBean.OBJECTNAME + ",*");
+            ObjectName oname = ObjectNameFactory.create("osgi.core:type=framework,*");
             frameworkMBean = getMBeanProxy(mbeanServer, oname, FrameworkMBean.class, 30, TimeUnit.SECONDS);
 
             // Get the BundleStateMBean
-            oname = ObjectNameFactory.create(BundleStateMBean.OBJECTNAME + ",*");
+            oname = ObjectNameFactory.create("osgi.core:type=bundleState,*");
             bundleStateMBean = getMBeanProxy(mbeanServer, oname, BundleStateMBean.class, 30, TimeUnit.SECONDS);
 
             // Get the BundleStateMBean
-            oname = ObjectNameFactory.create(ServiceStateMBean.OBJECTNAME + ",*");
+            oname = ObjectNameFactory.create("osgi.core:type=serviceState,*");
             serviceStateMBean = getMBeanProxy(mbeanServer, oname, ServiceStateMBean.class, 30, TimeUnit.SECONDS);
 
             // Install the arquillian bundle to become active
