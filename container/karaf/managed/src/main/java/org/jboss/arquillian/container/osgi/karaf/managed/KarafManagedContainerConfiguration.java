@@ -39,6 +39,12 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
     private Integer karafBeginningStartLevel;
     private String bootstrapCompleteService;
     private boolean allowConnectingToRunningServer;
+    private boolean outputToConsole;
+
+    public KarafManagedContainerConfiguration() {
+        this.allowConnectingToRunningServer = false;
+        this.outputToConsole = true;
+    }
 
     public String getKarafHome() {
         return karafHome;
@@ -102,6 +108,14 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
 
     public void setAllowConnectingToRunningServer(boolean allowConnectingToRunningServer) {
         this.allowConnectingToRunningServer = allowConnectingToRunningServer;
+    }
+
+    public boolean isOutputToConsole() {
+        return outputToConsole;
+    }
+
+    public void setOutputToConsole(boolean outputToConsole) {
+        this.outputToConsole = outputToConsole;
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.jboss.arquillian.container.osgi.karaf.managed;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -113,14 +114,10 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         }
 
         if (mbeanServer != null && !config.isAllowConnectingToRunningServer()) {
-            throw new LifecycleException(
-                    "The server is already running! " +
-                            "Managed containers does not support connecting to running server instances due to the " +
-                            "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
-                            "change to another type of container.\n" +
-                            "To disable this check and allow Arquillian to connect to a running server, " +
-                            "set allowConnectingToRunningServer to true in the container configuration"
-                    );
+            throw new LifecycleException("The server is already running! " + "Managed containers does not support connecting to running server instances due to the "
+                    + "possible harmful effect of connecting to the wrong server. Please stop server before running or " + "change to another type of container.\n"
+                    + "To disable this check and allow Arquillian to connect to a running server, "
+                    + "set allowConnectingToRunningServer to true in the container configuration");
         }
 
         // Start the Karaf process
@@ -137,9 +134,14 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             if (!javaArgs.contains("-Xmx")) {
                 javaArgs = KarafManagedContainerConfiguration.DEFAULT_JAVAVM_ARGUMENTS + javaArgs;
             }
-            String[] envp = new String[] { "JAVA_OPTS=" + javaArgs };
             try {
-                process = Runtime.getRuntime().exec("bin/karaf", envp, karafHomeDir);
+                ProcessBuilder processBuilder = new ProcessBuilder("bin/karaf");
+                Map<String, String> env = processBuilder.environment();
+                env.put("JAVA_OPTS", javaArgs);
+                processBuilder.directory(karafHomeDir);
+                processBuilder.redirectErrorStream(true);
+                process = processBuilder.start();
+                new Thread(new ConsoleConsumer()).start();
             } catch (Exception ex) {
                 throw new LifecycleException("Cannot start managed Karaf container", ex);
             }
@@ -242,7 +244,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
                 }
             }
         }
-     }
+    }
 
     @Override
     public void deploy(Descriptor descriptor) throws DeploymentException {
@@ -292,7 +294,8 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         return connector.getMBeanServerConnection();
     }
 
-    private <T> T getMBeanProxy(final MBeanServerConnection mbeanServer, final ObjectName oname, final Class<T> type, final long timeout, final TimeUnit unit) throws TimeoutException {
+    private <T> T getMBeanProxy(final MBeanServerConnection mbeanServer, final ObjectName oname, final Class<T> type, final long timeout, final TimeUnit unit)
+            throws TimeoutException {
         Callable<T> callable = new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -307,7 +310,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
                         Thread.sleep(500);
                     }
                 }
-                LOGGER.warn("Cannot get MBean proxy for type: " + type.getName(), lastException);
+                LOGGER.warn("Cannot get MBean proxy for type: " + oname, lastException);
                 throw new TimeoutException();
             }
         };
@@ -359,7 +362,8 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started: " + bundleState);
     }
 
-    private void awaitKarafBeginningStartLevel(final Integer beginningStartLevel, long timeout, TimeUnit unit) throws IOException, TimeoutException, InterruptedException {
+    private void awaitKarafBeginningStartLevel(final Integer beginningStartLevel, long timeout, TimeUnit unit) throws IOException, TimeoutException,
+            InterruptedException {
         int startLevel = 0;
         long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
         while (System.currentTimeMillis() < timeoutMillis) {
@@ -463,6 +467,30 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         @Override
         public String toString() {
             return "[" + bundleId + "]" + symbolicName;
+        }
+    }
+
+    /**
+     * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
+     *
+     * @author Stuart Douglas
+     */
+    private class ConsoleConsumer implements Runnable {
+
+        @Override
+        public void run() {
+            final InputStream stream = process.getInputStream();
+            final boolean writeOutput = config.isOutputToConsole();
+            try {
+                byte[] buf = new byte[32];
+                int num;
+                // Do not try reading a line cos it considers '\r' end of line
+                while ((num = stream.read(buf)) != -1) {
+                    if (writeOutput)
+                        System.out.write(buf, 0, num);
+                }
+            } catch (IOException e) {
+            }
         }
     }
 }
