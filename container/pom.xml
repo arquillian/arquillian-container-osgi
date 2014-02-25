@@ -24,6 +24,7 @@
         <module>common</module>
         <module>jbosgi</module>
         <module>felix</module>
+		<module>equinox</module>
         <module>karaf</module>
     </modules>
 
