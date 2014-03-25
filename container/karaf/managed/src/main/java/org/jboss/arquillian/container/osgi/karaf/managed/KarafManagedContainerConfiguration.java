@@ -27,7 +27,7 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
 public class KarafManagedContainerConfiguration implements ContainerConfiguration {
 
     public static final String DEFAULT_JMX_SERVICE_URL = "service:jmx:rmi://localhost:44444/jndi/rmi://localhost:1099/karaf-root";
-    public static final String DEFAULT_JAVAVM_ARGUMENTS = "-Xmx512m ";
+    public static final String DEFAULT_JAVAVM_ARGUMENTS = "-Xmx512m";
     public static final String DEFAULT_JMX_USERNAME = "karaf";
     public static final String DEFAULT_JMX_PASSWORD = "karaf";
 

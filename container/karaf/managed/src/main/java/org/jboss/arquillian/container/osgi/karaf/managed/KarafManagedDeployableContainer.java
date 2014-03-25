@@ -17,6 +17,7 @@
 package org.jboss.arquillian.container.osgi.karaf.managed;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -114,10 +115,10 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         }
 
         if (mbeanServer != null && !config.isAllowConnectingToRunningServer()) {
-            throw new LifecycleException("The server is already running! " + "Managed containers does not support connecting to running server instances due to the "
-                    + "possible harmful effect of connecting to the wrong server. Please stop server before running or " + "change to another type of container.\n"
-                    + "To disable this check and allow Arquillian to connect to a running server, "
-                    + "set allowConnectingToRunningServer to true in the container configuration");
+            throw new LifecycleException(
+                    "The server is already running! Managed containers does not support connecting to running server instances due to the " +
+                    "possible harmful effect of connecting to the wrong server. Please stop server before running or change to another type of container.\n" +
+                    "To disable this check and allow Arquillian to connect to a running server, set allowConnectingToRunningServer to true in the container configuration");
         }
 
         // Start the Karaf process
@@ -126,18 +127,55 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             if (karafHome == null)
                 throw new IllegalStateException("karafHome cannot be null");
 
-            File karafHomeDir = new File(karafHome);
+            File karafHomeDir = new File(karafHome).getAbsoluteFile();
             if (!karafHomeDir.isDirectory())
                 throw new IllegalStateException("Not a valid Karaf home dir: " + karafHomeDir);
 
+            List<String> cmd = new ArrayList<String>();
+            cmd.add("java");
+
             String javaArgs = config.getJavaVmArguments();
             if (!javaArgs.contains("-Xmx")) {
-                javaArgs = KarafManagedContainerConfiguration.DEFAULT_JAVAVM_ARGUMENTS + javaArgs;
+                cmd.add(KarafManagedContainerConfiguration.DEFAULT_JAVAVM_ARGUMENTS);
             }
+            cmd.add(javaArgs);
+
+            cmd.add("-Dkaraf.home=" + karafHomeDir);
+            cmd.add("-Dkaraf.base=" + karafHomeDir);
+            cmd.add("-Dkaraf.etc=" + karafHomeDir + "/etc");
+            cmd.add("-Dkaraf.data=" + karafHomeDir + "/data");
+            cmd.add("-Dkaraf.instances=" + karafHomeDir + "/instances");
+            cmd.add("-Dkaraf.startLocalConsole=false");
+            cmd.add("-Dkaraf.startRemoteShell=false");
+            cmd.add("-Djava.io.tmpdir=" + new File(karafHomeDir, "data/tmp"));
+            cmd.add("-Djava.util.logging.config.file=" + new File(karafHomeDir, "etc/java.util.logging.properties"));
+            cmd.add("-Djava.endorsed.dirs=" + new File(karafHomeDir, "lib/endorsed"));
+
+            StringBuffer classPath = new StringBuffer();
+            File karafLibDir = new File(karafHomeDir, "lib");
+            String[] libs = karafLibDir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.startsWith("karaf");
+                }
+            });
+            for (String lib : libs) {
+                String separator = classPath.length() > 0 ? File.pathSeparator : "";
+                classPath.append(separator + new File(karafHomeDir, "lib/" + lib));
+            }
+            cmd.add("-classpath");
+            cmd.add(classPath.toString());
+            cmd.add("org.apache.karaf.main.Main");
+
+            // Output the startup command
+            StringBuffer cmdstr = new StringBuffer();
+            for (String tok : cmd) {
+                cmdstr.append(tok + " ");
+            }
+            LOGGER.debug("Starting Karaf with: {}", cmdstr);
+
             try {
-                ProcessBuilder processBuilder = new ProcessBuilder("bin/karaf");
-                Map<String, String> env = processBuilder.environment();
-                env.put("JAVA_OPTS", javaArgs);
+                ProcessBuilder processBuilder = new ProcessBuilder(cmd);
                 processBuilder.directory(karafHomeDir);
                 processBuilder.redirectErrorStream(true);
                 process = processBuilder.start();
