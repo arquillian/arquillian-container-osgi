@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -134,12 +135,14 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             List<String> cmd = new ArrayList<String>();
             cmd.add("java");
 
+            // JavaVM args
             String javaArgs = config.getJavaVmArguments();
             if (!javaArgs.contains("-Xmx")) {
-                cmd.add(KarafManagedContainerConfiguration.DEFAULT_JAVAVM_ARGUMENTS);
+                javaArgs = KarafManagedContainerConfiguration.DEFAULT_JAVAVM_ARGUMENTS + " " + javaArgs;
             }
-            cmd.add(javaArgs);
+            cmd.addAll(Arrays.asList(javaArgs.split("\\s")));
 
+            // Karaf properties
             cmd.add("-Dkaraf.home=" + karafHomeDir);
             cmd.add("-Dkaraf.base=" + karafHomeDir);
             cmd.add("-Dkaraf.etc=" + karafHomeDir + "/etc");
@@ -147,10 +150,13 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             cmd.add("-Dkaraf.instances=" + karafHomeDir + "/instances");
             cmd.add("-Dkaraf.startLocalConsole=false");
             cmd.add("-Dkaraf.startRemoteShell=false");
+
+            // Java properties
             cmd.add("-Djava.io.tmpdir=" + new File(karafHomeDir, "data/tmp"));
             cmd.add("-Djava.util.logging.config.file=" + new File(karafHomeDir, "etc/java.util.logging.properties"));
             cmd.add("-Djava.endorsed.dirs=" + new File(karafHomeDir, "lib/endorsed"));
 
+            // Classpath
             StringBuffer classPath = new StringBuffer();
             File karafLibDir = new File(karafHomeDir, "lib");
             String[] libs = karafLibDir.list(new FilenameFilter() {
@@ -165,6 +171,8 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             }
             cmd.add("-classpath");
             cmd.add(classPath.toString());
+
+            // Main class
             cmd.add("org.apache.karaf.main.Main");
 
             // Output the startup command
