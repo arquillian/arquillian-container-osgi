@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jboss.arquillian.container</groupId>
         <artifactId>arquillian-container-osgi-parent</artifactId>
-        <version>2.1.0.CR15-SNAPSHOT</version>
+        <version>2.1.0.CR15</version>
     </parent>
 
     <artifactId>arquillian-container-jbosgi</artifactId>
