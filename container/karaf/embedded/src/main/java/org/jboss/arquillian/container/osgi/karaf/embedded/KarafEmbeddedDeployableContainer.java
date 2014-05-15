@@ -26,8 +26,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
-import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.service.startlevel.StartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,13 +121,14 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
 
     protected void awaitKarafBeginningStartLevel(final BundleContext syscontext, final Integer beginningStartLevel, long timeout, TimeUnit unit) {
         final CountDownLatch latch = new CountDownLatch(1);
-        final FrameworkStartLevel fwrkStartLevel = syscontext.getBundle().adapt(FrameworkStartLevel.class);
+        ServiceReference sref = syscontext.getServiceReference(StartLevel.class.getName());
+        final StartLevel startLevel = (StartLevel) syscontext.getService(sref);
         FrameworkListener listener = new FrameworkListener() {
             @Override
             public void frameworkEvent(FrameworkEvent event) {
                 if (event.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
-                    int startLevel = fwrkStartLevel.getStartLevel();
-                    if (startLevel == beginningStartLevel) {
+                    int startLevelVal = startLevel.getStartLevel();
+                    if (startLevelVal == beginningStartLevel) {
                         latch.countDown();
                     }
                 }
@@ -134,8 +136,8 @@ public class KarafEmbeddedDeployableContainer extends EmbeddedDeployableContaine
         };
         syscontext.addFrameworkListener(listener);
         try {
-            int startLevel = fwrkStartLevel.getStartLevel();
-            if (startLevel < beginningStartLevel) {
+            int startLevelVal = startLevel.getStartLevel();
+            if (startLevelVal < beginningStartLevel) {
                 try {
                     if (!latch.await(timeout, unit))
                         throw new IllegalStateException("Giving up waiting to reach start level: " + beginningStartLevel);

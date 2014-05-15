@@ -228,9 +228,13 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
                 awaitKarafBeginningStartLevel(beginningStartLevel, 30, TimeUnit.SECONDS);
 
             // Await the bootstrap complete marker service to become available
-            String completeService = config.getBootstrapCompleteService();
-            if (completeService != null)
-                awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
+            String completeServices = config.getBootstrapCompleteService();
+            if (completeServices != null) {
+                List<String> completeServicesList = Arrays.asList(completeServices.split(","));
+                for (String completeService : completeServicesList) {
+                    awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
+                }
+            }
 
         } catch (RuntimeException rte) {
             destroyKarafProcess();
@@ -273,11 +277,14 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             String bundleState = null;
             try {
                 long bundleId = handle.getBundleId();
-                CompositeData bundleType = bundleStateMBean.getBundle(bundleId);
+                CompositeData bundleType = getBundle(bundleId);
                 if (bundleType != null) {
                     bundleState = (String) bundleType.get(BundleStateMBean.STATE);
                 }
             } catch (IOException e) {
+                // ignore if the operation fails
+                return;
+            } catch (IllegalArgumentException e) {
                 // ignore non-existent bundle
                 return;
             }
@@ -426,7 +433,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
     private void awaitBootstrapCompleteService(String serviceName, long timeout, TimeUnit unit) throws TimeoutException, InterruptedException, IOException {
         long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
         while (System.currentTimeMillis() < timeoutMillis) {
-            TabularData list = serviceStateMBean.listServices(serviceName, null);
+            TabularData list = listServices(serviceName);
             if (list.size() > 0) {
                 return;
             } else {
@@ -491,6 +498,33 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             }
         }
         return bundleList;
+    }
+
+    private CompositeData getBundle(long bundleIdentifier) throws IOException {
+        TabularData listBundles = bundleStateMBean.listBundles();
+        Iterator<?> iterator = listBundles.values().iterator();
+        while (iterator.hasNext()) {
+            CompositeData bundleType = (CompositeData) iterator.next();
+            Long bundleId = (Long) bundleType.get(BundleStateMBean.IDENTIFIER);
+            if (bundleId.longValue() == bundleIdentifier) {
+                return bundleType;
+            }
+        }
+        throw new IllegalArgumentException("Indicated bundle (id=" + bundleIdentifier + ") does not exist");
+    }
+
+    private TabularData listServices(String clazz) throws IOException {
+        TabularData list = serviceStateMBean.listServices();
+        Iterator<?> iterator = list.values().iterator();
+        while (iterator.hasNext()) {
+            CompositeData serviceType = (CompositeData) iterator.next();
+            String [] serviceIntfsArray = (String []) serviceType.get(ServiceStateMBean.OBJECT_CLASS);
+            List<String> serviceIntfsList = Arrays.asList(serviceIntfsArray);
+            if (!serviceIntfsList.contains(clazz)) {
+                iterator.remove();
+            }
+        }
+        return list;
     }
 
     static class BundleHandle {

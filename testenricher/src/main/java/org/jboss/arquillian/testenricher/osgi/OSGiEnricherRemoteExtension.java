@@ -35,6 +35,8 @@ public class OSGiEnricherRemoteExtension implements RemoteLoadableExtension {
         if(Validate.classExists("org.osgi.framework.Bundle")) {
            builder.service(TestEnricher.class, OSGiTestEnricher.class);
            builder.service(ResourceProvider.class, BundleContextProvider.class);
+           builder.service(ResourceProvider.class, StartLevelProvider.class);
+           builder.service(ResourceProvider.class, PackageAdminProvider.class);
            builder.service(ResourceProvider.class, BundleProvider.class);
         }
     }

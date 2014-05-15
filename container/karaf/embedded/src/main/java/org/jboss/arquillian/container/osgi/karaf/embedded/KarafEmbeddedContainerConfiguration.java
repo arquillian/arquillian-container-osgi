@@ -20,7 +20,6 @@ import java.io.File;
 
 import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.jboss.osgi.metadata.spi.NotNullException;
 
 /**
  * KarafContainerConfiguration
@@ -52,7 +51,9 @@ public class KarafEmbeddedContainerConfiguration extends OSGiContainerConfigurat
     public void validate() throws ConfigurationException {
         super.validate();
 
-        NotNullException.assertValue(karafHome, "karafHome");
+        if (karafHome == null) {
+            throw new IllegalArgumentException("Null " + "karafHome");
+        }
         File karafHomeDir = new File(karafHome);
         if (!karafHomeDir.isDirectory())
             throw new IllegalStateException("Not a valid Karaf home dir: " + karafHomeDir);

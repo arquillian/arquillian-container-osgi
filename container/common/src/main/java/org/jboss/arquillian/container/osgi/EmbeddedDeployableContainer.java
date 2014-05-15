@@ -174,7 +174,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Bundle> bundleRef = new AtomicReference<Bundle>();
         int states = Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE;
-        BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(syscontext, states, null) {
+        BundleTracker tracker = new BundleTracker(syscontext, states, null) {
             @Override
             public Bundle addingBundle(Bundle bundle, BundleEvent event) {
                 if ("arquillian-osgi-bundle".equals(bundle.getSymbolicName())) {
@@ -186,7 +186,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
             }
 
             @Override
-            public void modifiedBundle(Bundle bundle, BundleEvent event, Bundle tracked) {
+            public void modifiedBundle(Bundle bundle, BundleEvent event, Object tracked) {
                 if (event != null && event.getType() == BundleEvent.STARTED) {
                     latch.countDown();
                 }
@@ -213,7 +213,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void awaitBootstrapCompleteService(BundleContext syscontext, String serviceName, long timeout, TimeUnit unit) {
         final CountDownLatch latch = new CountDownLatch(1);
-        ServiceTracker<?, ?> tracker = new ServiceTracker(syscontext, serviceName, null) {
+        ServiceTracker tracker = new ServiceTracker(syscontext, serviceName, null) {
             @Override
             public Object addingService(ServiceReference sref) {
                 Object service = super.addingService(sref);
@@ -289,10 +289,11 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         try {
             String location = archive.getName();
             log.info("Uninstalling bundle: " + location);
-
-            Bundle bundle = syscontext.getBundle(location);
-            if (bundle != null && bundle.getState() != Bundle.UNINSTALLED) {
-                uninstallBundle(bundle);
+            for (Bundle aux : syscontext.getBundles()) {
+                if (aux.getLocation().equals(location) && aux.getState() != Bundle.UNINSTALLED) {
+                    aux.uninstall();
+                    break;
+                }
             }
         } catch (BundleException ex) {
             log.warn("Cannot undeploy: " + archive, ex);

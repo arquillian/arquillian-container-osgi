@@ -38,8 +38,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.startlevel.BundleStartLevel;
-import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * Test {@link StartLevelAware}
@@ -56,6 +55,9 @@ public class StartLevelAwareTestCase {
     @ArquillianResource
     BundleContext context;
 
+    @ArquillianResource
+    StartLevel startLevel;
+
     @Deployment
     @StartLevelAware(startLevel = 3)
     public static JavaArchive create() {
@@ -66,7 +68,7 @@ public class StartLevelAwareTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(FrameworkStartLevel.class);
+                builder.addImportPackages(StartLevel.class);
                 return builder.openStream();
             }
         });
@@ -75,16 +77,13 @@ public class StartLevelAwareTestCase {
 
     @Test
     public void testStartLevel() throws Exception {
-
-        FrameworkStartLevel fwStartLevel = context.getBundle().adapt(FrameworkStartLevel.class);
-        int initialStartLevel = fwStartLevel.getInitialBundleStartLevel();
+        int initialStartLevel = startLevel.getInitialBundleStartLevel();
         assertEquals("Initial bundle start level", 1, initialStartLevel);
 
         assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
         assertEquals("start-level-bundle", bundle.getSymbolicName());
 
-        BundleStartLevel bStartLevel = bundle.adapt(BundleStartLevel.class);
-        int bundleStartLevel = bStartLevel.getStartLevel();
+        int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
         assertEquals("Bundle start level", 3, bundleStartLevel);
 
         try {
@@ -108,7 +107,7 @@ public class StartLevelAwareTestCase {
                     latch.countDown();
             }
         });
-        fwStartLevel.setStartLevel(3);
+        startLevel.setStartLevel(3);
         latch.await(3, TimeUnit.SECONDS);
 
         // The bundle should now be started

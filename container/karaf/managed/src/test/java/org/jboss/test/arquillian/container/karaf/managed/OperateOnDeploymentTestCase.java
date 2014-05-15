@@ -41,13 +41,13 @@ import org.osgi.framework.Bundle;
 @RunWith(Arquillian.class)
 public class OperateOnDeploymentTestCase {
 
-    static final String BUNDLE_A = "bundle-a";
-    static final String BUNDLE_B = "bundle-b";
+    static final String BUNDLE_A = "bundle-a.jar";
+    static final String BUNDLE_B = "bundle-b.jar";
 
     @Deployment
     public static Archive<?> deployment() {
         // The default deployment is needed if we don't want to @RunAsClient
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests.jar");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {

@@ -147,7 +147,7 @@ public class ArquillianDeployerTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(BAD_BUNDLE);
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackage("org.acme.foo");
+                builder.addImportPackages("org.acme.foo");
                 return builder.openStream();
             }
         });

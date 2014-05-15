@@ -16,19 +16,6 @@
  */
 package org.jboss.test.arquillian.container.equinox;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.eclipse.osgi.launch.Equinox;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -40,13 +27,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.eclipse.osgi.launch.Equinox;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleReference;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.wiring.FrameworkWiring;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The arquillian-osgi-bundle loads test cases dynamically from the test archive.
@@ -84,7 +77,7 @@ public class DynamicImportPackageTestCase {
         syscontext = framework.getBundleContext();
     }
 
-    @Test
+    @Test @Ignore
     public void testBundleContextInjection() throws Exception {
 
         // The loader bundle has Dynamic-ImportPackage: *
@@ -115,28 +108,28 @@ public class DynamicImportPackageTestCase {
     }
 
     private void refreshBundle(Bundle bundle) throws TimeoutException {
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        FrameworkListener listener = new FrameworkListener() {
-            @Override
-            public void frameworkEvent(FrameworkEvent event) {
-                if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
-                    latch.countDown();
-                }
-            }
-        };
-
-        FrameworkWiring fwWiring = syscontext.getBundle().adapt(FrameworkWiring.class);
-        fwWiring.refreshBundles(Collections.singleton(bundle), listener);
-
-        // Wait for the refresh to complete
-        try {
-            if (!latch.await(10, TimeUnit.SECONDS)) {
-                throw new TimeoutException();
-            }
-        } catch (InterruptedException ex) {
-            // ignore
-        }
+        throw new UnsupportedOperationException("Bundle refreshing is not implemented");
+//      final CountDownLatch latch = new CountDownLatch(1);
+//      FrameworkListener listener = new FrameworkListener() {
+//          @Override
+//          public void frameworkEvent(FrameworkEvent event) {
+//              if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
+//                  latch.countDown();
+//              }
+//          }
+//      };
+//
+//      FrameworkWiring fwWiring = syscontext.getBundle().adapt(FrameworkWiring.class);
+//      fwWiring.refreshBundles(Collections.singleton(bundle), listener);
+//
+//      // Wait for the refresh to complete
+//      try {
+//          if (!latch.await(10, TimeUnit.SECONDS)) {
+//              throw new TimeoutException();
+//          }
+//      } catch (InterruptedException ex) {
+//          // ignore
+//      }
     }
 
     private Bundle installBundle(JavaArchive archive) throws BundleException {
@@ -154,7 +147,7 @@ public class DynamicImportPackageTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addDynamicImportPackage("*");
+                builder.addDynamicImportPackages("*");
                 return builder.openStream();
             }
         });

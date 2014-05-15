@@ -41,13 +41,15 @@ import org.osgi.framework.Bundle;
 @RunWith(Arquillian.class)
 public class AutostartTestCase {
 
+    private static final String BUNDLE = "autostart-bundle.jar";
+
     @ArquillianResource
     Bundle bundle;
 
     @Deployment
     @StartLevelAware(autostart = true)
     public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "autostart-bundle");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -64,7 +66,7 @@ public class AutostartTestCase {
     public void testStartLevel() throws Exception {
 
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-        assertEquals("autostart-bundle", bundle.getSymbolicName());
+        assertEquals(BUNDLE, bundle.getSymbolicName());
 
         bundle.uninstall();
         assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());

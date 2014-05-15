@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.wiring.FrameworkWiring;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Test multiple bundle deployments
@@ -42,23 +42,27 @@ import org.osgi.framework.wiring.FrameworkWiring;
 @RunWith(Arquillian.class)
 public class MultipleBundleDeploymentsTestCase {
 
-    static final String BUNDLE_A = "bundle-a";
-    static final String BUNDLE_B = "bundle-b";
+    static final String BUNDLE_A = "bundle-a.jar";
+    static final String BUNDLE_B = "bundle-b.jar";
 
     @ArquillianResource
     BundleContext context;
 
+    @ArquillianResource
+    PackageAdmin packageAdmin;
+
+
     @Deployment
     public static Archive<?> deployment() {
         // The default deployment is needed if we don't want to @RunAsClient
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "multiple-tests.jar");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(FrameworkWiring.class);
+                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
@@ -97,10 +101,10 @@ public class MultipleBundleDeploymentsTestCase {
 
     @Test
     public void testBundleDeployments() throws Exception {
-        Bundle bundleA = context.getBundle(BUNDLE_A);
+        Bundle bundleA = packageAdmin.getBundles(BUNDLE_A, null)[0];
         Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
 
-        Bundle bundleB = context.getBundle(BUNDLE_B);
+        Bundle bundleB = packageAdmin.getBundles(BUNDLE_B, null)[0];
         Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleB.getState());
     }
 }
