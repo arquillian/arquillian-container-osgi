@@ -44,8 +44,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.jboss.arquillian.container.osgi.CommonDeployableContainer;
 import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
-import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
@@ -62,6 +62,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
 import org.osgi.framework.BundleException;
 import org.osgi.jmx.framework.BundleStateMBean;
 import org.osgi.jmx.framework.FrameworkMBean;
@@ -74,7 +75,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafManagedDeployableContainer implements DeployableContainer<KarafManagedContainerConfiguration> {
+public class KarafManagedDeployableContainer<T extends KarafManagedContainerConfiguration> extends CommonDeployableContainer<T> {
 
     static final Logger LOGGER = LoggerFactory.getLogger(KarafManagedDeployableContainer.class.getPackage().getName());
 
@@ -90,8 +91,10 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
     private Process process;
 
     @Override
-    public Class<KarafManagedContainerConfiguration> getConfigurationClass() {
-        return KarafManagedContainerConfiguration.class;
+    public Class<T> getConfigurationClass() {
+        @SuppressWarnings("unchecked")
+        Class<T> clazz = (Class<T>) KarafManagedContainerConfiguration.class;
+        return clazz;
     }
 
     @Override
@@ -100,8 +103,9 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
     }
 
     @Override
-    public void setup(KarafManagedContainerConfiguration config) {
-        this.config = config;
+    public void setup(T configuration) {
+        super.setup(configuration);
+        this.config = configuration;
     }
 
     @Override
@@ -228,13 +232,9 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
                 awaitKarafBeginningStartLevel(beginningStartLevel, 30, TimeUnit.SECONDS);
 
             // Await the bootstrap complete marker service to become available
-            String completeServices = config.getBootstrapCompleteService();
-            if (completeServices != null) {
-                List<String> completeServicesList = Arrays.asList(completeServices.split(","));
-                for (String completeService : completeServicesList) {
-                    awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
-                }
-            }
+            String completeService = config.getBootstrapCompleteService();
+            if (completeService != null)
+                awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
 
         } catch (RuntimeException rte) {
             destroyKarafProcess();
@@ -347,11 +347,11 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
         return connector.getMBeanServerConnection();
     }
 
-    private <T> T getMBeanProxy(final MBeanServerConnection mbeanServer, final ObjectName oname, final Class<T> type, final long timeout, final TimeUnit unit)
+    private <U> U getMBeanProxy(final MBeanServerConnection mbeanServer, final ObjectName oname, final Class<U> type, final long timeout, final TimeUnit unit)
             throws TimeoutException {
-        Callable<T> callable = new Callable<T>() {
+        Callable<U> callable = new Callable<U>() {
             @Override
-            public T call() throws Exception {
+            public U call() throws Exception {
                 IOException lastException = null;
                 long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
                 while (System.currentTimeMillis() < timeoutMillis) {
@@ -368,7 +368,7 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             }
         };
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<T> future = executor.submit(callable);
+        Future<U> future = executor.submit(callable);
         try {
             return future.get(timeout, unit);
         } catch (TimeoutException ex) {
@@ -525,6 +525,30 @@ public class KarafManagedDeployableContainer implements DeployableContainer<Kara
             }
         }
         return list;
+    }
+
+    private BundleHandle getBundle(String symbolicName, String version) throws Exception {
+        TabularData listBundles = bundleStateMBean.listBundles();
+        Iterator<?> iterator = listBundles.values().iterator();
+        while (iterator.hasNext()) {
+            CompositeData bundleType = (CompositeData) iterator.next();
+            Long bundleId = (Long) bundleType.get(BundleStateMBean.IDENTIFIER);
+            String auxName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
+            String auxVersion = (String) bundleType.get(BundleStateMBean.VERSION);
+            if (symbolicName.equals(auxName) && version.equals(auxVersion)) {
+                return new BundleHandle(bundleId, symbolicName);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void startBundle(String symbolicName, String version) throws Exception {
+        BundleHandle bHandle = getBundle(symbolicName, version);
+        if (bHandle == null) {
+            throw new IllegalStateException("Bundle '" + symbolicName + ":" + version + "' was not found");
+        }
+        frameworkMBean.startBundle(bHandle.getBundleId());
     }
 
     static class BundleHandle {
