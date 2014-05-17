@@ -17,6 +17,7 @@
  */
 package org.jboss.arquillian.container.osgi.felix;
 
+import org.jboss.arquillian.container.osgi.DeploymentObserver;
 import org.jboss.arquillian.container.osgi.OSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
@@ -33,6 +34,7 @@ public class FelixContainerExtension implements LoadableExtension {
     public void register(ExtensionBuilder builder) {
         builder.service(DeployableContainer.class, FelixEmbeddedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
+        builder.observer(DeploymentObserver.class);
     }
 
 }

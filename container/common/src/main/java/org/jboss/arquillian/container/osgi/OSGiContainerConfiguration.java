@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 import org.osgi.framework.launch.FrameworkFactory;
 
 /**
@@ -35,15 +34,15 @@ import org.osgi.framework.launch.FrameworkFactory;
  *
  * @author thomas.diesler@jboss.com
  */
-public class OSGiContainerConfiguration implements ContainerConfiguration {
+public class OSGiContainerConfiguration extends CommonContainerConfiguration {
 
     private final Map<String, String> frameworkConfiguration = new HashMap<String, String>();
     private FrameworkFactory frameworkFactory;
     private String frameworkProperties;
-    private String bootstrapCompleteService;
 
     @Override
     public void validate() throws ConfigurationException {
+        super.validate();
 
         // Get the framework configuration
         if (frameworkProperties != null) {
@@ -73,14 +72,6 @@ public class OSGiContainerConfiguration implements ContainerConfiguration {
 
     public void setFrameworkProperties(String frameworkProperties) {
         this.frameworkProperties = frameworkProperties;
-    }
-
-    public String getBootstrapCompleteService() {
-        return bootstrapCompleteService;
-    }
-
-    public void setBootstrapCompleteService(String bootstrapCompleteService) {
-        this.bootstrapCompleteService = bootstrapCompleteService;
     }
 
     public FrameworkFactory getFrameworkFactory() {

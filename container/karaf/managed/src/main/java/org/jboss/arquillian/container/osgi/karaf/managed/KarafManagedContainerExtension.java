@@ -17,13 +17,14 @@
  */
 package org.jboss.arquillian.container.osgi.karaf.managed;
 
+import org.jboss.arquillian.container.osgi.DeploymentObserver;
 import org.jboss.arquillian.container.osgi.OSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 
 /**
- * FelixContainerExtension
+ * KarafManagedContainerExtension
  *
  * @author thomas.diesler@jboss.com
  */
@@ -33,6 +34,7 @@ public class KarafManagedContainerExtension implements LoadableExtension {
     public void register(ExtensionBuilder builder) {
         builder.service(DeployableContainer.class, KarafManagedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
+        builder.observer(DeploymentObserver.class);
     }
 
 }

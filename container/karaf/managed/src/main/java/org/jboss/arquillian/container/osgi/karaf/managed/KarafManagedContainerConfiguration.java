@@ -16,15 +16,15 @@
  */
 package org.jboss.arquillian.container.osgi.karaf.managed;
 
+import org.jboss.arquillian.container.osgi.CommonContainerConfiguration;
 import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
 /**
  * KarafContainerConfiguration
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafManagedContainerConfiguration implements ContainerConfiguration {
+public class KarafManagedContainerConfiguration extends CommonContainerConfiguration {
 
     public static final String DEFAULT_JMX_SERVICE_URL = "service:jmx:rmi://localhost:44444/jndi/rmi://localhost:1099/karaf-root";
     public static final String DEFAULT_JAVAVM_ARGUMENTS = "-Xmx512m";
@@ -37,11 +37,11 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
     private String jmxUsername;
     private String jmxPassword;
     private Integer karafBeginningStartLevel;
-    private String bootstrapCompleteService;
     private boolean allowConnectingToRunningServer;
     private boolean outputToConsole;
 
     public KarafManagedContainerConfiguration() {
+        super();
         this.allowConnectingToRunningServer = false;
         this.outputToConsole = true;
     }
@@ -68,14 +68,6 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
 
     public void setKarafBeginningStartLevel(Integer startLevel) {
         this.karafBeginningStartLevel = startLevel;
-    }
-
-    public String getBootstrapCompleteService() {
-        return bootstrapCompleteService;
-    }
-
-    public void setBootstrapCompleteService(String bootstrapCompleteService) {
-        this.bootstrapCompleteService = bootstrapCompleteService;
     }
 
     public String getJmxServiceURL() {
@@ -120,6 +112,7 @@ public class KarafManagedContainerConfiguration implements ContainerConfiguratio
 
     @Override
     public void validate() throws ConfigurationException {
+        super.validate();
         if (javaVmArguments == null)
             setJavaVmArguments(DEFAULT_JAVAVM_ARGUMENTS);
         if (jmxServiceURL == null)

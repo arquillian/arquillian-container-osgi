@@ -17,6 +17,7 @@
  */
 package org.jboss.arquillian.container.osgi.equinox;
 
+import org.jboss.arquillian.container.osgi.DeploymentObserver;
 import org.jboss.arquillian.container.osgi.OSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
@@ -34,6 +35,7 @@ public class EquinoxContainerExtension implements LoadableExtension {
     public void register(ExtensionBuilder builder) {
         builder.service(DeployableContainer.class, EquinoxEmbeddedDeployableContainer.class);
         builder.service(ApplicationArchiveProcessor.class, OSGiApplicationArchiveProcessor.class);
+        builder.observer(DeploymentObserver.class);
     }
 
 }

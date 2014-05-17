@@ -31,7 +31,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerFactory;
 
-import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
@@ -56,7 +55,7 @@ import org.osgi.util.tracker.ServiceTracker;
  *
  * @author thomas.diesler@jboss.com
  */
-public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfiguration> implements DeployableContainer<T> {
+public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfiguration> extends CommonDeployableContainer<T> {
 
     public interface ContainerLogger {
 
@@ -98,6 +97,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
 
     @Override
     public void setup(T configuration) {
+        super.setup(configuration);
         this.configuration = configuration;
         this.log = getLogger();
         this.framework = createFramework(configuration);
@@ -146,6 +146,17 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
 
     protected void uninstallBundle(Bundle bundle) throws BundleException {
         bundle.uninstall();
+    }
+
+    @Override
+    public void startBundle(String symbolicName, String version) throws Exception {
+        for (Bundle bundle : syscontext.getBundles()) {
+            if (bundle.getSymbolicName().equals(symbolicName) && bundle.getVersion().toString().equals(version)) {
+                bundle.start();
+                return;
+            }
+        }
+        throw new IllegalStateException("Bundle '" + symbolicName + ":" + version + "' was not found");
     }
 
     @Override
