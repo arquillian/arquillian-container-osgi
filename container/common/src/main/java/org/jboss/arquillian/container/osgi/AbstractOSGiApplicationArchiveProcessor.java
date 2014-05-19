@@ -105,13 +105,13 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
                 continue;
 
             if (key.equals(Constants.IMPORT_PACKAGE)) {
-                String[] imports = value.split(",");
+                String[] imports = splitWithComma(value);
                 builder.addImportPackages(imports);
                 continue;
             }
 
             if (key.equals(Constants.EXPORT_PACKAGE)) {
-                String[] exports = value.split(",");
+                String[] exports = splitWithComma(value);
                 builder.addExportPackages(exports);
                 continue;
             }
@@ -160,4 +160,24 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         }
     }
 
+    private static String[] splitWithComma(String value) {
+        // Header clauses are split with comma but comma can also appear in version parameter or in a custom parameter for "Attribute Matching"
+        // e.g. Import-Package: org.jboss.arquillian.junit;version="[X.0.0,Y.0.0)";extra="A,B",...
+
+        // After each comma must be even number of double-quotes
+        return value.split(
+            "(?x)       " +   // Free-Spacing Mode
+            ",          " +   // Split with comma
+            "(?=        " +   // Followed by
+            "  (?:      " +   // Start a non-capture group
+            "    [^\"]* " +   // 0 or more non-quote characters
+            "    \"     " +   // 1 quote
+            "    [^\"]* " +   // 0 or more non-quote characters
+            "    \"     " +   // 1 quote
+            "  )*       " +   // 0 or more repetition of non-capture group (multiple of 2 quotes will be even)
+            "  [^\"]*   " +   // Finally 0 or more non-quotes
+            "  $        " +   // Till the end  (This is necessary, else every comma will satisfy the condition)
+            ")          "     // End look-ahead
+        );
+    }
 }
