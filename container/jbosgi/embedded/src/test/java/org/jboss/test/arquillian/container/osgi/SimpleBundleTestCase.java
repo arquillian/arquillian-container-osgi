@@ -90,11 +90,11 @@ public class SimpleBundleTestCase {
         assertNotNull("BundleContext available", context);
 
         // Get the service reference
-        ServiceReference<SimpleService> sref = context.getServiceReference(SimpleService.class);
+        ServiceReference sref = context.getServiceReference(SimpleService.class.getName());
         assertNotNull("ServiceReference not null", sref);
 
         // Get the service for the reference
-        SimpleService service = context.getService(sref);
+        SimpleService service = (SimpleService) context.getService(sref);
         assertNotNull("Service not null", service);
 
         // Invoke the service

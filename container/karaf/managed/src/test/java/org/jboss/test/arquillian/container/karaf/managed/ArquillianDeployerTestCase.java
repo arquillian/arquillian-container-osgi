@@ -42,12 +42,12 @@ import org.osgi.framework.BundleException;
 @RunWith(Arquillian.class)
 public class ArquillianDeployerTestCase {
 
-    private static final String GOOD_BUNDLE = "good-bundle";
-    private static final String BAD_BUNDLE = "bad-bundle";
+    private static final String GOOD_BUNDLE = "good-bundle.jar";
+    private static final String BAD_BUNDLE = "bad-bundle.jar";
 
     @Deployment
     public static JavaArchive create() {
-        return ShrinkWrap.create(JavaArchive.class, "deployer-tests");
+        return ShrinkWrap.create(JavaArchive.class, "deployer-tests.jar");
     }
 
     @ArquillianResource
@@ -147,7 +147,7 @@ public class ArquillianDeployerTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(BAD_BUNDLE);
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackage("org.acme.foo");
+                builder.addImportPackages("org.acme.foo");
                 return builder.openStream();
             }
         });

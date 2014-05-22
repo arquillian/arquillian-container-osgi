@@ -88,7 +88,7 @@ public class ArquillianBundleActivator implements BundleActivator {
 
                 // Load the the test class from bundle that defines a Bundle-ClassPath
                 for (Bundle aux : bundles) {
-                    String bundlecp = aux.getHeaders().get(Constants.BUNDLE_CLASSPATH);
+                    String bundlecp = (String) aux.getHeaders().get(Constants.BUNDLE_CLASSPATH);
                     if (bundlecp != null) {
                         try {
                             return aux.loadClass(className);

@@ -17,7 +17,6 @@
 
     <!-- Properties -->
     <properties>
-        <karaf.felix.version>4.0.3</karaf.felix.version>
         <karaf.home>${project.build.directory}/apache-karaf-${version.apache.karaf}</karaf.home>
     </properties>
     
@@ -41,6 +40,10 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
         </dependency>
         
         <!-- Provided Dependencies -->
@@ -66,7 +69,6 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>
-            <version>${karaf.felix.version}</version> <!--$NO-MVN-MAN-VER$-->
             <scope>provided</scope>
         </dependency>
         <dependency>

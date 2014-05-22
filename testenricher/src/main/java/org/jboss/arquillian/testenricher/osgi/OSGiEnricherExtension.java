@@ -34,6 +34,8 @@ public class OSGiEnricherExtension implements LoadableExtension {
         builder.service(TestEnricher.class, OSGiTestEnricher.class);
         builder.service(AuxiliaryArchiveAppender.class, OSGiAuxiliaryArchiveAppender.class);
         builder.service(ResourceProvider.class, BundleContextProvider.class);
+        builder.service(ResourceProvider.class, StartLevelProvider.class);
+        builder.service(ResourceProvider.class, PackageAdminProvider.class);
         builder.service(ResourceProvider.class, BundleProvider.class);
     }
 }
