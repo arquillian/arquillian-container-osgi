@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -162,10 +164,14 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         // Wait for the arquillian-osgi-bundle to become ACTIVE
         awaitArquillianBundleActive(syscontext, 30, TimeUnit.SECONDS);
 
-        // Wait for a bootstarap complete marker service to become available
-        String completeService = configuration.getBootstrapCompleteService();
-        if (completeService != null)
-            awaitBootstrapCompleteService(syscontext, completeService, 30, TimeUnit.SECONDS);
+        // Wait the bootstrap complete marker service to become available
+        String completeServices = configuration.getBootstrapCompleteService();
+        if (completeServices != null) {
+            List<String> completeServicesList = Arrays.asList(completeServices.split(","));
+            for (String completeService : completeServicesList) {
+                awaitBootstrapCompleteService(syscontext, completeService, 30, TimeUnit.SECONDS);
+            }
+        }
 
         log.info("Started OSGi embedded container: " + getClass().getName());
     }
