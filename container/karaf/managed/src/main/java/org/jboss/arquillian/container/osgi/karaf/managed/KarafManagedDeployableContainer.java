@@ -232,9 +232,13 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
                 awaitKarafBeginningStartLevel(beginningStartLevel, 30, TimeUnit.SECONDS);
 
             // Await the bootstrap complete marker service to become available
-            String completeService = config.getBootstrapCompleteService();
-            if (completeService != null)
-                awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
+            String completeServices = config.getBootstrapCompleteService();
+            if (completeServices != null) {
+                List<String> completeServicesList = Arrays.asList(completeServices.split(","));
+                for (String completeService : completeServicesList) {
+                    awaitBootstrapCompleteService(completeService, 30, TimeUnit.SECONDS);
+                }
+            }
 
         } catch (RuntimeException rte) {
             destroyKarafProcess();
