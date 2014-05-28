@@ -1,4 +1,4 @@
-package org.jboss.arquillian.container.osgi.karaf.managed;
+package org.jboss.arquillian.container.osgi.jmx;
 
 import java.util.Hashtable;
 

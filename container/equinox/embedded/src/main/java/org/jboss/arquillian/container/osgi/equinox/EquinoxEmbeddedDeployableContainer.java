@@ -19,8 +19,8 @@ package org.jboss.arquillian.container.osgi.equinox;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.arquillian.container.osgi.EmbeddedContainerConfiguration;
 import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
-import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
@@ -35,18 +35,18 @@ import org.slf4j.LoggerFactory;
  * @author sebastian.p.lorenz@googlemail.com
  */
 public class EquinoxEmbeddedDeployableContainer extends
-        EmbeddedDeployableContainer<OSGiContainerConfiguration> {
+        EmbeddedDeployableContainer<EmbeddedContainerConfiguration> {
 
     static final Logger logger = LoggerFactory.getLogger(EquinoxEmbeddedDeployableContainer.class.getPackage().getName());
 
     @Override
-    public Class<OSGiContainerConfiguration> getConfigurationClass() {
-        return OSGiContainerConfiguration.class;
+    public Class<EmbeddedContainerConfiguration> getConfigurationClass() {
+        return EmbeddedContainerConfiguration.class;
     }
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Framework createFramework(OSGiContainerConfiguration conf) {
+    protected Framework createFramework(EmbeddedContainerConfiguration conf) {
 
         // Set the configuration properties as system properties
         Map config = new HashMap(conf.getFrameworkConfiguration());

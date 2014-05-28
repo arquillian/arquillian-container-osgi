@@ -14,30 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.arquillian.container.osgi.karaf.remote;
+package org.jboss.arquillian.container.osgi.jmx;
 
-import org.jboss.arquillian.container.osgi.jmx.JMXContainerConfiguration;
+import org.jboss.arquillian.container.osgi.CommonContainerConfiguration;
 import org.jboss.arquillian.container.spi.ConfigurationException;
 
 /**
- * KarafRemoteContainerConfiguration
+ * JMXContainerConfiguration
  *
- * @author sbunciak
- *
+ * @author mbasovni@redhat.com
  */
-public class KarafRemoteContainerConfiguration extends JMXContainerConfiguration {
+public class JMXContainerConfiguration extends CommonContainerConfiguration {
 
-    public static final String DEFAULT_JMX_SERVICE_URL = "service:jmx:rmi://localhost:44444/jndi/rmi://localhost:1099/karaf-root";
-    public static final String DEFAULT_JMX_USERNAME = "karaf";
-    public static final String DEFAULT_JMX_PASSWORD = "karaf";
+    protected String jmxServiceURL;
+    protected String jmxUsername;
+    protected String jmxPassword;
 
     @Override
     public void validate() throws ConfigurationException {
-        if (jmxServiceURL == null)
-            setJmxServiceURL(DEFAULT_JMX_SERVICE_URL);
-        if (jmxUsername == null)
-            setJmxUsername(DEFAULT_JMX_USERNAME);
-        if (jmxPassword == null)
-            setJmxPassword(DEFAULT_JMX_PASSWORD);
+        super.validate();
     }
+
+    public String getJmxServiceURL() {
+        return jmxServiceURL;
+    }
+
+    public void setJmxServiceURL(String jmxServiceURL) {
+        this.jmxServiceURL = jmxServiceURL;
+    }
+
+    public String getJmxUsername() {
+        return jmxUsername;
+    }
+
+    public void setJmxUsername(String jmxUsername) {
+        this.jmxUsername = jmxUsername;
+    }
+
+    public String getJmxPassword() {
+        return jmxPassword;
+    }
+
+    public void setJmxPassword(String jmxPassword) {
+        this.jmxPassword = jmxPassword;
+    }
+
 }
