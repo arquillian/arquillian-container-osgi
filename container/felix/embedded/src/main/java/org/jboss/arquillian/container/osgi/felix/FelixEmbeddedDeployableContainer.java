@@ -22,8 +22,8 @@ import java.util.Map;
 import org.apache.felix.framework.Logger;
 import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.main.AutoProcessor;
+import org.jboss.arquillian.container.osgi.EmbeddedContainerConfiguration;
 import org.jboss.arquillian.container.osgi.EmbeddedDeployableContainer;
-import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
@@ -34,18 +34,18 @@ import org.osgi.framework.launch.FrameworkFactory;
  *
  * @author thomas.diesler@jboss.com
  */
-public class FelixEmbeddedDeployableContainer extends EmbeddedDeployableContainer<OSGiContainerConfiguration> {
+public class FelixEmbeddedDeployableContainer extends EmbeddedDeployableContainer<EmbeddedContainerConfiguration> {
 
     private final Logger logger = new FelixLogger();
 
     @Override
-    public Class<OSGiContainerConfiguration> getConfigurationClass() {
-        return OSGiContainerConfiguration.class;
+    public Class<EmbeddedContainerConfiguration> getConfigurationClass() {
+        return EmbeddedContainerConfiguration.class;
     }
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Framework createFramework(OSGiContainerConfiguration conf) {
+    protected Framework createFramework(EmbeddedContainerConfiguration conf) {
 
         // Add the logger if not given
         Map config = new HashMap(conf.getFrameworkConfiguration());

@@ -18,7 +18,7 @@ package org.jboss.arquillian.container.osgi.karaf.embedded;
 
 import java.io.File;
 
-import org.jboss.arquillian.container.osgi.OSGiContainerConfiguration;
+import org.jboss.arquillian.container.osgi.EmbeddedContainerConfiguration;
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.osgi.metadata.spi.NotNullException;
 
@@ -27,7 +27,7 @@ import org.jboss.osgi.metadata.spi.NotNullException;
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafEmbeddedContainerConfiguration extends OSGiContainerConfiguration {
+public class KarafEmbeddedContainerConfiguration extends EmbeddedContainerConfiguration {
 
     private String karafHome;
     private Integer karafBeginningStartLevel;

@@ -51,11 +51,11 @@ import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
- * OSGi deployable container
+ * EmbeddedDeployableContainer
  *
  * @author thomas.diesler@jboss.com
  */
-public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfiguration> extends CommonDeployableContainer<T> {
+public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerConfiguration> extends CommonDeployableContainer<T> {
 
     public interface ContainerLogger {
 
@@ -88,7 +88,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
     private Framework framework;
     private BundleContext syscontext;
     private MBeanServerConnection mbeanServer;
-    private OSGiContainerConfiguration configuration;
+    private EmbeddedContainerConfiguration configuration;
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -104,7 +104,7 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         this.mbeanServer = getMBeanServerConnection();
     }
 
-    protected OSGiContainerConfiguration getContainerConfiguration() {
+    protected EmbeddedContainerConfiguration getContainerConfiguration() {
         return configuration;
     }
 
@@ -173,11 +173,6 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
         // Wait for the arquillian-osgi-bundle to become ACTIVE
         awaitArquillianBundleActive(syscontext, 30, TimeUnit.SECONDS);
 
-        // Wait for a bootstarap complete marker service to become available
-        String completeService = configuration.getBootstrapCompleteService();
-        if (completeService != null)
-            awaitBootstrapCompleteService(syscontext, completeService, 30, TimeUnit.SECONDS);
-
         log.info("Started OSGi embedded container: " + getClass().getName());
     }
 
@@ -218,6 +213,15 @@ public abstract class EmbeddedDeployableContainer<T extends OSGiContainerConfigu
             }
         } finally {
             tracker.close();
+        }
+    }
+
+    @Override
+    protected void awaitBootstrapCompleteService(String service) {
+        try {
+            awaitBootstrapCompleteService(syscontext, service, 30, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot obtain bootsrap complete service: " + service, e);
         }
     }
 
