@@ -71,6 +71,14 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Shared tests -->
+		<dependency>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-container-osgi-tests</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -160,6 +168,9 @@
 					<systemPropertyVariables>
 						<log4j.configuration>file://${basedir}/src/test/resources/logging.properties</log4j.configuration>
 					</systemPropertyVariables>
+					<dependenciesToScan>
+						<dependency>org.jboss.arquillian.container:arquillian-container-osgi-tests</dependency>
+					</dependenciesToScan>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -38,7 +38,6 @@ import org.jboss.test.arquillian.container.equinox.sub.A;
 import org.jboss.test.arquillian.container.equinox.sub.B;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -58,7 +57,6 @@ import org.osgi.framework.wiring.FrameworkWiring;
  * @author thomas.diesler@jboss.com
  * @author th_janssen@outlook.com
  */
-@Ignore
 public class DynamicImportPackageTestCase {
 
     private BundleContext syscontext;
@@ -101,7 +99,8 @@ public class DynamicImportPackageTestCase {
         refreshBundle(bundleA);
 
         bundleA.uninstall();
-
+        Assert.assertEquals(Bundle.UNINSTALLED, bundleA.getState());
+        
         // Contains ...sub.B
         Bundle bundleB = installBundle(getBundleB());
         
@@ -112,6 +111,12 @@ public class DynamicImportPackageTestCase {
         Assert.assertNotNull("B not null", objB);
         Bundle fromB = ((BundleReference) objB.getClass().getClassLoader()).getBundle();
         Assert.assertSame(bundleB, fromB);
+        
+        // clean-up
+        bundleB.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, bundleB.getState());
+        loader.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, loader.getState());
     }
 
     private void refreshBundle(Bundle bundle) throws TimeoutException {

@@ -51,12 +51,13 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
- * The arquillian-osgi-bundle loads test cases dynamically from the test archive.
- * When the test archive gets undeployed the wiring to the test case may is still active.
- *
- * A subsequent class load of another test case in the same package would use the
- * wiring of the first test archive and result in ClassNotFoundException
- *
+ * The arquillian-osgi-bundle loads test cases dynamically from the test
+ * archive. When the test archive gets undeployed the wiring to the test case
+ * may is still active.
+ * 
+ * A subsequent class load of another test case in the same package would use
+ * the wiring of the first test archive and result in ClassNotFoundException
+ * 
  * @author thomas.diesler@jboss.com
  */
 public class DynamicImportPackageTestCase {
@@ -70,8 +71,8 @@ public class DynamicImportPackageTestCase {
         URL url = getClass().getResource("/framework.properties");
         Properties props = new Properties();
         props.load(url.openStream());
-        HashMap<String, Object> map = new HashMap<String, Object> ();
-        for (Entry<Object, Object> entry :  props.entrySet()) {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        for (Entry<Object, Object> entry : props.entrySet()) {
             map.put(entry.getKey().toString(), entry.getValue().toString());
         }
         map.put(FelixConstants.LOG_LOGGER_PROP, new FelixLogger());
@@ -101,7 +102,8 @@ public class DynamicImportPackageTestCase {
         refreshBundle(bundleA);
 
         bundleA.uninstall();
-
+        Assert.assertEquals(Bundle.UNINSTALLED, bundleA.getState());
+        
         // Contains ...sub.B
         Bundle bundleB = installBundle(getBundleB());
 
@@ -109,6 +111,12 @@ public class DynamicImportPackageTestCase {
         Assert.assertNotNull("B not null", objB);
         Bundle fromB = ((BundleReference) objB.getClass().getClassLoader()).getBundle();
         Assert.assertSame(bundleB, fromB);
+
+        // clean-up
+        bundleB.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, bundleB.getState());
+        loader.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, loader.getState());
     }
 
     private void refreshBundle(Bundle bundle) throws TimeoutException {
