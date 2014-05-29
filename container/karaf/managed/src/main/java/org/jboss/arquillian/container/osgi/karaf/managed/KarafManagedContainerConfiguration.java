@@ -16,15 +16,15 @@
  */
 package org.jboss.arquillian.container.osgi.karaf.managed;
 
-import org.jboss.arquillian.container.osgi.CommonContainerConfiguration;
+import org.jboss.arquillian.container.osgi.jmx.JMXContainerConfiguration;
 import org.jboss.arquillian.container.spi.ConfigurationException;
 
 /**
- * KarafContainerConfiguration
+ * KarafManagedContainerConfiguration
  *
  * @author thomas.diesler@jboss.com
  */
-public class KarafManagedContainerConfiguration extends CommonContainerConfiguration {
+public class KarafManagedContainerConfiguration extends JMXContainerConfiguration {
 
     public static final String DEFAULT_JMX_SERVICE_URL = "service:jmx:rmi://localhost:44444/jndi/rmi://localhost:1099/karaf-root";
     public static final String DEFAULT_JAVAVM_ARGUMENTS = "-Xmx512m";
@@ -33,9 +33,6 @@ public class KarafManagedContainerConfiguration extends CommonContainerConfigura
 
     private String karafHome;
     private String javaVmArguments;
-    private String jmxServiceURL;
-    private String jmxUsername;
-    private String jmxPassword;
     private Integer karafBeginningStartLevel;
     private boolean allowConnectingToRunningServer;
     private boolean outputToConsole;
@@ -68,30 +65,6 @@ public class KarafManagedContainerConfiguration extends CommonContainerConfigura
 
     public void setKarafBeginningStartLevel(Integer startLevel) {
         this.karafBeginningStartLevel = startLevel;
-    }
-
-    public String getJmxServiceURL() {
-        return jmxServiceURL;
-    }
-
-    public void setJmxServiceURL(String jmxServiceURL) {
-        this.jmxServiceURL = jmxServiceURL;
-    }
-
-    public String getJmxUsername() {
-        return jmxUsername;
-    }
-
-    public void setJmxUsername(String jmxUsername) {
-        this.jmxUsername = jmxUsername;
-    }
-
-    public String getJmxPassword() {
-        return jmxPassword;
-    }
-
-    public void setJmxPassword(String jmxPassword) {
-        this.jmxPassword = jmxPassword;
     }
 
     public boolean isAllowConnectingToRunningServer() {

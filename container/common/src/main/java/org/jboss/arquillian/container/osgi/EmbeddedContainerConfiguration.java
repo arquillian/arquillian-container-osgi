@@ -30,11 +30,11 @@ import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.osgi.framework.launch.FrameworkFactory;
 
 /**
- * OSGi container configuration
+ * EmbeddedContainerConfiguration
  *
  * @author thomas.diesler@jboss.com
  */
-public class OSGiContainerConfiguration extends CommonContainerConfiguration {
+public class EmbeddedContainerConfiguration extends CommonContainerConfiguration {
 
     private final Map<String, String> frameworkConfiguration = new HashMap<String, String>();
     private FrameworkFactory frameworkFactory;

@@ -24,7 +24,7 @@ import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
 /**
- * Common container configuration
+ * CommonContainerConfiguration
  *
  * @author mbasovni@redhat.com
  */

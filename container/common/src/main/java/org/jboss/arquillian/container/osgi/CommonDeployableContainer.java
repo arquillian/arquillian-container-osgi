@@ -1,5 +1,7 @@
 package org.jboss.arquillian.container.osgi;
 
+import java.util.List;
+
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 
 public abstract class CommonDeployableContainer <T extends CommonContainerConfiguration> implements DeployableContainer<T> {
@@ -20,6 +22,25 @@ public abstract class CommonDeployableContainer <T extends CommonContainerConfig
      * @throws Exception If an error occured and therefore bundle was not started
      */
     public abstract void startBundle(String symbolicName, String version) throws Exception;
+
+    /**
+     * Await bootstrap complete services
+     */
+    public void awaitBootstrapCompleteServices() {
+        List<String> services = config.getBootstrapCompleteServices();
+        if (services != null) {
+            for (String service : services) {
+                awaitBootstrapCompleteService(service);
+            }
+        }
+    }
+
+    /**
+     * Await for bootstrap service
+     * @param name
+     * @throws IllegalStateException If bootstrap service was not started
+     */
+    protected abstract void awaitBootstrapCompleteService(String name);
 
     @Override
     public void setup(T configuration) {
