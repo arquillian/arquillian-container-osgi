@@ -51,7 +51,6 @@ import java.util.concurrent.TimeoutException;
  * @author thomas.diesler@jboss.com
  * @author th_janssen@outlook.com
  */
-@Ignore
 public class DynamicImportPackageTestCase {
 
     private BundleContext syscontext;
@@ -94,7 +93,8 @@ public class DynamicImportPackageTestCase {
         refreshBundle(bundleA);
 
         bundleA.uninstall();
-
+        Assert.assertEquals(Bundle.UNINSTALLED, bundleA.getState());
+        
         // Contains ...sub.B
         Bundle bundleB = installBundle(getBundleB());
         
@@ -105,6 +105,12 @@ public class DynamicImportPackageTestCase {
         Assert.assertNotNull("B not null", objB);
         Bundle fromB = ((BundleReference) objB.getClass().getClassLoader()).getBundle();
         Assert.assertSame(bundleB, fromB);
+        
+        // clean-up
+        bundleB.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, bundleB.getState());
+        loader.uninstall();
+        Assert.assertEquals(Bundle.UNINSTALLED, loader.getState());
     }
 
     private void refreshBundle(Bundle bundle) throws TimeoutException {
