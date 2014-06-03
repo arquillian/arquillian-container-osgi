@@ -35,6 +35,22 @@
             <groupId>org.jboss.osgi.metadata</groupId>
             <artifactId>jbosgi-metadata</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.spi</groupId>
+            <artifactId>jbosgi-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.vfs</groupId>
+            <artifactId>jbosgi-vfs30</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
         
         <dependency>
             <groupId>org.osgi</groupId>
