@@ -23,6 +23,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.felix.framework.Felix;
@@ -37,13 +39,16 @@ import org.jboss.test.arquillian.container.felix.sub.A;
 import org.jboss.test.arquillian.container.felix.sub.B;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleReference;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * The arquillian-osgi-bundle loads test cases dynamically from the test
@@ -80,7 +85,7 @@ public class DynamicImportPackageTestCase {
         syscontext = framework.getBundleContext();
     }
 
-    @Test @Ignore
+    @Test
     public void testBundleContextInjection() throws Exception {
 
         // The loader bundle has Dynamic-ImportPackage: *
@@ -98,7 +103,7 @@ public class DynamicImportPackageTestCase {
 
         bundleA.uninstall();
         Assert.assertEquals(Bundle.UNINSTALLED, bundleA.getState());
-        
+
         // Contains ...sub.B
         Bundle bundleB = installBundle(getBundleB());
 
@@ -115,28 +120,27 @@ public class DynamicImportPackageTestCase {
     }
 
     private void refreshBundle(Bundle bundle) throws TimeoutException {
-        throw new UnsupportedOperationException("Bundle refreshing is not implemented");
-//        final CountDownLatch latch = new CountDownLatch(1);
-//        FrameworkListener listener = new FrameworkListener() {
-//            @Override
-//            public void frameworkEvent(FrameworkEvent event) {
-//                if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
-//                    latch.countDown();
-//                }
-//            }
-//        };
-//
-//        FrameworkWiring fwWiring = syscontext.getBundle().adapt(FrameworkWiring.class);
-//        fwWiring.refreshBundles(Collections.singleton(bundle), listener);
-//
-//        // Wait for the refresh to complete
-//        try {
-//            if (!latch.await(10, TimeUnit.SECONDS)) {
-//                throw new TimeoutException();
-//            }
-//        } catch (InterruptedException ex) {
-//            // ignore
-//        }
+        final CountDownLatch latch = new CountDownLatch(1);
+        FrameworkListener listener = new FrameworkListener() {
+            @Override
+            public void frameworkEvent(FrameworkEvent event) {
+                if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
+                    latch.countDown();
+                }
+            }
+        };
+        syscontext.addFrameworkListener(listener);
+        ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin packageAdmin = (PackageAdmin) syscontext.getService(sref);
+        packageAdmin.refreshPackages(new Bundle[]{bundle});
+        // Wait for the refresh to complete
+        try {
+            if (!latch.await(10, TimeUnit.SECONDS)) {
+                throw new TimeoutException();
+            }
+        } catch (InterruptedException ex) {
+            // ignore
+        }
     }
 
     private Bundle installBundle(JavaArchive archive) throws BundleException {

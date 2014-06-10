@@ -16,6 +16,17 @@
  */
 package org.jboss.test.arquillian.container.equinox;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -25,21 +36,16 @@ import org.jboss.test.arquillian.container.equinox.sub.A;
 import org.jboss.test.arquillian.container.equinox.sub.B;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.eclipse.osgi.launch.Equinox;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleReference;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.TimeoutException;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * The arquillian-osgi-bundle loads test cases dynamically from the test archive.
@@ -54,8 +60,8 @@ import java.util.concurrent.TimeoutException;
 public class DynamicImportPackageTestCase {
 
     private BundleContext syscontext;
-	private Equinox framework;
-	
+    private Equinox framework;
+
     @Before
     public void setUp() throws Exception {
 
@@ -76,7 +82,7 @@ public class DynamicImportPackageTestCase {
         syscontext = framework.getBundleContext();
     }
 
-    @Test @Ignore
+    @Test
     public void testBundleContextInjection() throws Exception {
 
         // The loader bundle has Dynamic-ImportPackage: *
@@ -94,18 +100,18 @@ public class DynamicImportPackageTestCase {
 
         bundleA.uninstall();
         Assert.assertEquals(Bundle.UNINSTALLED, bundleA.getState());
-        
+
         // Contains ...sub.B
         Bundle bundleB = installBundle(getBundleB());
-        
+
         // Refresh bundle to resolve it
         refreshBundle(bundleB);
-        
+
         Object objB = loader.loadClass(B.class.getName()).newInstance();
         Assert.assertNotNull("B not null", objB);
         Bundle fromB = ((BundleReference) objB.getClass().getClassLoader()).getBundle();
         Assert.assertSame(bundleB, fromB);
-        
+
         // clean-up
         bundleB.uninstall();
         Assert.assertEquals(Bundle.UNINSTALLED, bundleB.getState());
@@ -114,28 +120,27 @@ public class DynamicImportPackageTestCase {
     }
 
     private void refreshBundle(Bundle bundle) throws TimeoutException {
-        throw new UnsupportedOperationException("Bundle refreshing is not implemented");
-//      final CountDownLatch latch = new CountDownLatch(1);
-//      FrameworkListener listener = new FrameworkListener() {
-//          @Override
-//          public void frameworkEvent(FrameworkEvent event) {
-//              if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
-//                  latch.countDown();
-//              }
-//          }
-//      };
-//
-//      FrameworkWiring fwWiring = syscontext.getBundle().adapt(FrameworkWiring.class);
-//      fwWiring.refreshBundles(Collections.singleton(bundle), listener);
-//
-//      // Wait for the refresh to complete
-//      try {
-//          if (!latch.await(10, TimeUnit.SECONDS)) {
-//              throw new TimeoutException();
-//          }
-//      } catch (InterruptedException ex) {
-//          // ignore
-//      }
+        final CountDownLatch latch = new CountDownLatch(1);
+        FrameworkListener listener = new FrameworkListener() {
+            @Override
+            public void frameworkEvent(FrameworkEvent event) {
+                if (event.getType() == FrameworkEvent.PACKAGES_REFRESHED) {
+                    latch.countDown();
+                }
+            }
+        };
+        syscontext.addFrameworkListener(listener);
+        ServiceReference sref = syscontext.getServiceReference(PackageAdmin.class.getName());
+        PackageAdmin packageAdmin = (PackageAdmin) syscontext.getService(sref);
+        packageAdmin.refreshPackages(new Bundle[]{bundle});
+        // Wait for the refresh to complete
+        try {
+            if (!latch.await(10, TimeUnit.SECONDS)) {
+                throw new TimeoutException();
+            }
+        } catch (InterruptedException ex) {
+            // ignore
+        }
     }
 
     private Bundle installBundle(JavaArchive archive) throws BundleException {
