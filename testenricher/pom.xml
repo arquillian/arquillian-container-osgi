@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jboss.arquillian.osgi</groupId>
         <artifactId>arquillian-osgi</artifactId>
-        <version>2.1.0.CR16-SNAPSHOT</version>
+        <version>1.1.0.Final</version>
     </parent>
 
     <groupId>org.jboss.arquillian.testenricher</groupId>

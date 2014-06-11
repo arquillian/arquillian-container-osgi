@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.jboss.arquillian.container</groupId>
         <artifactId>arquillian-container-felix</artifactId>
-        <version>2.1.0.CR16-SNAPSHOT</version>
+        <version>1.1.0.Final</version>
     </parent>
 
     <artifactId>arquillian-container-felix-embedded</artifactId>
