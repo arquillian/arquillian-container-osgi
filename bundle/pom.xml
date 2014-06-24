@@ -122,6 +122,7 @@
                             org.jboss.shrinkwrap.api.container;version=${version.jboss.shrinkwrap},
                             org.junit.runner;version=${version.junit},
                             org.junit;version=${version.junit},
+                            org.junit.rules;version=${version.junit},
                         </_exportcontents>
                     </instructions>
                 </configuration>
