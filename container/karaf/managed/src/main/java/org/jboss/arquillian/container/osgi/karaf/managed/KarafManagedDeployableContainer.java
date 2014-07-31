@@ -91,8 +91,11 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             if (!karafHomeDir.isDirectory())
                 throw new IllegalStateException("Not a valid Karaf home dir: " + karafHomeDir);
 
+            String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+            _logger.info(String.format("Using java: %s", java));
+
             List<String> cmd = new ArrayList<String>();
-            cmd.add("java");
+            cmd.add(java);
 
             // JavaVM args
             String javaArgs = config.getJavaVmArguments();
@@ -116,7 +119,7 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             cmd.add("-Djava.endorsed.dirs=" + new File(karafHomeDir, "lib/endorsed"));
 
             // Classpath
-            StringBuffer classPath = new StringBuffer();
+            StringBuilder classPath = new StringBuilder();
             File karafLibDir = new File(karafHomeDir, "lib");
             String[] libs = karafLibDir.list(new FilenameFilter() {
                 @Override
@@ -126,7 +129,7 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             });
             for (String lib : libs) {
                 String separator = classPath.length() > 0 ? File.pathSeparator : "";
-                classPath.append(separator + new File(karafHomeDir, "lib/" + lib));
+                classPath.append(separator).append(new File(karafHomeDir, "lib/" + lib));
             }
             cmd.add("-classpath");
             cmd.add(classPath.toString());
@@ -137,7 +140,7 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             // Output the startup command
             StringBuffer cmdstr = new StringBuffer();
             for (String tok : cmd) {
-                cmdstr.append(tok + " ");
+                cmdstr.append(tok).append(" ");
             }
             _logger.debug("Starting Karaf with: {}", cmdstr);
 
@@ -228,7 +231,7 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
                     if (writeOutput)
                         System.out.write(buf, 0, num);
                 }
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
     }
