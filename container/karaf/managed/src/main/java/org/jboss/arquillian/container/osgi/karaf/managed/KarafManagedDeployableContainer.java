@@ -47,6 +47,8 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
 
     static final Logger _logger = LoggerFactory.getLogger(KarafManagedDeployableContainer.class.getPackage().getName());
 
+    private static final int INITIALIZATION_RETRIES = 3;
+
     private KarafManagedContainerConfiguration config;
     private Process process;
 
@@ -155,43 +157,27 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             }
 
             // Get the MBeanServerConnection
-            try {
-                mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
-            } catch (Exception ex) {
-                destroyKarafProcess();
-                throw new LifecycleException("Cannot obtain MBean server connection", ex);
-            }
+            mbeanServer = getMBeanServerConnectionTimeout();
         }
 
-        mbeanServerInstance.set(mbeanServer);
+        init(mbeanServer);
+    }
 
+    private void init(MBeanServerConnection mbeanServer) throws LifecycleException {
         try {
-            // Get the FrameworkMBean
-            ObjectName oname = ObjectNameFactory.create("osgi.core:type=framework,*");
-            frameworkMBean = getMBeanProxy(mbeanServer, oname, FrameworkMBean.class, 30, TimeUnit.SECONDS);
-
-            // Get the BundleStateMBean
-            oname = ObjectNameFactory.create("osgi.core:type=bundleState,*");
-            bundleStateMBean = getMBeanProxy(mbeanServer, oname, BundleStateMBean.class, 30, TimeUnit.SECONDS);
-
-            // Get the BundleStateMBean
-            oname = ObjectNameFactory.create("osgi.core:type=serviceState,*");
-            serviceStateMBean = getMBeanProxy(mbeanServer, oname, ServiceStateMBean.class, 30, TimeUnit.SECONDS);
-
-            // Install the arquillian bundle to become active
-            installArquillianBundle();
-
-            // Await the arquillian bundle to become active
-            awaitArquillianBundleActive(30, TimeUnit.SECONDS);
-
-            // Await the beginning start level
-            Integer beginningStartLevel = config.getKarafBeginningStartLevel();
-            if (beginningStartLevel != null)
-                awaitBeginningStartLevel(beginningStartLevel, 30, TimeUnit.SECONDS);
-
-            // Await bootsrap complete services
-            awaitBootstrapCompleteServices();
-
+            Exception ex = null;
+            for (int i = 0; i < INITIALIZATION_RETRIES; i++) {
+                try {
+                    _logger.debug("Initialization, attempt " + i);
+                    tryToInit(mbeanServer);
+                    return;
+                } catch (RuntimeException e) {
+                    _logger.info("Failed to init, attempt " + i);
+                    mbeanServer = getMBeanServerConnectionTimeout();
+                    ex = e;
+                }
+            }
+            throw ex;
         } catch (RuntimeException rte) {
             destroyKarafProcess();
             throw rte;
@@ -199,6 +185,48 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             destroyKarafProcess();
             throw new LifecycleException("Cannot start Karaf container", ex);
         }
+    }
+
+    private MBeanServerConnection getMBeanServerConnectionTimeout() throws LifecycleException {
+        try {
+            _logger.debug("Try to obtain MBeanServerConnection");
+            return getMBeanServerConnection(60, TimeUnit.SECONDS);
+        } catch (Exception ex) {
+            _logger.error("Failed to obtain connection", ex);
+            destroyKarafProcess();
+            throw new LifecycleException("Cannot obtain MBean server connection", ex);
+        }
+    }
+
+    private void tryToInit(MBeanServerConnection mbeanServer) throws Exception {
+        mbeanServerInstance.set(mbeanServer);
+
+        // Get the FrameworkMBean
+        ObjectName oname = ObjectNameFactory.create("osgi.core:type=framework,*");
+        frameworkMBean = getMBeanProxy(mbeanServer, oname, FrameworkMBean.class, 30, TimeUnit.SECONDS);
+
+        // Get the BundleStateMBean
+        oname = ObjectNameFactory.create("osgi.core:type=bundleState,*");
+        bundleStateMBean = getMBeanProxy(mbeanServer, oname, BundleStateMBean.class, 30, TimeUnit.SECONDS);
+
+        // Get the BundleStateMBean
+        oname = ObjectNameFactory.create("osgi.core:type=serviceState,*");
+        serviceStateMBean = getMBeanProxy(mbeanServer, oname, ServiceStateMBean.class, 30, TimeUnit.SECONDS);
+
+        // Await bootsrap complete services
+        awaitBootstrapCompleteServices();
+
+        // Install the arquillian bundle to become active
+        installArquillianBundle();
+
+        // Await the arquillian bundle to become active
+        awaitArquillianBundleActive(30, TimeUnit.SECONDS);
+
+        // Await the beginning start level
+        Integer beginningStartLevel = config.getKarafBeginningStartLevel();
+        if (beginningStartLevel != null)
+            awaitBeginningStartLevel(beginningStartLevel, 30, TimeUnit.SECONDS);
+
     }
 
     @Override
