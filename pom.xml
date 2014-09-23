@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>8</version>
+        <version>9</version>
     </parent>
 
     <groupId>org.jboss.arquillian.osgi</groupId>
@@ -41,6 +41,9 @@
         <version.osgi>5.0.0</version.osgi>
         <version.slf4j>1.5.11</version.slf4j>
 		<version.eclipse.equinox>3.7.1</version.eclipse.equinox>
+		
+		<!-- Plugin versions -->
+		<version.release.plugin>2.5.1</version.release.plugin>
     </properties>
 
     <!-- Modules -->

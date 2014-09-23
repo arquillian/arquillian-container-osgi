@@ -68,9 +68,13 @@
                         <Bundle-Activator>org.jboss.arquillian.osgi.ArquillianBundleActivator</Bundle-Activator>
                         <Export-Package />
                         <Import-Package>
+                        	!org.jboss.arquillian.config.*,
+                        	!org.jboss.shrinkwrap.descriptor.api,
+                            javax.activation,
                             javax.management*,
                             javax.naming,
                             org.osgi.framework;version="[1.5,2.0)",
+                            org.osgi.framework.startlevel;version="[1.0,2.0)",
                             org.osgi.service.packageadmin;version="[1.2,2.0)",
                             org.osgi.service.startlevel;version="[1.1,2.0)",
                             org.osgi.util.tracker;version="[1.4,2.0)",
@@ -78,7 +82,6 @@
                         <Private-Package>
                             org.jboss.arquillian.osgi,
                         </Private-Package>
-                        <DynamicImport-Package>*</DynamicImport-Package>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>
                             arquillian-core-api;inline=false,
