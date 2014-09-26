@@ -71,7 +71,7 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
             mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
             mbeanServerInstance.set(mbeanServer);
         } catch (TimeoutException e) {
-            logger.error("Error connecting to Karaf MBeanServer: ", e);
+            throw new LifecycleException("Error connecting to Karaf MBeanServer: ", e);
         }
 
         try {
