@@ -18,6 +18,8 @@ package org.jboss.arquillian.container.osgi.jmx;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.jboss.arquillian.container.osgi.CommonDeployableContainer;
+import org.jboss.arquillian.container.osgi.jmx.http.SimpleHTTPServer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
@@ -161,9 +164,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
         URL fileURL = resolved[0].toURI().toURL();
 
-        long bundleId = frameworkMBean.installBundleFromURL(filespec, fileURL.toExternalForm());
-        String symbolicName = bundleStateMBean.getSymbolicName(bundleId);
-        BundleHandle handle = new BundleHandle(bundleId, symbolicName);
+        BundleHandle handle = installBundle(filespec, fileURL);
 
         if (startBundle) {
             frameworkMBean.startBundle(handle.getBundleId());
@@ -187,9 +188,43 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     }
 
     private BundleHandle installBundle(String location, URL streamURL) throws BundleException, IOException {
-        long bundleId = frameworkMBean.installBundleFromURL(location, streamURL.toExternalForm());
-        String symbolicName = bundleStateMBean.getSymbolicName(bundleId);
-        return new BundleHandle(bundleId, symbolicName);
+        URL serverUrl = streamURL;
+
+        // Adapt URL to remote system by serving over HTTP
+        SimpleHTTPServer server = null;
+        if (!isLocalHost(config)) {
+            server = new SimpleHTTPServer();
+            serverUrl = server.serve(streamURL);
+            server.start();
+        }
+
+        try {
+            long bundleId = frameworkMBean.installBundleFromURL(location, serverUrl.toExternalForm());
+            String symbolicName = bundleStateMBean.getSymbolicName(bundleId);
+            return new BundleHandle(bundleId, symbolicName);
+        } finally {
+            if (server != null) {
+                server.shutdown();
+            }
+        }
+    }
+
+    private static boolean isLocalHost(JMXContainerConfiguration config) {
+        try {
+            JMXServiceURL serviceURL = new JMXServiceURL(config.getJmxServiceURL());
+            InetAddress addr = InetAddress.getByName(serviceURL.getHost());
+
+            // Any localhost address
+            if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
+                return true;
+            }
+
+            // Address of a local network interface
+            return (NetworkInterface.getByInetAddress(addr) != null);
+        } catch (IOException e) {
+            // Assume name lookups imply not local
+            return false;
+        }
     }
 
     protected void installArquillianBundle() throws LifecycleException, IOException {
