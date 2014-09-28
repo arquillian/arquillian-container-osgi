@@ -35,7 +35,7 @@ import java.util.concurrent.TimeoutException;
  * Remote deployable container for Karaf.
  * <p>
  * Should also work with any remote container with an OSGi Enterprise JMX MBeans implementation
- * (such as Apache Aries JMX) enabled. 
+ * (such as Apache Aries JMX) enabled.
  *
  * @author thomas.diesler@jboss.com
  * @author sbunciak@redhat.com
