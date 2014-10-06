@@ -43,7 +43,7 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
 
     //private KarafRemoteContainerConfiguration config;
 
-    static final Logger _logger = LoggerFactory.getLogger(KarafRemoteDeployableContainer.class.getPackage().getName());
+    static final Logger logger = LoggerFactory.getLogger(KarafRemoteDeployableContainer.class.getPackage().getName());
 
     @Override
     public Class<T> getConfigurationClass() {
@@ -71,7 +71,7 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
             mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
             mbeanServerInstance.set(mbeanServer);
         } catch (TimeoutException e) {
-            _logger.error("Error connecting to Karaf MBeanServer: ", e);
+            logger.error("Error connecting to Karaf MBeanServer: ", e);
         }
 
         try {
@@ -105,7 +105,6 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
 
     @Override
     public void stop() throws LifecycleException {
-        // Intentionally left blank, at the moment
-        // Any cleanup operations can be performed in this method
+        super.stop();
     }
 }
