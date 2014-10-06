@@ -60,6 +60,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
 import org.osgi.framework.BundleException;
 import org.osgi.jmx.framework.BundleStateMBean;
 import org.osgi.jmx.framework.FrameworkMBean;
@@ -74,7 +75,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration> extends CommonDeployableContainer<T> {
 
-    static final Logger _logger = LoggerFactory.getLogger(JMXDeployableContainer.class.getPackage().getName());
+    static final Logger logger = LoggerFactory.getLogger(JMXDeployableContainer.class.getPackage().getName());
 
     protected final Map<String, BundleHandle> deployedBundles = new HashMap<String, BundleHandle>();
     private JMXContainerConfiguration config;
@@ -143,7 +144,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
                     long bundleId = handle.getBundleId();
                     frameworkMBean.uninstallBundle(bundleId);
                 } catch (IOException ex) {
-                    _logger.error("Cannot undeploy: " + archive.getName(), ex);
+                    logger.error("Cannot undeploy: " + archive.getName(), ex);
                 }
             }
         }
@@ -152,6 +153,11 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     @Override
     public void undeploy(Descriptor desc) throws DeploymentException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void stop() throws LifecycleException {
+        uninstallArquillianBundle();
     }
 
     protected BundleHandle installBundle(String groupId, String artifactId, String version, boolean startBundle)
@@ -196,21 +202,36 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         return new BundleHandle(bundleId, symbolicName);
     }
 
-    protected void installArquillianBundle() throws LifecycleException, IOException {
+    protected String getArquillianBundleVersion() {
+        // Note, the bundle does not have an ImplementationVersion, we
+        // use the one of the container.
+        String arqVersion = JMXDeployableContainer.class.getPackage().getImplementationVersion();
+        if (arqVersion == null) {
+            arqVersion = System.getProperty("arquillian.osgi.version");
+        }
+        return arqVersion;
+    }
 
+    protected void installArquillianBundle() throws LifecycleException, IOException {
         List<BundleHandle> bundleList = listBundles("arquillian-osgi-bundle");
         if (bundleList.isEmpty()) {
             try {
-                // Note, the bundle does not have an ImplementationVersion, we
-                // use the one of the container.
-                String arqVersion = JMXDeployableContainer.class.getPackage().getImplementationVersion();
-                if (arqVersion == null) {
-                    arqVersion = System.getProperty("arquillian.osgi.version");
-                }
-                installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
+                installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", getArquillianBundleVersion(), true);
             } catch (BundleException ex) {
                 throw new LifecycleException("Cannot install arquillian-osgi-bundle", ex);
             }
+        }
+    }
+
+    protected void uninstallArquillianBundle() throws LifecycleException {
+        try {
+            BundleHandle arqBundle = getBundle("arquillian-osgi-bundle", getArquillianBundleVersion());
+            if (arqBundle != null) {
+                frameworkMBean.uninstallBundle(arqBundle.getBundleId());
+                logger.info("Bundle 'arquillian-osgi-bundle' was undeployed");
+            }
+        } catch (Exception ex) {
+            throw new LifecycleException("Cannot uninstall arquillian-osgi-bundle", ex);
         }
     }
 
@@ -333,7 +354,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
                         Thread.sleep(500);
                     }
                 }
-                _logger.warn("Cannot get MBean proxy for type: " + oname, lastException);
+                logger.warn("Cannot get MBean proxy for type: " + oname, lastException);
                 throw new TimeoutException();
             }
         };

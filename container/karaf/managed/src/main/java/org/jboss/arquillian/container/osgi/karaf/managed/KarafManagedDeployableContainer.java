@@ -200,6 +200,7 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
 
     @Override
     public void stop() throws LifecycleException {
+        super.stop();
         destroyKarafProcess();
     }
 
