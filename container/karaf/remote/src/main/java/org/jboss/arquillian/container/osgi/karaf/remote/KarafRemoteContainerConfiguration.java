@@ -33,6 +33,7 @@ public class KarafRemoteContainerConfiguration extends JMXContainerConfiguration
 
     @Override
     public void validate() throws ConfigurationException {
+        super.validate();
         if (jmxServiceURL == null)
             setJmxServiceURL(DEFAULT_JMX_SERVICE_URL);
         if (jmxUsername == null)
