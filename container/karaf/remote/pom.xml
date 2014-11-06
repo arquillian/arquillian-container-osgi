@@ -15,6 +15,9 @@
 
 	<properties>
 		<karaf.home>${project.build.directory}/apache-karaf-${version.apache.karaf}</karaf.home>
+		<karaf.started.indicator.file>${karaf.home}/karaf.started</karaf.started.indicator.file>
+		<karaf.executable.start>${karaf.home}/bin/start</karaf.executable.start>
+		<karaf.executable.stop>${karaf.home}/bin/stop</karaf.executable.stop>
 	</properties>
 
 	<!-- Dependencies -->
@@ -116,6 +119,7 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>adjust-karaf</id>
 						<phase>process-test-resources</phase>
 						<goals>
 							<goal>run</goal>
@@ -130,35 +134,88 @@
 							</target>
 						</configuration>
 					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.3</version>
-				<executions>
 					<execution>
 						<id>start-karaf</id>
 						<phase>process-test-resources</phase>
 						<goals>
-							<goal>exec</goal>
+							<goal>run</goal>
 						</goals>
 						<configuration>
-							<executable>${karaf.home}/bin/start</executable>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+								</taskdef>
+								<if>
+									<available file="${karaf.started.indicator.file}" />
+									<then>
+										<fail>
+											A karaf instance is already running or file '${karaf.started.indicator.file}' was not deleted!
+											Execute 'mvn clean' to solve this problem.
+										</fail>
+									</then>
+									<else>
+										<echo message="Start karaf" />
+										<exec executable="${karaf.executable.start}" />
+										<touch file="${karaf.started.indicator.file}" />
+									</else>
+								</if>
+							</target>
+							<skip>${skipTests}</skip>
 						</configuration>
 					</execution>
 					<execution>
 						<id>stop-karaf</id>
-						<phase>verify</phase>
+						<phase>test</phase>
 						<goals>
-							<goal>exec</goal>
+							<goal>run</goal>
 						</goals>
 						<configuration>
-							<executable>${karaf.home}/bin/stop</executable>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+								</taskdef>
+								<if>
+									<available file="${karaf.started.indicator.file}" />
+									<then>
+										<echo message="Stop karaf" />
+										<exec executable="${karaf.executable.stop}" />
+										<delete file="${karaf.started.indicator.file}" />
+									</then>
+								</if>
+							</target>
+							<skip>${skipTests}</skip>
+						</configuration>
+					</execution>
+					<execution>
+						<id>stop-karaf-clean</id>
+						<phase>pre-clean</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+								</taskdef>
+								<if>
+									<available file="${karaf.started.indicator.file}" />
+									<then>
+										<echo message="Stop karaf" />
+										<exec executable="${karaf.executable.stop}" />
+										<delete file="${karaf.started.indicator.file}" />
+									</then>
+								</if>
+							</target>
 						</configuration>
 					</execution>
 				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>ant-contrib</groupId>
+						<artifactId>ant-contrib</artifactId>
+						<version>20020829</version>
+					</dependency>
+				</dependencies>
 			</plugin>
+			<!-- surefire:test goal will be executed first in the test phase (before karaf stop),
+				because it is contained in the JAR packaging lifecycle. -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
