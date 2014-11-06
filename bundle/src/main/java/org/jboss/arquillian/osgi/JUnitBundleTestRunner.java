@@ -16,8 +16,13 @@
  */
 package org.jboss.arquillian.osgi;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.arquillian.junit.container.JUnitTestRunner;
 import org.jboss.arquillian.test.spi.TestResult;
+import org.junit.runner.Description;
+import org.junit.runner.notification.RunListener;
 
 /**
  * A JUnitTestRunner for OSGi
@@ -25,11 +30,23 @@ import org.jboss.arquillian.test.spi.TestResult;
  * @author thomas.diesler@jboss.com
  */
 public class JUnitBundleTestRunner extends JUnitTestRunner {
+
+    @Override
+    protected List<RunListener> getRunListeners() {
+        RunListener listener = new RunListener() {
+            public void testStarted(Description description) throws Exception {
+                // [ARQ-1880] Workaround to reset the TCCL before the test is called
+                Thread.currentThread().setContextClassLoader(null);
+            }
+        };
+        return Collections.singletonList(listener);
+    }
+
     @Override
     public TestResult execute(Class<?> testClass, String methodName) {
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
-            // Make sure we run in the context of the arquillian-bundle class loader
+            // [ARQ-1880] Arquillian core relies on TCCL to load infra
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
             return super.execute(testClass, methodName);
         } finally {
