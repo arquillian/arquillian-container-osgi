@@ -32,7 +32,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * KarafRemoteDeployableContainer
+ * Remote deployable container for Karaf.
+ * <p>
+ * Should also work with any remote container with an OSGi Enterprise JMX MBeans implementation
+ * (such as Apache Aries JMX) enabled.
  *
  * @author thomas.diesler@jboss.com
  * @author sbunciak@redhat.com
@@ -71,7 +74,7 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
             mbeanServer = getMBeanServerConnection(30, TimeUnit.SECONDS);
             mbeanServerInstance.set(mbeanServer);
         } catch (TimeoutException e) {
-            logger.error("Error connecting to Karaf MBeanServer: ", e);
+            throw new LifecycleException("Error connecting to Karaf MBeanServer: ", e);
         }
 
         try {
