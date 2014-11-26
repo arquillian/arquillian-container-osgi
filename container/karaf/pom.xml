@@ -15,7 +15,6 @@
     <packaging>pom</packaging>
 
 	<modules>
-		<module>embedded</module>
         <module>managed</module>
         <module>remote</module>
 	</modules>    
