@@ -36,22 +36,6 @@ For [Apache Felix](http://felix.apache.org/documentation/subprojects/apache-feli
         </dependency>
     </dependencies>
     
-For [Apache Karaf](http://karaf.apache.org/) setup these:
-
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.arquillian.container</groupId>
-            <artifactId>arquillian-container-karaf-embedded</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.framework</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.karaf</groupId>
-            <artifactId>org.apache.karaf.main</artifactId>
-        </dependency>
-    </dependencies>
     
 For [Eclipse Equinox](http://www.eclipse.org/equinox/) setup these:
 
