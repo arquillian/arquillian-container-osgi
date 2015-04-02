@@ -79,6 +79,10 @@
             <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
         <!-- Shared tests -->
         <dependency>
             <groupId>org.jboss.arquillian.container</groupId>
