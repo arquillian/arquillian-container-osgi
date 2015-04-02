@@ -1,50 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Parent -->
     <parent>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-parent</artifactId>
-        <version>9</version>
+        <groupId>org.jboss.osgi</groupId>
+        <artifactId>jbosgi-parent</artifactId>
+        <version>1.0.26-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.arquillian.osgi</groupId>
     <artifactId>arquillian-osgi</artifactId>
     <packaging>pom</packaging>
 
-    <version>2.1.0.CR19-SNAPSHOT</version>
+    <version>2.1.0.Final-SNAPSHOT</version>
 
     <name>Arquillian OSGi</name>
 
     <scm>
-        <connection>scm:git:git://git@github.com:arquillian/arquillian-container-osgi.git</connection>
-        <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
-        <url>git://github.com/arquillian/arquillian-container-osgi.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <connection>scm:git:git://git@github.com:jbosgi/arquillian-container-osgi.git</connection>
+        <developerConnection>scm:git:ssh://github.com/jbosgi/arquillian-container-osgi.git</developerConnection>
+        <url>git://github.com/jbosgi/arquillian-container-osgi.git</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <!-- Properties -->
     <properties>
-        <version.apache.felix.framework>4.2.1</version.apache.felix.framework>
+        <version.apache.felix.framework>4.6.1</version.apache.felix.framework>
         <version.apache.karaf>2.3.3</version.apache.karaf>
-        <version.jboss.arquillian.core>1.1.2.Final</version.jboss.arquillian.core>
-        <version.jboss.logging>3.1.3.GA</version.jboss.logging>
-        <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
-        <version.jboss.osgi.framework>3.0.3.Final</version.jboss.osgi.framework>
-        <version.jboss.osgi.metadata>4.0.0.CR1</version.jboss.osgi.metadata>
-        <version.jboss.osgi.spi>4.0.0.Final</version.jboss.osgi.spi>
-        <version.jboss.osgi.vfs>2.0.0.Final</version.jboss.osgi.vfs>
-        <version.jboss.shrinkwrap>1.1.2</version.jboss.shrinkwrap>
-        <version.jboss.shrinkwrap.resolver>2.0.0</version.jboss.shrinkwrap.resolver>
-        <version.junit>4.11</version.junit>
-        <version.mockito>1.8.4</version.mockito>
-        <version.osgi>5.0.0</version.osgi>
-        <version.slf4j>1.5.11</version.slf4j>
-		<version.eclipse.equinox>3.7.1</version.eclipse.equinox>
-		
-		<!-- Plugin versions -->
-		<version.release.plugin>2.5.1</version.release.plugin>
+        <version.eclipse.equinox>3.7.1</version.eclipse.equinox>
+        <version.jboss.osgi.framework>3.0.5.Final-SNAPSHOT</version.jboss.osgi.framework>
+        <version.jboss.osgi.metadata>4.0.0.Final</version.jboss.osgi.metadata>
+        <version.jboss.osgi.spi>4.0.2.Final-SNAPSHOT</version.jboss.osgi.spi>
+        <version.jboss.osgi.vfs>2.0.2.Final-SNAPSHOT</version.jboss.osgi.vfs>
     </properties>
 
     <!-- Modules -->
@@ -80,21 +69,11 @@
                 <version>${version.apache.karaf}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>${version.jboss.arquillian.core}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging</artifactId>
-                <version>${version.jboss.logging}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.logmanager</groupId>
-                <artifactId>jboss-logmanager</artifactId>
-                <version>${version.jboss.logmanager}</version>
+                <groupId>org.apache.karaf</groupId>
+                <artifactId>apache-karaf</artifactId>
+                <classifier>minimal</classifier>
+                <type>tar.gz</type>
+                <version>${version.apache.karaf}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.osgi.framework</groupId>
@@ -117,51 +96,6 @@
                 <version>${version.jboss.osgi.vfs}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-impl-base</artifactId>
-                <version>${version.jboss.shrinkwrap}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-depchain</artifactId>
-                <version>${version.jboss.shrinkwrap.resolver}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>${version.mockito}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>${version.osgi}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.enterprise</artifactId>
-                <version>${version.osgi}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${version.slf4j}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${version.slf4j}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-jdk14</artifactId>
-                <version>${version.slf4j}</version>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
-            </dependency>
-			<dependency>
                 <groupId>org.eclipse.osgi</groupId>
                 <artifactId>org.eclipse.osgi</artifactId>
                 <version>${version.eclipse.equinox}</version>
@@ -191,23 +125,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <localCheckout>true</localCheckout>
-                    <pushChanges>false</pushChanges>
-                </configuration>
-            </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
     <!-- Repositories -->
@@ -227,6 +145,6 @@
             </snapshots>
         </repository>
     </repositories>
-    
+
 </project>
 
