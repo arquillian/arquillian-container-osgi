@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jboss.osgi</groupId>
         <artifactId>jbosgi-parent</artifactId>
-        <version>1.0.26-SNAPSHOT</version>
+        <version>1.0.26</version>
     </parent>
 
     <groupId>org.jboss.arquillian.osgi</groupId>
@@ -19,9 +19,9 @@
     <name>Arquillian OSGi</name>
 
     <scm>
-        <connection>scm:git:git://git@github.com:jbosgi/arquillian-container-osgi.git</connection>
-        <developerConnection>scm:git:ssh://github.com/jbosgi/arquillian-container-osgi.git</developerConnection>
-        <url>git://github.com/jbosgi/arquillian-container-osgi.git</url>
+        <connection>scm:git:git://git@github.com:arquillian/arquillian-container-osgi.git</connection>
+        <developerConnection>scm:git:ssh://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
+        <url>git://github.com/arquillian/arquillian-container-osgi.git</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -31,10 +31,10 @@
         <version.apache.felix.framework>4.6.1</version.apache.felix.framework>
         <version.apache.karaf>2.3.10</version.apache.karaf>
         <version.eclipse.equinox>3.7.1</version.eclipse.equinox>
-        <version.jboss.osgi.framework>3.0.5.Final-SNAPSHOT</version.jboss.osgi.framework>
+        <version.jboss.osgi.framework>3.0.4.Final</version.jboss.osgi.framework>
         <version.jboss.osgi.metadata>4.0.0.Final</version.jboss.osgi.metadata>
-        <version.jboss.osgi.spi>4.0.2.Final-SNAPSHOT</version.jboss.osgi.spi>
-        <version.jboss.osgi.vfs>2.0.2.Final-SNAPSHOT</version.jboss.osgi.vfs>
+        <version.jboss.osgi.spi>4.0.2.Final</version.jboss.osgi.spi>
+        <version.jboss.osgi.vfs>2.0.2.Final</version.jboss.osgi.vfs>
     </properties>
 
     <!-- Modules -->
