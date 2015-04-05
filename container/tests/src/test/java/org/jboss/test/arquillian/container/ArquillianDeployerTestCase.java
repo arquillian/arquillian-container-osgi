@@ -27,6 +27,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -71,13 +72,18 @@ public class ArquillianDeployerTestCase {
             Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
         } finally {
             bundle.uninstall();
-            Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+            if(bundle != null) {
+                Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+            }
         }
     }
 
     @Test
     public void testDeployBundle() throws Exception {
         deployer.deploy(GOOD_BUNDLE);
+        for(int i = 0; i < 30 && deployer.getDeployment(GOOD_BUNDLE) == null; i++) {
+            Thread.sleep(1000);
+        }
         Bundle bundle = null;
         try {
             for (Bundle aux : context.getBundles()) {
@@ -86,6 +92,7 @@ public class ArquillianDeployerTestCase {
                     break;
                 }
             }
+            Assert.assertNotNull("No bundle found", bundle);
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
 
             bundle.start();
@@ -95,13 +102,18 @@ public class ArquillianDeployerTestCase {
             Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
         } finally {
             deployer.undeploy(GOOD_BUNDLE);
-            Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+            if(bundle != null) {
+                Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+            }
         }
     }
 
     @Test
     public void testDeployBadBundle() throws Exception {
         deployer.deploy(BAD_BUNDLE);
+        for(int i = 0; i < 30 && deployer.getDeployment(BAD_BUNDLE) == null; i++) {
+            Thread.sleep(1000);
+        }
         Bundle bundle = null;
         try {
             for (Bundle aux : context.getBundles()) {
@@ -110,6 +122,7 @@ public class ArquillianDeployerTestCase {
                     break;
                 }
             }
+            Assert.assertNotNull("No bundle found", bundle);
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
 
             try {
@@ -121,7 +134,9 @@ public class ArquillianDeployerTestCase {
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
         } finally {
             deployer.undeploy(BAD_BUNDLE);
-            Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+            if(bundle != null) {
+                Assert.assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+            }
         }
     }
 
