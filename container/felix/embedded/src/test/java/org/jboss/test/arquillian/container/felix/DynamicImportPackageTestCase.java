@@ -38,6 +38,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.test.arquillian.container.felix.sub.A;
 import org.jboss.test.arquillian.container.felix.sub.B;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,6 +65,8 @@ public class DynamicImportPackageTestCase {
 
     BundleContext syscontext;
 
+    Framework framework;
+    
     @Before
     public void setUp() throws Exception {
 
@@ -78,7 +81,7 @@ public class DynamicImportPackageTestCase {
         map.put(FelixConstants.LOG_LOGGER_PROP, new FelixLogger());
 
         // Create the framework instance
-        Framework framework = new Felix(map);
+        framework = new Felix(map);
         framework.init();
         framework.start();
 
@@ -119,6 +122,12 @@ public class DynamicImportPackageTestCase {
         Assert.assertEquals(Bundle.UNINSTALLED, loader.getState());
     }
 
+    @After
+    public void tearDown() throws Exception 
+    {
+        framework.stop();
+    }
+    
     private void refreshBundle(Bundle bundle) throws TimeoutException {
 
         final CountDownLatch latch = new CountDownLatch(1);
