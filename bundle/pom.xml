@@ -127,6 +127,8 @@
                             org.junit.runners.model;version=${version.junit},
                             org.junit;version=${version.junit},
                             org.junit.rules;version=${version.junit},
+                            org.hamcrest;version=${version.hamcrest-core},
+                            org.hamcrest.core;version=${version.hamcrest-core}
                         </_exportcontents>
                     </instructions>
                 </configuration>

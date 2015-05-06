@@ -38,6 +38,7 @@
         <version.jboss.shrinkwrap>1.1.2</version.jboss.shrinkwrap>
         <version.jboss.shrinkwrap.resolver>2.0.0</version.jboss.shrinkwrap.resolver>
         <version.junit>4.11</version.junit>
+        <version.hamcrest-core>1.3</version.hamcrest-core>
         <version.mockito>1.8.4</version.mockito>
         <version.osgi>5.0.0</version.osgi>
         <version.slf4j>1.5.11</version.slf4j>
