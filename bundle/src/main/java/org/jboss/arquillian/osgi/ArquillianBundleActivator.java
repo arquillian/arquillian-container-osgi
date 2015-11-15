@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
@@ -107,6 +108,11 @@ public class ArquillianBundleActivator implements BundleActivator {
         testRunner = new JMXTestRunner(testClassLoader) {
             @Override
             public byte[] runTestMethod(String className, String methodName) {
+                return super.runTestMethod(className, methodName);
+            }
+
+            @Override
+            public byte[] runTestMethod(String className, String methodName, Map<String, String> protocolProps) {
                 Class<?> testClass;
                 try {
                     testClass = testClassLoader.loadTestClass(className);
@@ -115,7 +121,7 @@ public class ArquillianBundleActivator implements BundleActivator {
                 }
                 BundleAssociation.setBundle(getTestBundle(syscontext, testClass, methodName));
                 BundleContextAssociation.setBundleContext(syscontext);
-                return super.runTestMethod(className, methodName);
+                return super.runTestMethod(className, methodName, protocolProps);
             }
         };
         testRunner.registerMBean(mbeanServer);
