@@ -45,7 +45,9 @@
 		<version.eclipse.equinox>3.7.1</version.eclipse.equinox>
 		
 		<!-- Plugin versions -->
-		<version.release.plugin>2.5.1</version.release.plugin>
+        <version-maven-antrun-plugin>1.7</version-maven-antrun-plugin>
+        <version-maven-javadoc-plugin>2.10.3</version-maven-javadoc-plugin>
+		<version-maven-release-plugin>2.5.3</version-maven-release-plugin>
     </properties>
 
     <!-- Modules -->
@@ -193,19 +195,35 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <localCheckout>true</localCheckout>
-                    <pushChanges>false</pushChanges>
-                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
+                    <version>${version-maven-antrun-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${version-maven-javadoc-plugin}</version>
+                    <configuration>
+                        <quiet>true</quiet>
+                        <failOnError>false</failOnError>
+                        <additionalparam>-Xdoclint:none</additionalparam>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${version-maven-release-plugin}</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
