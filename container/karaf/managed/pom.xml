@@ -2,7 +2,8 @@
 <!-- 
     Set these VM properties in your IDE debugger
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Parent -->
@@ -17,10 +18,10 @@
 
     <!-- Properties -->
     <properties>
-        <karaf.felix.version>4.0.3</karaf.felix.version>
+        <karaf.felix.version>5.4.0</karaf.felix.version>
         <karaf.home>${project.build.directory}/apache-karaf-${version.apache.karaf}</karaf.home>
     </properties>
-    
+
     <!-- Dependencies -->
     <dependencies>
         <dependency>
@@ -50,7 +51,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-        
+
         <!-- Provided Dependencies -->
         <dependency>
             <groupId>org.osgi</groupId>
@@ -62,7 +63,7 @@
             <artifactId>org.osgi.enterprise</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
@@ -89,19 +90,21 @@
         </dependency>
     </dependencies>
 
-	<build>
+    <build>
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
             </testResource>
         </testResources>
-		<plugins>
+        <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.10</version>
                 <executions>
                     <execution>
-                        <id>unpack-karaf</id>
+                        <id>unpack</id>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -112,7 +115,6 @@
                                     <groupId>org.apache.karaf</groupId>
                                     <artifactId>apache-karaf</artifactId>
                                     <version>${version.apache.karaf}</version>
-                                    <classifier>minimal</classifier>
                                     <type>tar.gz</type>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
@@ -132,7 +134,7 @@
                         <configuration>
                             <target>
                                 <echo file="${karaf.home}/etc/custom.properties" append="true">
-# Clean the persitent bundle store on Framework INIT                                
+# Clean the persitent bundle store on Framework INIT
 org.osgi.framework.storage.clean=onFirstInit
                                 </echo>
                             </target>
@@ -146,13 +148,14 @@ org.osgi.framework.storage.clean=onFirstInit
                     <argLine>${surefire.system.args}</argLine>
                     <redirectTestOutputToFile>false</redirectTestOutputToFile>
                     <systemPropertyVariables>
-                        <log4j.configuration>file://${basedir}/src/test/resources/logging.properties</log4j.configuration>
+                        <log4j.configuration>file://${basedir}/src/test/resources/logging.properties
+                        </log4j.configuration>
                     </systemPropertyVariables>
                     <dependenciesToScan>
                         <dependency>org.jboss.arquillian.container:arquillian-container-osgi-tests</dependency>
                     </dependenciesToScan>
                 </configuration>
             </plugin>
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 </project>
