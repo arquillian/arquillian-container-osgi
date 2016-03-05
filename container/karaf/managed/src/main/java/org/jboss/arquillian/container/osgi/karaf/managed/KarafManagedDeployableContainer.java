@@ -110,6 +110,7 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             cmd.add("-Dkaraf.etc=" + karafHomeDir + "/etc");
             cmd.add("-Dkaraf.data=" + karafHomeDir + "/data");
             cmd.add("-Dkaraf.instances=" + karafHomeDir + "/instances");
+            cmd.add("-Dkaraf.restart.jvm.supported=true");
             cmd.add("-Dkaraf.startLocalConsole=false");
             cmd.add("-Dkaraf.startRemoteShell=false");
 
@@ -120,16 +121,16 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
 
             // Classpath
             StringBuilder classPath = new StringBuilder();
-            File karafLibDir = new File(karafHomeDir, "lib");
-            String[] libs = karafLibDir.list(new FilenameFilter() {
+            File karafLibBootDir = new File(karafHomeDir, "lib/boot/");
+            String[] libs = karafLibBootDir.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.startsWith("karaf");
+                    return name.endsWith(".jar");
                 }
             });
             for (String lib : libs) {
                 String separator = classPath.length() > 0 ? File.pathSeparator : "";
-                classPath.append(separator).append(new File(karafHomeDir, "lib/" + lib));
+                classPath.append(separator).append(new File(karafLibBootDir, lib));
             }
             cmd.add("-classpath");
             cmd.add(classPath.toString());

@@ -18,7 +18,7 @@
     <!-- Properties -->
     <properties>
         <karaf.felix.version>4.0.3</karaf.felix.version>
-        <karaf.home>${project.build.directory}/apache-karaf-${version.apache.karaf}</karaf.home>
+        <karaf.home>${project.build.directory}/apache-karaf-minimal-${version.apache.karaf}</karaf.home>
     </properties>
     
     <!-- Dependencies -->
@@ -99,6 +99,7 @@
 		<plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.10</version>
                 <executions>
                     <execution>
                         <id>unpack-karaf</id>
@@ -110,9 +111,8 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.apache.karaf</groupId>
-                                    <artifactId>apache-karaf</artifactId>
+                                    <artifactId>apache-karaf-minimal</artifactId>
                                     <version>${version.apache.karaf}</version>
-                                    <classifier>minimal</classifier>
                                     <type>tar.gz</type>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
@@ -132,7 +132,7 @@
                         <configuration>
                             <target>
                                 <echo file="${karaf.home}/etc/custom.properties" append="true">
-# Clean the persitent bundle store on Framework INIT                                
+# Clean the persistent bundle store on Framework INIT
 org.osgi.framework.storage.clean=onFirstInit
                                 </echo>
                             </target>
