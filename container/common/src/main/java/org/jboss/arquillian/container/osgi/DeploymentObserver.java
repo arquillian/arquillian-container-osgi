@@ -21,6 +21,9 @@ import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.jar.Manifest;
 
 /**
@@ -30,13 +33,19 @@ import java.util.jar.Manifest;
  */
 public class DeploymentObserver {
 
+    static final Logger logger = LoggerFactory.getLogger(DeploymentObserver.class.getPackage().getName());
+
     public void autostartBundle(@Observes AfterDeploy event) throws Exception {
         if (event.getDeployableContainer() instanceof CommonDeployableContainer) {
             CommonDeployableContainer<?> container = (CommonDeployableContainer<?>) event.getDeployableContainer();
             if (container.isAutostartBundle()) {
                 Manifest manifest = new Manifest(event.getDeployment().getArchive().get("/META-INF/MANIFEST.MF").getAsset().openStream());
                 OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
-                container.startBundle(metadata.getBundleSymbolicName(), metadata.getBundleVersion().toString());
+                if (metadata.getFragmentHost() == null) {
+                    container.startBundle(metadata.getBundleSymbolicName(), metadata.getBundleVersion().toString());
+                } else {
+                    logger.debug("Fragment bundle cannot be started");
+                }
             }
         }
     }
