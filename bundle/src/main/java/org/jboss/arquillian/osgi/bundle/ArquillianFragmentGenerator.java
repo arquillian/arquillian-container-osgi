@@ -47,6 +47,8 @@ public class ArquillianFragmentGenerator {
         properties.setProperty(Constants.BUNDLE_SYMBOLICNAME, symbolicName+"-fragment");
         properties.setProperty(Constants.BUNDLE_NAME, symbolicName + " Fragment");
         properties.setProperty(Constants.BUNDLE_VERSION, "1.0.0");
+        properties.setProperty(TEST_BUNDLE_SYMBOLIC_NAME, symbolicName);
+        properties.setProperty(TEST_BUNDLE_VERSION, "1.0.0");
         properties.setProperty(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
         properties.setProperty("Fragment-Host", ArquillianBundleGenerator.BUNDLE_SYMBOLIC_NAME);
 
@@ -54,5 +56,9 @@ public class ArquillianFragmentGenerator {
 
         return arquillianFragmentBundleArchive;
     }
+
+    public static final String TEST_BUNDLE_SYMBOLIC_NAME = "Test-Bundle-Symbolic-Name";
+
+    public static final String TEST_BUNDLE_VERSION = "Test-Bundle-Version";
 
 }
