@@ -39,6 +39,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.osgi.CommonDeployableContainer;
 import org.jboss.arquillian.container.osgi.jmx.http.SimpleHTTPServer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -55,6 +56,7 @@ import org.jboss.osgi.vfs.VFSUtils;
 import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.osgi.framework.BundleException;
 import org.osgi.jmx.framework.BundleStateMBean;
@@ -102,6 +104,15 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         try {
             BundleHandle handle = installBundle(archive);
             deployedBundles.put(archive.getName(), handle);
+
+            //deploy fragment also
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+            if (fragment != null) {
+                BundleHandle handleHandle = installBundle(fragment);
+
+                deployedBundles.put(archive.getName() + "-fragment", handleHandle);
+            }
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception ex) {
@@ -118,7 +129,20 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        BundleHandle handle = deployedBundles.remove(archive.getName());
+        undeploy(archive.getName());
+
+        //undeploy fragment also
+        JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+        if (fragment != null) {
+            undeploy(archive.getName() + "-fragment");
+        }
+
+    }
+
+    private void undeploy(String name) throws DeploymentException {
+        BundleHandle handle = deployedBundles.remove(name);
+
         if (handle != null) {
             String bundleState = null;
             try {
@@ -136,7 +160,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
                     long bundleId = handle.getBundleId();
                     frameworkMBean.uninstallBundle(bundleId);
                 } catch (IOException ex) {
-                    logger.error("Cannot undeploy: " + archive.getName(), ex);
+                    logger.error("Cannot undeploy: " + name, ex);
                 }
             }
         }

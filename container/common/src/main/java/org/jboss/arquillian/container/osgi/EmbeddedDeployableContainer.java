@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -320,6 +321,13 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
     public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException {
         try {
             installBundle(archive, false);
+
+            //deploy fragment also
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+            if (fragment != null) {
+                installBundle(fragment, false);
+            }
         } catch (Exception e) {
            throw new DeploymentException("Can't deploy archive", e);
         }
@@ -336,6 +344,16 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
             Bundle bundle = syscontext.getBundle(location);
             if (bundle != null && bundle.getState() != Bundle.UNINSTALLED) {
                 uninstallBundle(bundle);
+            }
+
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+            if (fragment != null) {
+                Bundle fragmentBundle = syscontext.getBundle(fragment.getName());
+
+                if (fragmentBundle != null) {
+                    uninstallBundle(fragmentBundle);
+                }
             }
         } catch (BundleException ex) {
             log.warn("Cannot undeploy: " + archive, ex);
