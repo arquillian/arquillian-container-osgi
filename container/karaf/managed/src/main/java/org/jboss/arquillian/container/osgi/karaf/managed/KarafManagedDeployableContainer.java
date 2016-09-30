@@ -179,12 +179,6 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             oname = ObjectNameFactory.create("osgi.core:type=serviceState,*");
             serviceStateMBean = getMBeanProxy(mbeanServer, oname, ServiceStateMBean.class, 30, TimeUnit.SECONDS);
 
-            // Install the arquillian bundle to become active
-            installArquillianBundle();
-
-            // Await the arquillian bundle to become active
-            awaitArquillianBundleActive(30, TimeUnit.SECONDS);
-
             // Await the beginning start level
             Integer beginningStartLevel = config.getKarafBeginningStartLevel();
             if (beginningStartLevel != null)

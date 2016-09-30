@@ -16,16 +16,13 @@
  */
 package org.jboss.arquillian.container.osgi.jmx;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -34,7 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
@@ -43,7 +39,6 @@ import javax.management.openmbean.TabularData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-
 import org.jboss.arquillian.container.osgi.CommonDeployableContainer;
 import org.jboss.arquillian.container.osgi.jmx.http.SimpleHTTPServer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -61,8 +56,6 @@ import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-
 import org.osgi.framework.BundleException;
 import org.osgi.jmx.framework.BundleStateMBean;
 import org.osgi.jmx.framework.FrameworkMBean;
@@ -170,26 +163,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
     @Override
     public void stop() throws LifecycleException {
-        uninstallArquillianBundle();
-    }
-
-    protected BundleHandle installBundle(String groupId, String artifactId, String version, boolean startBundle)
-        throws BundleException, IOException {
-        String filespec = groupId + ":" + artifactId + ":jar:" + version;
-        File[] resolved = Maven.resolver().resolve(filespec).withoutTransitivity().asFile();
-        if (resolved == null || resolved.length == 0)
-            throw new BundleException("Cannot obtain maven artifact: " + filespec);
-        if (resolved.length > 1)
-            throw new BundleException("Multiple maven artifacts for: " + filespec);
-
-        URL fileURL = resolved[0].toURI().toURL();
-
-        BundleHandle handle = installBundle(filespec, fileURL);
-
-        if (startBundle) {
-            frameworkMBean.startBundle(handle.getBundleId());
-        }
-        return handle;
     }
 
     @Override
@@ -261,39 +234,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         }
     }
 
-    protected String getArquillianBundleVersion() {
-        // Note, the bundle does not have an ImplementationVersion, we
-        // use the one of the container.
-        String arqVersion = JMXDeployableContainer.class.getPackage().getImplementationVersion();
-        if (arqVersion == null) {
-            arqVersion = System.getProperty("arquillian.osgi.version");
-        }
-        return arqVersion;
-    }
-
-    protected void installArquillianBundle() throws LifecycleException, IOException {
-        List<BundleHandle> bundleList = listBundles("arquillian-osgi-bundle");
-        if (bundleList.isEmpty()) {
-            try {
-                installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", getArquillianBundleVersion(), true);
-            } catch (BundleException ex) {
-                throw new LifecycleException("Cannot install arquillian-osgi-bundle", ex);
-            }
-        }
-    }
-
-    protected void uninstallArquillianBundle() throws LifecycleException {
-        try {
-            BundleHandle arqBundle = getBundle("arquillian-osgi-bundle", getArquillianBundleVersion());
-            if (arqBundle != null) {
-                frameworkMBean.uninstallBundle(arqBundle.getBundleId());
-                logger.info("Bundle 'arquillian-osgi-bundle' was undeployed");
-            }
-        } catch (Exception ex) {
-            throw new LifecycleException("Cannot uninstall arquillian-osgi-bundle", ex);
-        }
-    }
-
     private VirtualFile toVirtualFile(Archive<?> archive) throws IOException {
         ZipExporter exporter = archive.as(ZipExporter.class);
         return AbstractVFS.toVirtualFile(archive.getName(), exporter.exportAsInputStream());
@@ -334,37 +274,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             }
         }
         throw new TimeoutException("Timeout while waiting for service: " + serviceName);
-    }
-
-	protected void awaitArquillianBundleActive(long timeout, TimeUnit unit) throws IOException, TimeoutException,
-		InterruptedException {
-		String symbolicName = "arquillian-osgi-bundle";
-		List<BundleHandle> list = listBundles(symbolicName);
-		if (list.size() != 1)
-			throw new IllegalStateException("Cannot obtain: " + symbolicName);
-
-		String bundleState = null;
-		long bundleId = list.get(0).getBundleId();
-		long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
-		while (System.currentTimeMillis() < timeoutMillis) {
-			bundleState = bundleStateMBean.getState(bundleId);
-			if (BundleStateMBean.ACTIVE.equals(bundleState)) {
-				return;
-			} else {
-				Thread.sleep(500);
-			}
-		}
-		throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started: " + bundleState);
-	}
-
-    protected void awaitBundleActive(String symbolicName, long timeout, TimeUnit unit) throws IOException, TimeoutException,
-        InterruptedException {
-
-        List<BundleHandle> list = listBundles(symbolicName);
-        if (list.size() != 1)
-            throw new IllegalStateException("Cannot obtain: " + symbolicName);
-
-        awaitBundleActive(list.get(0).getBundleId(), timeout, unit);
     }
 
     protected void awaitBundleActive(long bundleId, long timeout, TimeUnit unit) throws IOException, TimeoutException,
@@ -454,22 +363,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
-    }
-
-    protected List<BundleHandle> listBundles(String symbolicName) throws IOException {
-        List<BundleHandle> bundleList = new ArrayList<BundleHandle>();
-        TabularData listBundles = bundleStateMBean.listBundles();
-        Iterator<?> iterator = listBundles.values().iterator();
-        while (iterator.hasNext()) {
-            CompositeData bundleType = (CompositeData) iterator.next();
-            Long bundleId = (Long) bundleType.get(BundleStateMBean.IDENTIFIER);
-            String auxName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
-            String version = (String) bundleType.get(BundleStateMBean.VERSION);
-            if (symbolicName == null || symbolicName.equals(auxName)) {
-                bundleList.add(new BundleHandle(bundleId, symbolicName, version));
-            }
-        }
-        return bundleList;
     }
 
     @Override
