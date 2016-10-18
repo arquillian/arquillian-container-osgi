@@ -18,8 +18,8 @@
     <name>Arquillian OSGi</name>
 
     <scm>
-        <connection>scm:git:git://github.com/arquillian/arquillian-container-osgi.git</connection>
-        <developerConnection>scm:git:git@github.com:arquillian/arquillian-container-osgi.git</developerConnection>
+        <connection>scm:git:https://github.com/arquillian/arquillian-container-osgi.git</connection>
+        <developerConnection>scm:git:https://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
         <url>http://github.com/arquillian/arquillian-container-osgi.git</url>
         <tag>HEAD</tag>
     </scm>
