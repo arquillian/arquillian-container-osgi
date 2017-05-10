@@ -73,7 +73,21 @@ public class ArquillianBundleActivator implements BundleActivator {
         testRunner = new JMXTestRunner(testClassLoader) {
             @Override
             public byte[] runTestMethod(String className, String methodName) {
-                return super.runTestMethod(className, methodName);
+                Thread thread = Thread.currentThread();
+
+                ClassLoader contextClassLoader = thread.getContextClassLoader();
+
+                try {
+                    Bundle bundle = context.getBundle();
+
+                    thread.setContextClassLoader(
+                        bundle.adapt(BundleWiring.class).getClassLoader());
+
+                    return super.runTestMethod(className, methodName);
+                }
+                finally {
+                    thread.setContextClassLoader(contextClassLoader);
+                }
             }
 
             @Override
