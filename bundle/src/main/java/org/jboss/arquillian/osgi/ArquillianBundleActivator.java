@@ -24,6 +24,7 @@ package org.jboss.arquillian.osgi;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -41,6 +42,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
  * This is the Arquillian {@link BundleActivator}.
@@ -100,7 +102,13 @@ public class ArquillianBundleActivator implements BundleActivator {
                 }
                 Bundle fragmentBundle = getFragmentBundle(context);
 
-                BundleAssociation.setBundle(getTestBundle(syscontext, fragmentBundle.getHeaders().get(ArquillianFragmentGenerator.TEST_BUNDLE_SYMBOLIC_NAME), testClass, methodName));
+                Bundle testBundle = getTestBundle(syscontext, fragmentBundle.getHeaders().get(ArquillianFragmentGenerator.TEST_BUNDLE_SYMBOLIC_NAME), testClass, methodName);
+
+                FrameworkWiring adapt = syscontext.getBundle().adapt(FrameworkWiring.class);
+
+                adapt.resolveBundles(Arrays.asList(testBundle));
+
+                BundleAssociation.setBundle(testBundle);
                 BundleContextAssociation.setBundleContext(syscontext);
                 return super.runTestMethod(className, methodName, protocolProps);
             }
