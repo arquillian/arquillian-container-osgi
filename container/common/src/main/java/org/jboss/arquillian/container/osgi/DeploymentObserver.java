@@ -16,15 +16,21 @@
  */
 package org.jboss.arquillian.container.osgi;
 
+import java.util.jar.Manifest;
+
 import org.jboss.arquillian.container.spi.event.container.AfterDeploy;
+import org.jboss.arquillian.container.spi.event.container.BeforeSetup;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
+import org.jboss.arquillian.core.spi.ServiceLoader;
+import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
+import org.jboss.shrinkwrap.api.Archive;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.jar.Manifest;
 
 /**
  * DeploymentObserver
@@ -34,6 +40,17 @@ import java.util.jar.Manifest;
 public class DeploymentObserver {
 
     static final Logger logger = LoggerFactory.getLogger(DeploymentObserver.class.getPackage().getName());
+
+    public void buildArquillianOSGiBundle(@Observes BeforeSetup event) throws Exception {
+        if (_arquillianOSGiBundle == null) {
+            ServiceLoader serviceLoader = _serviceLoaderInstance.get();
+
+            ArquillianBundleGenerator arquillianBundleGenerator =
+                serviceLoader.onlyOne(ArquillianBundleGenerator.class);
+
+            _arquillianOSGiBundle = arquillianBundleGenerator.createArquillianBundle();
+        }
+    }
 
     public void autostartBundle(@Observes AfterDeploy event) throws Exception {
         if (event.getDeployableContainer() instanceof CommonDeployableContainer) {
@@ -49,4 +66,9 @@ public class DeploymentObserver {
             }
         }
     }
+
+    private Archive<?> _arquillianOSGiBundle;
+
+    @Inject
+    private Instance<ServiceLoader> _serviceLoaderInstance;
 }
