@@ -17,18 +17,19 @@
 package org.jboss.arquillian.container.osgi;
 
 import java.util.jar.Manifest;
-
 import org.jboss.arquillian.container.spi.event.container.AfterDeploy;
+import org.jboss.arquillian.container.spi.event.container.AfterStart;
 import org.jboss.arquillian.container.spi.event.container.BeforeSetup;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.core.spi.ServiceLoader;
 import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
+import org.jboss.arquillian.test.spi.event.suite.After;
+import org.jboss.arquillian.test.spi.event.suite.Before;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.shrinkwrap.api.Archive;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,22 @@ public class DeploymentObserver {
         }
     }
 
+    public void startContainer(@Observes AfterStart event) throws Exception {
+        if (event.getDeployableContainer() instanceof CommonDeployableContainer) {
+            container = (CommonDeployableContainer<?>) event.getDeployableContainer();
+        }
+    }
+
+    public void installArquillianBundle(@Observes Before event) throws Exception {
+        _arquillianOSGiBundleId = container.installBundle(_arquillianOSGiBundle, true);
+    }
+
+    public void uninstallArquillianBundle(@Observes After event) throws Exception {
+        container.uninstallBundle(_arquillianOSGiBundleId);
+
+        container.refresh();
+    }
+
     public void autostartBundle(@Observes AfterDeploy event) throws Exception {
         if (event.getDeployableContainer() instanceof CommonDeployableContainer) {
             CommonDeployableContainer<?> container = (CommonDeployableContainer<?>) event.getDeployableContainer();
@@ -67,7 +84,11 @@ public class DeploymentObserver {
         }
     }
 
+    private CommonDeployableContainer<?> container;
+
     private Archive<?> _arquillianOSGiBundle;
+
+    private long _arquillianOSGiBundleId;
 
     @Inject
     private Instance<ServiceLoader> _serviceLoaderInstance;
