@@ -150,8 +150,22 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     }
 
     @Override
+    public void refresh() throws Exception {
+    }
+
+    @Override
     public void undeploy(Descriptor desc) throws DeploymentException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void uninstallBundle(long bundleId) throws Exception {
+        try {
+            frameworkMBean.uninstallBundle(bundleId);
+            logger.info("Bundle '" + bundleId + " was uninstalled");
+        } catch (Exception ex) {
+            throw new LifecycleException("Cannot uninstall " + bundleId, ex);
+        }
     }
 
     @Override
@@ -176,6 +190,19 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             frameworkMBean.startBundle(handle.getBundleId());
         }
         return handle;
+    }
+
+    @Override
+    public long installBundle(Archive<?> archive, boolean start) throws Exception {
+        BundleHandle bundleHandle = installBundle(archive);
+
+        if (start) {
+            startBundle(bundleHandle.getBundleId());
+
+            awaitBundleActive(bundleHandle.getBundleId(), 30, TimeUnit.SECONDS);
+        }
+
+        return bundleHandle.getBundleId();
     }
 
     private BundleHandle installBundle(Archive<?> archive) throws BundleException, IOException {
@@ -207,7 +234,8 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         try {
             long bundleId = frameworkMBean.installBundleFromURL(location, serverUrl.toExternalForm());
             String symbolicName = bundleStateMBean.getSymbolicName(bundleId);
-            return new BundleHandle(bundleId, symbolicName);
+            String version = bundleStateMBean.getVersion(bundleId);
+            return new BundleHandle(bundleId, symbolicName, version);
         } finally {
             if (server != null) {
                 server.shutdown();
@@ -308,16 +336,44 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         throw new TimeoutException("Timeout while waiting for service: " + serviceName);
     }
 
-    protected void awaitArquillianBundleActive(long timeout, TimeUnit unit) throws IOException, TimeoutException,
+	protected void awaitArquillianBundleActive(long timeout, TimeUnit unit) throws IOException, TimeoutException,
+		InterruptedException {
+		String symbolicName = "arquillian-osgi-bundle";
+		List<BundleHandle> list = listBundles(symbolicName);
+		if (list.size() != 1)
+			throw new IllegalStateException("Cannot obtain: " + symbolicName);
+
+		String bundleState = null;
+		long bundleId = list.get(0).getBundleId();
+		long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+		while (System.currentTimeMillis() < timeoutMillis) {
+			bundleState = bundleStateMBean.getState(bundleId);
+			if (BundleStateMBean.ACTIVE.equals(bundleState)) {
+				return;
+			} else {
+				Thread.sleep(500);
+			}
+		}
+		throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started: " + bundleState);
+	}
+
+    protected void awaitBundleActive(String symbolicName, long timeout, TimeUnit unit) throws IOException, TimeoutException,
         InterruptedException {
-        String symbolicName = "arquillian-osgi-bundle";
+
         List<BundleHandle> list = listBundles(symbolicName);
         if (list.size() != 1)
             throw new IllegalStateException("Cannot obtain: " + symbolicName);
 
-        String bundleState = null;
-        long bundleId = list.get(0).getBundleId();
+        awaitBundleActive(list.get(0).getBundleId(), timeout, unit);
+    }
+
+    protected void awaitBundleActive(long bundleId, long timeout, TimeUnit unit) throws IOException, TimeoutException,
+        InterruptedException {
+
         long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+
+        String bundleState = null;
+
         while (System.currentTimeMillis() < timeoutMillis) {
             bundleState = bundleStateMBean.getState(bundleId);
             if (BundleStateMBean.ACTIVE.equals(bundleState)) {
@@ -408,8 +464,9 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             CompositeData bundleType = (CompositeData) iterator.next();
             Long bundleId = (Long) bundleType.get(BundleStateMBean.IDENTIFIER);
             String auxName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
+            String version = (String) bundleType.get(BundleStateMBean.VERSION);
             if (symbolicName == null || symbolicName.equals(auxName)) {
-                bundleList.add(new BundleHandle(bundleId, symbolicName));
+                bundleList.add(new BundleHandle(bundleId, symbolicName, version));
             }
         }
         return bundleList;
@@ -421,7 +478,11 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         if (bHandle == null) {
             throw new IllegalStateException("Bundle '" + symbolicName + ":" + version + "' was not found");
         }
-        frameworkMBean.startBundle(bHandle.getBundleId());
+        startBundle(bHandle.getBundleId());
+    }
+
+    public void startBundle(long bundleId) throws Exception {
+        frameworkMBean.startBundle(bundleId);
     }
 
     protected BundleHandle getBundle(String symbolicName, String version) throws Exception {
@@ -433,7 +494,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             String auxName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
             String auxVersion = (String) bundleType.get(BundleStateMBean.VERSION);
             if (symbolicName.equals(auxName) && version.equals(auxVersion)) {
-                return new BundleHandle(bundleId, symbolicName);
+                return new BundleHandle(bundleId, symbolicName, auxVersion);
             }
         }
         return null;
@@ -442,10 +503,12 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     static class BundleHandle {
         private long bundleId;
         private String symbolicName;
+        private String version;
 
-        BundleHandle(long bundleId, String symbolicName) {
+        BundleHandle(long bundleId, String symbolicName, String version) {
             this.bundleId = bundleId;
             this.symbolicName = symbolicName;
+            this.version = version;
         }
 
         long getBundleId() {
@@ -456,9 +519,13 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             return symbolicName;
         }
 
+        String getVersion() {
+            return version;
+        }
+
         @Override
         public String toString() {
-            return "[" + bundleId + "]" + symbolicName;
+            return "[" + bundleId + "]" + symbolicName + ":" + version;
         }
     }
 }
