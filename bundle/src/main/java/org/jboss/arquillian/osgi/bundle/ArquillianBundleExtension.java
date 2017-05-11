@@ -33,6 +33,7 @@ public class ArquillianBundleExtension implements LoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         builder.service(ArquillianBundleGenerator.class, ArquillianBundleGenerator.class);
+        builder.service(ArquillianFragmentGenerator.class, ArquillianFragmentGenerator.class);
     }
 
 
