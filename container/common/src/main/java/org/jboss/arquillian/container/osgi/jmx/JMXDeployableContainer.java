@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.jar.Manifest;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
@@ -50,6 +51,8 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaD
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.osgi.vfs.VFSUtils;
@@ -102,8 +105,12 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
         try {
+            Manifest manifest = new Manifest(archive.get("/META-INF/MANIFEST.MF").getAsset().openStream());
+            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+
             BundleHandle handle = installBundle(archive);
-            deployedBundles.put(archive.getName(), handle);
+
+            deployedBundles.put(metadata.getBundleSymbolicName(), handle);
 
             //deploy fragment also
             JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
@@ -111,7 +118,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             if (fragment != null) {
                 BundleHandle handleHandle = installBundle(fragment);
 
-                deployedBundles.put(archive.getName() + "-fragment", handleHandle);
+                deployedBundles.put(metadata.getBundleSymbolicName()  + "-fragment", handleHandle);
             }
         } catch (RuntimeException rte) {
             throw rte;
@@ -129,19 +136,27 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        undeploy(archive.getName());
+        try {
+            Manifest manifest = new Manifest(archive.get("/META-INF/MANIFEST.MF").getAsset().openStream());
+            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
 
-        //undeploy fragment also
-        JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+            undeploy(metadata.getBundleSymbolicName());
 
-        if (fragment != null) {
-            undeploy(archive.getName() + "-fragment");
+            //undeploy fragment also
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+            if (fragment != null) {
+                undeploy(metadata.getBundleSymbolicName() + "-fragment");
+            }
+
         }
-
+        catch (IOException e) {
+            throw new DeploymentException("Cannot undeploy: " + archive.getName(), e);
+        }
     }
 
-    private void undeploy(String name) throws DeploymentException {
-        BundleHandle handle = deployedBundles.remove(name);
+    private void undeploy(String symbolicName) throws DeploymentException {
+        BundleHandle handle = deployedBundles.remove(symbolicName);
 
         if (handle != null) {
             String bundleState = null;
@@ -160,7 +175,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
                     long bundleId = handle.getBundleId();
                     frameworkMBean.uninstallBundle(bundleId);
                 } catch (IOException ex) {
-                    logger.error("Cannot undeploy: " + name, ex);
+                    logger.error("Cannot undeploy: " + symbolicName, ex);
                 }
             }
         }
@@ -391,10 +406,14 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
     @Override
     public void startBundle(String symbolicName, String version) throws Exception {
-        BundleHandle bHandle = getBundle(symbolicName, version);
-        if (bHandle == null) {
-            throw new IllegalStateException("Bundle '" + symbolicName + ":" + version + "' was not found");
+        BundleHandle bHandle = this.deployedBundles.get(symbolicName);
+        if ((bHandle == null) || !bHandle.getSymbolicName().equals(symbolicName) || !bHandle.getVersion().equals(version)) {
+            bHandle = getBundle(symbolicName, version);
+            if (bHandle == null) {
+                throw new IllegalStateException("Bundle '" + symbolicName + ":" + version + "' was not found");
+            }
         }
+
         startBundle(bHandle.getBundleId());
     }
 
