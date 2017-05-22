@@ -25,24 +25,24 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.osgi.bundle.ArquillianFragmentGenerator;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner.TestClassLoader;
 import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleReference;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.framework.wiring.FrameworkWiring;
 
 /**
  * This is the Arquillian {@link BundleActivator}.
@@ -57,49 +57,16 @@ public class ArquillianBundleActivator implements BundleActivator {
     private static Logger log = Logger.getLogger(ArquillianBundleActivator.class.getName());
 
     private JMXTestRunner testRunner;
-    private long arqBundleId;
 
     public void start(final BundleContext context) throws Exception {
-
-        arqBundleId = context.getBundle().getBundleId();
 
         final BundleContext syscontext = context.getBundle(0).getBundleContext();
         final TestClassLoader testClassLoader = new TestClassLoader() {
 
             @Override
             public Class<?> loadTestClass(String className) throws ClassNotFoundException {
-                String namePath = className.replace('.', '/') + ".class";
-
-                // Get all installed bundles and remove some
-                List<Bundle> bundles = new ArrayList<Bundle>(Arrays.asList(syscontext.getBundles()));
-                Iterator<Bundle> iterator = bundles.iterator();
-                while(iterator.hasNext()) {
-                    Bundle aux = iterator.next();
-                    if (aux.getBundleId() <= arqBundleId || aux.getState() == Bundle.UNINSTALLED) {
-                        iterator.remove();
-                    }
-                }
-
                 // Load the the test class from the bundle that contains the entry
-                for (Bundle aux : bundles) {
-                    if (aux.getEntry(namePath) != null) {
-                        return aux.loadClass(className);
-                    }
-                }
-
-                // Load the the test class from bundle that defines a Bundle-ClassPath
-                for (Bundle aux : bundles) {
-                    String bundlecp = aux.getHeaders().get(Constants.BUNDLE_CLASSPATH);
-                    if (bundlecp != null) {
-                        try {
-                            return aux.loadClass(className);
-                        } catch (ClassNotFoundException ex) {
-                            // ignore
-                        }
-                    }
-                }
-
-                throw new ClassNotFoundException("Test '" + className + "' not found in: " + bundles);
+                return context.getBundle().loadClass(className);
             }
         };
 
@@ -108,7 +75,21 @@ public class ArquillianBundleActivator implements BundleActivator {
         testRunner = new JMXTestRunner(testClassLoader) {
             @Override
             public byte[] runTestMethod(String className, String methodName) {
-                return super.runTestMethod(className, methodName);
+                Thread thread = Thread.currentThread();
+
+                ClassLoader contextClassLoader = thread.getContextClassLoader();
+
+                try {
+                    Bundle bundle = context.getBundle();
+
+                    thread.setContextClassLoader(
+                        bundle.adapt(BundleWiring.class).getClassLoader());
+
+                    return super.runTestMethod(className, methodName);
+                }
+                finally {
+                    thread.setContextClassLoader(contextClassLoader);
+                }
             }
 
             @Override
@@ -119,7 +100,15 @@ public class ArquillianBundleActivator implements BundleActivator {
                 } catch (ClassNotFoundException ex) {
                     throw new IllegalStateException(ex);
                 }
-                BundleAssociation.setBundle(getTestBundle(syscontext, testClass, methodName));
+                Bundle fragmentBundle = getFragmentBundle(context);
+
+                Bundle testBundle = getTestBundle(syscontext, fragmentBundle.getHeaders().get(ArquillianFragmentGenerator.TEST_BUNDLE_SYMBOLIC_NAME), testClass, methodName);
+
+                FrameworkWiring adapt = syscontext.getBundle().adapt(FrameworkWiring.class);
+
+                adapt.resolveBundles(Arrays.asList(testBundle));
+
+                BundleAssociation.setBundle(testBundle);
                 BundleContextAssociation.setBundleContext(syscontext);
                 return super.runTestMethod(className, methodName, protocolProps);
             }
@@ -153,19 +142,54 @@ public class ArquillianBundleActivator implements BundleActivator {
         return mbeanServer;
     }
 
-    private Bundle getTestBundle(BundleContext syscontext, Class<?> testClass, String methodName) {
-        Bundle bundle = ((BundleReference) testClass.getClassLoader()).getBundle();
+    private Bundle getFragmentBundle(BundleContext context) {
+        BundleWiring bundleWiring = context.getBundle().adapt(BundleWiring.class );
+
+        List<Bundle> fragmentBundles = new ArrayList<Bundle>();
+
+        if (bundleWiring != null) {
+            List<BundleWire> providedWires = bundleWiring.getProvidedWires(HostNamespace.HOST_NAMESPACE);
+
+            for (BundleWire providedWire : providedWires) {
+                fragmentBundles.add(providedWire.getRequirerWiring().getRevision().getBundle());
+            }
+        }
+
+        if (fragmentBundles.isEmpty()) {
+            throw new RuntimeException("There are not fragment associated with the context");
+        }
+
+        if (fragmentBundles.size() > 1) {
+            throw new RuntimeException("There are more than one fragment for the Arquilian Bundle");
+        }
+
+        return fragmentBundles.get(0);
+
+    }
+
+    private Bundle getTestBundle(BundleContext syscontext, String testBundleSymbolicName, Class<?> testClass, String methodName) {
+        Bundle testBundle = null;
+
+        for (Bundle aux : syscontext.getBundles()) {
+            if (aux.getSymbolicName().equals(testBundleSymbolicName)) {
+                testBundle = aux;
+
+                break;
+            }
+        }
+
         for (Method method : testClass.getMethods()) {
             OperateOnDeployment opon = method.getAnnotation(OperateOnDeployment.class);
             if (opon != null && methodName.equals(method.getName())) {
                 for (Bundle aux : syscontext.getBundles()) {
                     if (aux.getLocation().equals(opon.value())) {
-                        bundle = aux;
+                        testBundle = aux;
                         break;
                     }
                 }
             }
         }
-        return bundle;
+
+        return testBundle;
     }
 }

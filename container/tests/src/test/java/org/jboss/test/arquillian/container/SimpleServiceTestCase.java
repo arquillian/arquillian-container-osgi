@@ -59,6 +59,7 @@ public class SimpleServiceTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(SimpleActivator.class.getName());
                 builder.addImportPackages(BundleActivator.class);
+                builder.addExportPackages(SimpleService.class.getPackage());
                 return builder.openStream();
             }
         });

@@ -18,7 +18,6 @@ package org.jboss.arquillian.container.osgi;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -26,11 +25,9 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerFactory;
-
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
@@ -38,15 +35,18 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -140,11 +140,46 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
         framework.stop();
     }
 
+    @Override
+    public long installBundle(Archive<?> archive, boolean start) throws Exception {
+        try {
+            ZipExporter exporter = archive.as(ZipExporter.class);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            exporter.exportTo(baos);
+
+            String location = archive.getName();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+            log.info("Installing bundle: " + location);
+
+            Bundle bundle = installBundle(location, inputStream);
+
+            if (start) {
+                bundle.start();
+
+                awaitBundleActive(bundle.getSymbolicName(), syscontext, 1, TimeUnit.MINUTES);
+            }
+
+            return bundle.getBundleId();
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception ex) {
+            throw new DeploymentException("Cannot deploy: " + archive, ex);
+        }
+    }
+
     protected Bundle installBundle(String location, InputStream inputStream) throws BundleException {
         return syscontext.installBundle(location, inputStream);
     }
 
     protected void uninstallBundle(Bundle bundle) throws BundleException {
+        bundle.uninstall();
+    }
+
+    @Override
+    public void uninstallBundle(long bundleId) throws Exception {
+        Bundle bundle = syscontext.getBundle(bundleId);
+
         bundle.uninstall();
     }
 
@@ -168,22 +203,17 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
             throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
         }
 
-        installArquillianBundle();
-
-        // Wait for the arquillian-osgi-bundle to become ACTIVE
-        awaitArquillianBundleActive(syscontext, 30, TimeUnit.SECONDS);
-
         log.info("Started OSGi embedded container: " + getClass().getName());
     }
 
-    protected void awaitArquillianBundleActive(BundleContext syscontext, long timeout, TimeUnit unit) throws LifecycleException {
+    protected void awaitBundleActive(final String symbolicName, BundleContext syscontext, long timeout, TimeUnit unit) throws LifecycleException {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Bundle> bundleRef = new AtomicReference<Bundle>();
         int states = Bundle.INSTALLED | Bundle.RESOLVED | Bundle.STARTING | Bundle.ACTIVE;
         BundleTracker<Bundle> tracker = new BundleTracker<Bundle>(syscontext, states, null) {
             @Override
             public Bundle addingBundle(Bundle bundle, BundleEvent event) {
-                if ("arquillian-osgi-bundle".equals(bundle.getSymbolicName())) {
+                if (symbolicName.equals(bundle.getSymbolicName())) {
                     bundleRef.set(bundle);
                     return bundle;
                 } else {
@@ -205,7 +235,7 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
             if (arqBundle == null || arqBundle.getState() != Bundle.ACTIVE) {
                 try {
                     if (!latch.await(timeout, unit)) {
-                        throw new LifecycleException("Framework startup timeout");
+                        throw new LifecycleException("The bundle " + symbolicName + " can't be started on time");
                     }
                 } catch (InterruptedException ex) {
                     throw new LifecycleException("Framework startup interupted", ex);
@@ -214,6 +244,10 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
         } finally {
             tracker.close();
         }
+    }
+
+    protected void awaitArquillianBundleActive(BundleContext syscontext, long timeout, TimeUnit unit) throws LifecycleException {
+        awaitBundleActive("arquillian-osgi-bundle", syscontext, timeout, unit);
     }
 
     @Override
@@ -247,19 +281,25 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
         }
     }
 
-    protected void installArquillianBundle() throws LifecycleException {
-        Bundle arqBundle = getInstalledBundle("arquillian-osgi-bundle");
-        if (arqBundle == null) {
-            try {
-                // Note, the bundle does not have an ImplementationVersion, we use the one of the container.
-                String arqVersion = EmbeddedDeployableContainer.class.getPackage().getImplementationVersion();
-                if (arqVersion == null) {
-                    arqVersion = System.getProperty("arquillian.osgi.version");
-                }
-                arqBundle = installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", arqVersion, true);
-            } catch (BundleException ex) {
-                throw new LifecycleException("Cannot install arquillian-osgi-bundle", ex);
+    @Override
+    public void refresh() throws Exception {
+        FrameworkWiring frameworkWiring = syscontext.getBundle().adapt(FrameworkWiring.class);
+
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        frameworkWiring.refreshBundles(null, new FrameworkListener() {
+
+            @Override
+            public void frameworkEvent(FrameworkEvent frameworkEvent) {
+                countDownLatch.countDown();
             }
+        });
+
+        try {
+            countDownLatch.await();
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -280,20 +320,16 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
     @Override
     public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException {
         try {
-            // Export the bundle bytes
-            ZipExporter exporter = archive.as(ZipExporter.class);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            exporter.exportTo(baos);
+            installBundle(archive, false);
 
-            String location = archive.getName();
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
-            log.info("Installing bundle: " + location);
-            installBundle(location, inputStream);
+            //deploy fragment also
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
 
-        } catch (RuntimeException rte) {
-            throw rte;
-        } catch (Exception ex) {
-            throw new DeploymentException("Cannot deploy: " + archive, ex);
+            if (fragment != null) {
+                installBundle(fragment, false);
+            }
+        } catch (Exception e) {
+           throw new DeploymentException("Can't deploy archive", e);
         }
 
         return new ProtocolMetaData().addContext(new JMXContext(mbeanServer));
@@ -309,6 +345,16 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
             if (bundle != null && bundle.getState() != Bundle.UNINSTALLED) {
                 uninstallBundle(bundle);
             }
+
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+            if (fragment != null) {
+                Bundle fragmentBundle = syscontext.getBundle(fragment.getName());
+
+                if (fragmentBundle != null) {
+                    uninstallBundle(fragmentBundle);
+                }
+            }
         } catch (BundleException ex) {
             log.warn("Cannot undeploy: " + archive, ex);
         }
@@ -322,44 +368,6 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
         throw new UnsupportedOperationException("OSGi does not support Descriptor deployment");
-    }
-
-    private Bundle getInstalledBundle(String symbolicName) {
-        for (Bundle aux : syscontext.getBundles()) {
-            if (symbolicName.equals(aux.getSymbolicName()))
-                return aux;
-        }
-        return null;
-    }
-
-    private Bundle installBundle(String groupId, String artifactId, String version, boolean startBundle) throws BundleException {
-        String filespec = groupId + ":" + artifactId + ":jar:" + version;
-        File[] resolved = Maven.resolver().resolve(filespec).withoutTransitivity().asFile();
-        if (resolved == null || resolved.length == 0)
-            throw new BundleException("Cannot obtain maven artifact: " + filespec);
-
-        File bundleFile;
-        if (resolved.length == 1) {
-            bundleFile = resolved[0];
-        } else if (version.endsWith("SNAPSHOT")) {
-            // [TODO] process multiple snapshots
-            throw new BundleException("Multiple maven artifacts for: " + filespec);
-        } else {
-            throw new BundleException("Multiple maven artifacts for: " + filespec);
-        }
-
-        String location = bundleFile.toURI().toString();
-        log.info("Installing bundle: " + location);
-        try {
-            Bundle bundle = installBundle(location, null);
-            if (startBundle == true)
-                bundle.start();
-
-            return bundle;
-        } catch (BundleException ex) {
-            log.error("Cannot install/start bundle: " + bundleFile, ex);
-        }
-        return null;
     }
 
     private MBeanServerConnection getMBeanServerConnection() {

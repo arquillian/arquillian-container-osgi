@@ -16,16 +16,13 @@
  */
 package org.jboss.arquillian.container.osgi.jmx;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -34,7 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
+import java.util.jar.Manifest;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
@@ -43,7 +40,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-
+import org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.osgi.CommonDeployableContainer;
 import org.jboss.arquillian.container.osgi.jmx.http.SimpleHTTPServer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -54,15 +51,16 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaD
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.osgi.vfs.VFSUtils;
 import org.jboss.osgi.vfs.VirtualFile;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-
 import org.osgi.framework.BundleException;
 import org.osgi.jmx.framework.BundleStateMBean;
 import org.osgi.jmx.framework.FrameworkMBean;
@@ -107,8 +105,21 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
         try {
+            Manifest manifest = new Manifest(archive.get("/META-INF/MANIFEST.MF").getAsset().openStream());
+            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+
             BundleHandle handle = installBundle(archive);
-            deployedBundles.put(archive.getName(), handle);
+
+            deployedBundles.put(metadata.getBundleSymbolicName(), handle);
+
+            //deploy fragment also
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+            if (fragment != null) {
+                BundleHandle handleHandle = installBundle(fragment);
+
+                deployedBundles.put(metadata.getBundleSymbolicName()  + "-fragment", handleHandle);
+            }
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception ex) {
@@ -125,7 +136,28 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        BundleHandle handle = deployedBundles.remove(archive.getName());
+        try {
+            Manifest manifest = new Manifest(archive.get("/META-INF/MANIFEST.MF").getAsset().openStream());
+            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+
+            undeploy(metadata.getBundleSymbolicName());
+
+            //undeploy fragment also
+            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
+
+            if (fragment != null) {
+                undeploy(metadata.getBundleSymbolicName() + "-fragment");
+            }
+
+        }
+        catch (IOException e) {
+            throw new DeploymentException("Cannot undeploy: " + archive.getName(), e);
+        }
+    }
+
+    private void undeploy(String symbolicName) throws DeploymentException {
+        BundleHandle handle = deployedBundles.remove(symbolicName);
+
         if (handle != null) {
             String bundleState = null;
             try {
@@ -143,10 +175,14 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
                     long bundleId = handle.getBundleId();
                     frameworkMBean.uninstallBundle(bundleId);
                 } catch (IOException ex) {
-                    logger.error("Cannot undeploy: " + archive.getName(), ex);
+                    logger.error("Cannot undeploy: " + symbolicName, ex);
                 }
             }
         }
+    }
+
+    @Override
+    public void refresh() throws Exception {
     }
 
     @Override
@@ -155,27 +191,30 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     }
 
     @Override
-    public void stop() throws LifecycleException {
-        uninstallArquillianBundle();
+    public void uninstallBundle(long bundleId) throws Exception {
+        try {
+            frameworkMBean.uninstallBundle(bundleId);
+            logger.info("Bundle '" + bundleId + " was uninstalled");
+        } catch (Exception ex) {
+            throw new LifecycleException("Cannot uninstall " + bundleId, ex);
+        }
     }
 
-    protected BundleHandle installBundle(String groupId, String artifactId, String version, boolean startBundle)
-        throws BundleException, IOException {
-        String filespec = groupId + ":" + artifactId + ":jar:" + version;
-        File[] resolved = Maven.resolver().resolve(filespec).withoutTransitivity().asFile();
-        if (resolved == null || resolved.length == 0)
-            throw new BundleException("Cannot obtain maven artifact: " + filespec);
-        if (resolved.length > 1)
-            throw new BundleException("Multiple maven artifacts for: " + filespec);
+    @Override
+    public void stop() throws LifecycleException {
+    }
 
-        URL fileURL = resolved[0].toURI().toURL();
+    @Override
+    public long installBundle(Archive<?> archive, boolean start) throws Exception {
+        BundleHandle bundleHandle = installBundle(archive);
 
-        BundleHandle handle = installBundle(filespec, fileURL);
+        if (start) {
+            startBundle(bundleHandle.getBundleId());
 
-        if (startBundle) {
-            frameworkMBean.startBundle(handle.getBundleId());
+            awaitBundleActive(bundleHandle.getBundleId(), 30, TimeUnit.SECONDS);
         }
-        return handle;
+
+        return bundleHandle.getBundleId();
     }
 
     private BundleHandle installBundle(Archive<?> archive) throws BundleException, IOException {
@@ -207,7 +246,8 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         try {
             long bundleId = frameworkMBean.installBundleFromURL(location, serverUrl.toExternalForm());
             String symbolicName = bundleStateMBean.getSymbolicName(bundleId);
-            return new BundleHandle(bundleId, symbolicName);
+            String version = bundleStateMBean.getVersion(bundleId);
+            return new BundleHandle(bundleId, symbolicName, version);
         } finally {
             if (server != null) {
                 server.shutdown();
@@ -230,39 +270,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         } catch (IOException e) {
             // Assume name lookups imply not local
             return false;
-        }
-    }
-
-    protected String getArquillianBundleVersion() {
-        // Note, the bundle does not have an ImplementationVersion, we
-        // use the one of the container.
-        String arqVersion = JMXDeployableContainer.class.getPackage().getImplementationVersion();
-        if (arqVersion == null) {
-            arqVersion = System.getProperty("arquillian.osgi.version");
-        }
-        return arqVersion;
-    }
-
-    protected void installArquillianBundle() throws LifecycleException, IOException {
-        List<BundleHandle> bundleList = listBundles("arquillian-osgi-bundle");
-        if (bundleList.isEmpty()) {
-            try {
-                installBundle("org.jboss.arquillian.osgi", "arquillian-osgi-bundle", getArquillianBundleVersion(), true);
-            } catch (BundleException ex) {
-                throw new LifecycleException("Cannot install arquillian-osgi-bundle", ex);
-            }
-        }
-    }
-
-    protected void uninstallArquillianBundle() throws LifecycleException {
-        try {
-            BundleHandle arqBundle = getBundle("arquillian-osgi-bundle", getArquillianBundleVersion());
-            if (arqBundle != null) {
-                frameworkMBean.uninstallBundle(arqBundle.getBundleId());
-                logger.info("Bundle 'arquillian-osgi-bundle' was undeployed");
-            }
-        } catch (Exception ex) {
-            throw new LifecycleException("Cannot uninstall arquillian-osgi-bundle", ex);
         }
     }
 
@@ -308,16 +315,13 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         throw new TimeoutException("Timeout while waiting for service: " + serviceName);
     }
 
-    protected void awaitArquillianBundleActive(long timeout, TimeUnit unit) throws IOException, TimeoutException,
+    protected void awaitBundleActive(long bundleId, long timeout, TimeUnit unit) throws IOException, TimeoutException,
         InterruptedException {
-        String symbolicName = "arquillian-osgi-bundle";
-        List<BundleHandle> list = listBundles(symbolicName);
-        if (list.size() != 1)
-            throw new IllegalStateException("Cannot obtain: " + symbolicName);
+
+        long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
 
         String bundleState = null;
-        long bundleId = list.get(0).getBundleId();
-        long timeoutMillis = System.currentTimeMillis() + unit.toMillis(timeout);
+
         while (System.currentTimeMillis() < timeoutMillis) {
             bundleState = bundleStateMBean.getState(bundleId);
             if (BundleStateMBean.ACTIVE.equals(bundleState)) {
@@ -400,28 +404,21 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
         }
     }
 
-    protected List<BundleHandle> listBundles(String symbolicName) throws IOException {
-        List<BundleHandle> bundleList = new ArrayList<BundleHandle>();
-        TabularData listBundles = bundleStateMBean.listBundles();
-        Iterator<?> iterator = listBundles.values().iterator();
-        while (iterator.hasNext()) {
-            CompositeData bundleType = (CompositeData) iterator.next();
-            Long bundleId = (Long) bundleType.get(BundleStateMBean.IDENTIFIER);
-            String auxName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
-            if (symbolicName == null || symbolicName.equals(auxName)) {
-                bundleList.add(new BundleHandle(bundleId, symbolicName));
-            }
-        }
-        return bundleList;
-    }
-
     @Override
     public void startBundle(String symbolicName, String version) throws Exception {
-        BundleHandle bHandle = getBundle(symbolicName, version);
-        if (bHandle == null) {
-            throw new IllegalStateException("Bundle '" + symbolicName + ":" + version + "' was not found");
+        BundleHandle bHandle = this.deployedBundles.get(symbolicName);
+        if ((bHandle == null) || !bHandle.getSymbolicName().equals(symbolicName) || !bHandle.getVersion().equals(version)) {
+            bHandle = getBundle(symbolicName, version);
+            if (bHandle == null) {
+                throw new IllegalStateException("Bundle '" + symbolicName + ":" + version + "' was not found");
+            }
         }
-        frameworkMBean.startBundle(bHandle.getBundleId());
+
+        startBundle(bHandle.getBundleId());
+    }
+
+    public void startBundle(long bundleId) throws Exception {
+        frameworkMBean.startBundle(bundleId);
     }
 
     protected BundleHandle getBundle(String symbolicName, String version) throws Exception {
@@ -433,7 +430,7 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             String auxName = (String) bundleType.get(BundleStateMBean.SYMBOLIC_NAME);
             String auxVersion = (String) bundleType.get(BundleStateMBean.VERSION);
             if (symbolicName.equals(auxName) && version.equals(auxVersion)) {
-                return new BundleHandle(bundleId, symbolicName);
+                return new BundleHandle(bundleId, symbolicName, auxVersion);
             }
         }
         return null;
@@ -442,10 +439,12 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     static class BundleHandle {
         private long bundleId;
         private String symbolicName;
+        private String version;
 
-        BundleHandle(long bundleId, String symbolicName) {
+        BundleHandle(long bundleId, String symbolicName, String version) {
             this.bundleId = bundleId;
             this.symbolicName = symbolicName;
+            this.version = version;
         }
 
         long getBundleId() {
@@ -456,9 +455,13 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             return symbolicName;
         }
 
+        String getVersion() {
+            return version;
+        }
+
         @Override
         public String toString() {
-            return "[" + bundleId + "]" + symbolicName;
+            return "[" + bundleId + "]" + symbolicName + ":" + version;
         }
     }
 }
