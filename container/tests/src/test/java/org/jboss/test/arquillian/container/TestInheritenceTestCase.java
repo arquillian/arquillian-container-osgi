@@ -18,6 +18,7 @@ package org.jboss.test.arquillian.container;
 
 import java.io.InputStream;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -25,11 +26,13 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.test.arquillian.container.util.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 
 /**
  * @author Cristina González
  */
+@RunWith(Arquillian.class)
 public class TestInheritenceTestCase extends BaseTest {
 	@Deployment
 	public static JavaArchive createdeployment() {
@@ -41,6 +44,7 @@ public class TestInheritenceTestCase extends BaseTest {
 				builder.addBundleSymbolicName(archive.getName());
 				builder.addBundleManifestVersion(2);
 				builder.addImportPackages(Bundle.class);
+				builder.addExportPackages(BaseTest.class);
 				return builder.openStream();
 			}
 		});
