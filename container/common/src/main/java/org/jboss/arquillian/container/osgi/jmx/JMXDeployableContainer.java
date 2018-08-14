@@ -49,8 +49,11 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.core.spi.ServiceLoader;
+import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.BundleInfo;
@@ -87,6 +90,10 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     protected BundleStateMBean bundleStateMBean;
     protected ServiceStateMBean serviceStateMBean;
 
+
+    @Inject
+    private Instance<ServiceLoader> _serviceLoaderInstance;
+
     protected JMXContainerConfiguration getContainerConfiguration() {
         return config;
     }
@@ -112,14 +119,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
             deployedBundles.put(metadata.getBundleSymbolicName(), handle);
 
-            //deploy fragment also
-            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
-
-            if (fragment != null) {
-                BundleHandle handleHandle = installBundle(fragment);
-
-                deployedBundles.put(metadata.getBundleSymbolicName()  + "-fragment", handleHandle);
-            }
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception ex) {
@@ -141,13 +140,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
 
             undeploy(metadata.getBundleSymbolicName());
-
-            //undeploy fragment also
-            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
-
-            if (fragment != null) {
-                undeploy(metadata.getBundleSymbolicName() + "-fragment");
-            }
 
         }
         catch (IOException e) {
@@ -331,6 +323,18 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             }
         }
         throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started: " + bundleState);
+    }
+
+    protected Long installArquillianBundle() {
+        ServiceLoader serviceLoader = _serviceLoaderInstance.get();
+        ArquillianBundleGenerator arquillianBundleGenerator = serviceLoader.onlyOne(ArquillianBundleGenerator.class);
+        try {
+            Archive arquillianBundle = arquillianBundleGenerator.createArquillianBundle();
+            return installBundle(arquillianBundle, true);
+        } catch (Exception e) {
+            logger.error("Can't generate " + ArquillianBundleGenerator.BUNDLE_NAME);
+        }
+        return null;
     }
 
     protected MBeanServerConnection getMBeanServerConnection(final long timeout, final TimeUnit unit)

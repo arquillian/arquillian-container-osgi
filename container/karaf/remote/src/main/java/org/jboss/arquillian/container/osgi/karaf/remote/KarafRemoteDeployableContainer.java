@@ -93,6 +93,9 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
             // Await bootsrap complete services
             awaitBootstrapCompleteServices();
 
+            long bundleId = installArquillianBundle();
+            awaitBundleActive(bundleId, 30, TimeUnit.SECONDS);
+
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception ex) {

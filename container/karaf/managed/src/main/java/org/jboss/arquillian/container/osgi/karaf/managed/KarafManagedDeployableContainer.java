@@ -32,6 +32,7 @@ import javax.management.ObjectName;
 import org.jboss.arquillian.container.osgi.jmx.JMXDeployableContainer;
 import org.jboss.arquillian.container.osgi.jmx.ObjectNameFactory;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
 import org.osgi.jmx.framework.BundleStateMBean;
 import org.osgi.jmx.framework.FrameworkMBean;
 import org.osgi.jmx.framework.ServiceStateMBean;
@@ -186,6 +187,9 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
 
             // Await bootsrap complete services
             awaitBootstrapCompleteServices();
+
+            long bundleId = installArquillianBundle();
+            awaitBundleActive(bundleId, 30, TimeUnit.SECONDS);
 
         } catch (RuntimeException rte) {
             destroyKarafProcess();

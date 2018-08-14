@@ -33,6 +33,10 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.core.spi.ServiceLoader;
+import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -89,6 +93,9 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
     private BundleContext syscontext;
     private MBeanServerConnection mbeanServer;
     private EmbeddedContainerConfiguration configuration;
+
+    @Inject
+    private Instance<ServiceLoader> _serviceLoaderInstance;
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -203,6 +210,9 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
             throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
         }
 
+        installArquillianBundle();
+        awaitBundleActive(ArquillianBundleGenerator.BUNDLE_SYMBOLIC_NAME, syscontext, 30, TimeUnit.SECONDS);
+
         log.info("Started OSGi embedded container: " + getClass().getName());
     }
 
@@ -246,10 +256,6 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
         }
     }
 
-    protected void awaitArquillianBundleActive(BundleContext syscontext, long timeout, TimeUnit unit) throws LifecycleException {
-        awaitBundleActive("arquillian-osgi-bundle", syscontext, timeout, unit);
-    }
-
     @Override
     protected void awaitBootstrapCompleteService(String service) {
         try {
@@ -259,7 +265,7 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected void awaitBootstrapCompleteService(BundleContext syscontext, String serviceName, long timeout, TimeUnit unit) {
         final CountDownLatch latch = new CountDownLatch(1);
         ServiceTracker<?, ?> tracker = new ServiceTracker(syscontext, serviceName, null) {
@@ -297,8 +303,7 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
 
         try {
             countDownLatch.await();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -321,15 +326,8 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
     public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException {
         try {
             installBundle(archive, false);
-
-            //deploy fragment also
-            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
-
-            if (fragment != null) {
-                installBundle(fragment, false);
-            }
         } catch (Exception e) {
-           throw new DeploymentException("Can't deploy archive", e);
+            throw new DeploymentException("Can't deploy archive", e);
         }
 
         return new ProtocolMetaData().addContext(new JMXContext(mbeanServer));
@@ -344,16 +342,6 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
             Bundle bundle = syscontext.getBundle(location);
             if (bundle != null && bundle.getState() != Bundle.UNINSTALLED) {
                 uninstallBundle(bundle);
-            }
-
-            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
-
-            if (fragment != null) {
-                Bundle fragmentBundle = syscontext.getBundle(fragment.getName());
-
-                if (fragmentBundle != null) {
-                    uninstallBundle(fragmentBundle);
-                }
             }
         } catch (BundleException ex) {
             log.warn("Cannot undeploy: " + archive, ex);
@@ -388,6 +376,18 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
         }
 
         return mbeanServer;
+    }
+
+    private Long installArquillianBundle() {
+        ServiceLoader serviceLoader = _serviceLoaderInstance.get();
+        ArquillianBundleGenerator arquillianBundleGenerator = serviceLoader.onlyOne(ArquillianBundleGenerator.class);
+        try {
+            Archive arquillianBundle = arquillianBundleGenerator.createArquillianBundle();
+            return installBundle(arquillianBundle, true);
+        } catch (Exception e) {
+            log.error("Can't generate " + ArquillianBundleGenerator.BUNDLE_NAME);
+        }
+        return null;
     }
 
     public abstract static class AbstractContainerLogger implements ContainerLogger {

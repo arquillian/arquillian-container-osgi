@@ -72,7 +72,10 @@ public class ArquillianBundleGenerator {
         properties.setProperty(Constants.BUNDLE_ACTIVATOR, ArquillianBundleActivator.class.getCanonicalName());
         properties.setProperty(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
 
-        properties.setProperty(Constants.EXPORT_PACKAGE, OSGiManifestBuilder.class.getPackage().getName());
+        String exportPackages ="org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,org.jboss.arquillian.osgi,org.jboss.arquillian.test.api," +
+                "org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec," +
+                "org.junit,org.junit.runner,org.osgi.framework,org.jboss.osgi.metadata";
+        properties.setProperty(Constants.EXPORT_PACKAGE, exportPackages);
 
         List<Archive<?>> extensionArchives = loadAuxiliaryArchives();
 
