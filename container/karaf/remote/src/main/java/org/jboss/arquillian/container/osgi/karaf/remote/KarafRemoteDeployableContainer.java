@@ -16,20 +16,18 @@
  */
 package org.jboss.arquillian.container.osgi.karaf.remote;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import org.jboss.arquillian.container.osgi.jmx.JMXDeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-
+import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
 import org.osgi.jmx.framework.BundleStateMBean;
 import org.osgi.jmx.framework.FrameworkMBean;
 import org.osgi.jmx.framework.ServiceStateMBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Remote deployable container for Karaf.
@@ -93,8 +91,11 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
             // Await bootsrap complete services
             awaitBootstrapCompleteServices();
 
-            long bundleId = installArquillianBundle();
-            awaitBundleActive(bundleId, 30, TimeUnit.SECONDS);
+            try {
+                installArquillianBundle();
+            } catch (Exception e) {
+                logger.error("Can't deploy " + ArquillianBundleGenerator.BUNDLE_NAME);
+            }
 
         } catch (RuntimeException rte) {
             throw rte;
@@ -105,6 +106,11 @@ public class KarafRemoteDeployableContainer<T extends KarafRemoteContainerConfig
 
     @Override
     public void stop() throws LifecycleException {
+        try {
+            uninstallArquillianBundle();
+        } catch (Exception e) {
+            logger.error("Can't uninstall arquillian bundle", e);
+        }
         super.stop();
     }
 }

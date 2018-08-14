@@ -141,7 +141,7 @@ public class SimpleHTTPServer {
     private class ClientConnection extends Thread {
         private Socket socket;
 
-        public ClientConnection(Socket socket) {
+        ClientConnection(Socket socket) {
             setDaemon(true);
             this.socket = socket;
         }

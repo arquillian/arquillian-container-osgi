@@ -24,11 +24,13 @@ package org.jboss.arquillian.osgi.bundle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
 import org.jboss.arquillian.core.api.Instance;
@@ -54,6 +56,30 @@ import org.osgi.framework.Constants;
  */
 public class ArquillianBundleGenerator {
 
+    private static final List<String> exportPackages = Arrays.asList(
+            "org.jboss.arquillian.container.test.api",
+            "org.jboss.arquillian.junit",
+            "org.jboss.arquillian.osgi",
+            "org.jboss.arquillian.test.api",
+            "org.jboss.shrinkwrap.api",
+            "org.jboss.shrinkwrap.api.asset",
+            "org.jboss.shrinkwrap.api.spec",
+            "junit.framework",
+            "org.hamcrest",
+            "org.hamcrest.core",
+            "org.junit",
+            "org.junit.matchers",
+            "org.junit.rules",
+            "org.junit.runner",
+            "org.junit.runner.manipulation",
+            "org.junit.runner.notification",
+            "org.junit.runners",
+            "org.junit.runners.model",
+            "org.junit.runners.parameterized",
+            "org.junit.validator",
+            "org.osgi.framework",
+            "org.jboss.osgi.metadata");
+
     public Archive<?> createArquillianBundle()
         throws Exception{
 
@@ -72,10 +98,7 @@ public class ArquillianBundleGenerator {
         properties.setProperty(Constants.BUNDLE_ACTIVATOR, ArquillianBundleActivator.class.getCanonicalName());
         properties.setProperty(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
 
-        String exportPackages ="org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,org.jboss.arquillian.osgi,org.jboss.arquillian.test.api," +
-                "org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec," +
-                "org.junit,org.junit.runner,org.osgi.framework,org.jboss.osgi.metadata";
-        properties.setProperty(Constants.EXPORT_PACKAGE, exportPackages);
+        properties.setProperty(Constants.EXPORT_PACKAGE, exportPackages.stream().collect(Collectors.joining(",")));
 
         List<Archive<?>> extensionArchives = loadAuxiliaryArchives();
 
