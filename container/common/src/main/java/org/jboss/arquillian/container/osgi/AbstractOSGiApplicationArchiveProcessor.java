@@ -23,6 +23,10 @@ package org.jboss.arquillian.container.osgi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -34,7 +38,10 @@ import org.jboss.arquillian.osgi.bundle.ArquillianFragmentGenerator;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -67,34 +74,71 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
         if (ClassContainer.class.isAssignableFrom(appArchive.getClass()) == false)
             throw new IllegalArgumentException("ClassContainer expected: " + appArchive);
 
-        ServiceLoader serviceLoader = _serviceLoaderInstance.get();
-
-        ArquillianFragmentGenerator arquillianFragmentGenerator = serviceLoader.onlyOne(ArquillianFragmentGenerator.class);
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-            manifest.write(baos);
-
-            ByteArrayAsset byteArrayAsset = new ByteArrayAsset(baos.toByteArray());
-
-            appArchive.delete(MANIFEST_PATH);
-
-            appArchive.add(byteArrayAsset, MANIFEST_PATH);
-
-            Archive<?> arquillianFragment = arquillianFragmentGenerator.createArquillianFragment(manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME), manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION), testClass);
-
-            ZipExporter arquillianBundleArchiveZipExporter = arquillianFragment.as(ZipExporter.class);
-
-            InputStream arquillianBundleArchiveInputStream = arquillianBundleArchiveZipExporter.exportAsInputStream();
-
-            byteArrayAsset = new ByteArrayAsset(
-                arquillianBundleArchiveInputStream);
-
-            appArchive.add(byteArrayAsset, FRAGMENT_PATH);
-        } catch (Exception e) {
-            throw new RuntimeException("Can't create the Arquillian Fragment", e);
+        // Get the test class and its super classes
+        Class<?> javaClass = testClass.getJavaClass();
+        Set<Class<?>> classes = new HashSet<Class<?>>();
+        classes.add(javaClass);
+        Class<?> superclass = javaClass.getSuperclass();
+        while (superclass != Object.class) {
+            classes.add(superclass);
+            superclass = superclass.getSuperclass();
         }
+
+        // Check if the application archive already contains the test classes
+        if (!appArchive.getName().endsWith(".war")) {
+            for (Class<?> clazz : classes) {
+                boolean testClassFound = false;
+                String path = clazz.getName().replace('.', '/') + ".class";
+                for (ArchivePath auxpath : appArchive.getContent().keySet()) {
+                    if (auxpath.toString().endsWith(path)) {
+                        testClassFound = true;
+                        break;
+                    }
+                }
+                if (testClassFound == false) {
+                    ((ClassContainer<?>) appArchive).addClass(clazz);
+                }
+            }
+        }
+
+        final OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+        Attributes attributes = manifest.getMainAttributes();
+        for (Map.Entry<Object, Object> entry : attributes.entrySet()) {
+            String key = entry.getKey().toString();
+            String value = (String) entry.getValue();
+            if (key.equals("Manifest-Version"))
+                continue;
+
+            if (key.equals(Constants.IMPORT_PACKAGE)) {
+                String[] imports = splitWithComma(value);
+                builder.addImportPackages(imports);
+                continue;
+            }
+
+            if (key.equals(Constants.EXPORT_PACKAGE)) {
+                String[] exports = splitWithComma(value);
+                builder.addExportPackages(exports);
+                continue;
+            }
+
+            builder.addManifestHeader(key, value);
+        }
+
+        // Export the test class package otherwise the arq-bundle cannot load the test class
+        builder.addExportPackages(javaClass);
+
+        // Add common test imports
+        builder.addImportPackages("org.jboss.arquillian.container.test.api", "org.jboss.arquillian.junit", "org.jboss.arquillian.osgi", "org.jboss.arquillian.test.api");
+        builder.addImportPackages("org.jboss.shrinkwrap.api", "org.jboss.shrinkwrap.api.asset", "org.jboss.shrinkwrap.api.spec");
+        builder.addImportPackages("org.junit", "org.junit.runner", "org.osgi.framework");
+
+        // Add or replace the manifest in the archive
+        appArchive.delete(ArchivePaths.create(JarFile.MANIFEST_NAME));
+        appArchive.add(new Asset() {
+            public InputStream openStream() {
+                return builder.openStream();
+            }
+        }, JarFile.MANIFEST_NAME);
     }
 
     private void assertValidBundleArchive(Archive<?> archive) {
@@ -127,26 +171,18 @@ public abstract class AbstractOSGiApplicationArchiveProcessor implements Applica
 
         // After each comma must be even number of double-quotes
         return value.split(
-            "(?x)       " +   // Free-Spacing Mode
-            ",          " +   // Split with comma
-            "(?=        " +   // Followed by
-            "  (?:      " +   // Start a non-capture group
-            "    [^\"]* " +   // 0 or more non-quote characters
-            "    \"     " +   // 1 quote
-            "    [^\"]* " +   // 0 or more non-quote characters
-            "    \"     " +   // 1 quote
-            "  )*       " +   // 0 or more repetition of non-capture group (multiple of 2 quotes will be even)
-            "  [^\"]*   " +   // Finally 0 or more non-quotes
-            "  $        " +   // Till the end  (This is necessary, else every comma will satisfy the condition)
-            ")          "     // End look-ahead
+                "(?x)       " +   // Free-Spacing Mode
+                        ",          " +   // Split with comma
+                        "(?=        " +   // Followed by
+                        "  (?:      " +   // Start a non-capture group
+                        "    [^\"]* " +   // 0 or more non-quote characters
+                        "    \"     " +   // 1 quote
+                        "    [^\"]* " +   // 0 or more non-quote characters
+                        "    \"     " +   // 1 quote
+                        "  )*       " +   // 0 or more repetition of non-capture group (multiple of 2 quotes will be even)
+                        "  [^\"]*   " +   // Finally 0 or more non-quotes
+                        "  $        " +   // Till the end  (This is necessary, else every comma will satisfy the condition)
+                        ")          "     // End look-ahead
         );
     }
-
-
-    @Inject
-    private Instance<ServiceLoader> _serviceLoaderInstance;
-
-    public static final String MANIFEST_PATH = "META-INF/MANIFEST.MF";
-
-    public static final String FRAGMENT_PATH = "deployment/fragment.jar";
 }

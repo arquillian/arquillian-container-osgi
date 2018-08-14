@@ -42,33 +42,6 @@ public class DeploymentObserver {
 
     static final Logger logger = LoggerFactory.getLogger(DeploymentObserver.class.getPackage().getName());
 
-    public void buildArquillianOSGiBundle(@Observes BeforeSetup event) throws Exception {
-        if (_arquillianOSGiBundle == null) {
-            ServiceLoader serviceLoader = _serviceLoaderInstance.get();
-
-            ArquillianBundleGenerator arquillianBundleGenerator =
-                serviceLoader.onlyOne(ArquillianBundleGenerator.class);
-
-            _arquillianOSGiBundle = arquillianBundleGenerator.createArquillianBundle();
-        }
-    }
-
-    public void startContainer(@Observes AfterStart event) throws Exception {
-        if (event.getDeployableContainer() instanceof CommonDeployableContainer) {
-            container = (CommonDeployableContainer<?>) event.getDeployableContainer();
-        }
-    }
-
-    public void installArquillianBundle(@Observes Before event) throws Exception {
-        _arquillianOSGiBundleId = container.installBundle(_arquillianOSGiBundle, true);
-    }
-
-    public void uninstallArquillianBundle(@Observes After event) throws Exception {
-        container.uninstallBundle(_arquillianOSGiBundleId);
-
-        container.refresh();
-    }
-
     public void autostartBundle(@Observes AfterDeploy event) throws Exception {
         if (event.getDeployableContainer() instanceof CommonDeployableContainer) {
             CommonDeployableContainer<?> container = (CommonDeployableContainer<?>) event.getDeployableContainer();
@@ -83,13 +56,4 @@ public class DeploymentObserver {
             }
         }
     }
-
-    private CommonDeployableContainer<?> container;
-
-    private Archive<?> _arquillianOSGiBundle;
-
-    private long _arquillianOSGiBundleId;
-
-    @Inject
-    private Instance<ServiceLoader> _serviceLoaderInstance;
 }
