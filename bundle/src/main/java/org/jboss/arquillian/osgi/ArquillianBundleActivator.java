@@ -25,10 +25,12 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -44,7 +46,6 @@ import org.osgi.framework.Constants;
 
 /**
  * This is the Arquillian {@link BundleActivator}.
- *
  * It unconditionally starts the {@link JMXTestRunner}.
  *
  * @author thomas.diesler@jboss.com
@@ -62,43 +63,29 @@ public class ArquillianBundleActivator implements BundleActivator {
         arqBundleId = context.getBundle().getBundleId();
 
         final BundleContext syscontext = context.getBundle(0).getBundleContext();
-        final TestClassLoader testClassLoader = new TestClassLoader() {
+        final TestClassLoader testClassLoader = className -> {
+            String namePath = className.replace('.', '/') + ".class";
 
-            @Override
-            public Class<?> loadTestClass(String className) throws ClassNotFoundException {
-                String namePath = className.replace('.', '/') + ".class";
+            // Get all installed bundles and remove some
+            final Supplier<Stream<Bundle>> bundlesSuplier = () -> Arrays.asList(syscontext.getBundles()).stream()
+                    .filter(bundle -> bundle.getBundleId() > arqBundleId && bundle.getState() != Bundle.UNINSTALLED);
 
-                // Get all installed bundles and remove some
-                List<Bundle> bundles = new ArrayList<Bundle>(Arrays.asList(syscontext.getBundles()));
-                Iterator<Bundle> iterator = bundles.iterator();
-                while(iterator.hasNext()) {
-                    Bundle aux = iterator.next();
-                    if(aux.getBundleId() <= arqBundleId || aux.getState() == Bundle.UNINSTALLED) {
-                        iterator.remove();
-                    }
-                }
+            //find bundle which contains testClass or search in bundles which define BUNDLE_CLASSPATH
+            Optional<Bundle> testBundleOptional = bundlesSuplier.get().filter(bundle -> bundle.getEntry(namePath) != null).findAny().isPresent() ?
+                    bundlesSuplier.get().filter(bundle -> bundle.getEntry(namePath) != null).findAny() :
+                    bundlesSuplier.get()
+                            .filter(bundle -> bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH) != null)
+                            .filter(bundle -> {
+                                try {
+                                    bundle.loadClass(className);
+                                    return true;
+                                } catch (ClassNotFoundException e) {
+                                    return false;
+                                }
+                            }).findAny();
 
-                // Load the the test class from the bundle that contains the entry
-                for(Bundle aux : bundles) {
-                    if(aux.getEntry(namePath) != null) {
-                        return aux.loadClass(className);
-                    }
-                }
 
-                // Load the the test class from bundle that defines a Bundle-ClassPath
-                for(Bundle aux : bundles) {
-                    String bundlecp = aux.getHeaders().get(Constants.BUNDLE_CLASSPATH);
-                    if(bundlecp != null) {
-                        try {
-                            return aux.loadClass(className);
-                        } catch(ClassNotFoundException ex) {
-                            // ignore
-                        }
-                    }
-                }
-
-                throw new ClassNotFoundException("Test '" + className + "' not found in: " + bundles);
-            }
+            return testBundleOptional.orElseThrow(() -> new ClassNotFoundException("Test '" + className + "' not found in: " + bundlesSuplier.get().collect(Collectors.toList()))).loadClass(className);
         };
 
         // Register the JMXTestRunner
@@ -112,7 +99,7 @@ public class ArquillianBundleActivator implements BundleActivator {
                 try {
                     thread.setContextClassLoader(testClassLoader.loadTestClass(className).getClassLoader());
                     return super.runTestMethod(className, methodName);
-                } catch(ClassNotFoundException e) {
+                } catch (ClassNotFoundException e) {
                     log.warning("Can't find class" + className);
                 } finally {
                     thread.setContextClassLoader(contextClassLoader);
@@ -164,11 +151,11 @@ public class ArquillianBundleActivator implements BundleActivator {
 
     private Bundle getTestBundle(BundleContext syscontext, Class<?> testClass, String methodName) {
         Bundle bundle = ((BundleReference) testClass.getClassLoader()).getBundle();
-        for(Method method : testClass.getMethods()) {
+        for (Method method : testClass.getMethods()) {
             OperateOnDeployment opon = method.getAnnotation(OperateOnDeployment.class);
-            if(opon != null && methodName.equals(method.getName())) {
-                for(Bundle aux : syscontext.getBundles()) {
-                    if(aux.getLocation().equals(opon.value())) {
+            if (opon != null && methodName.equals(method.getName())) {
+                for (Bundle aux : syscontext.getBundles()) {
+                    if (aux.getLocation().equals(opon.value())) {
                         bundle = aux;
                         break;
                     }

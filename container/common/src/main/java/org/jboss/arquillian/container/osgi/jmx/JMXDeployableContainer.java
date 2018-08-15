@@ -90,10 +90,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
     protected BundleStateMBean bundleStateMBean;
     protected ServiceStateMBean serviceStateMBean;
 
-
-    @Inject
-    private Instance<ServiceLoader> _serviceLoaderInstance;
-
     protected JMXContainerConfiguration getContainerConfiguration() {
         return config;
     }
@@ -323,18 +319,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             }
         }
         throw new TimeoutException("Arquillian bundle [" + bundleId + "] not started: " + bundleState);
-    }
-
-    protected Long installArquillianBundle() {
-        ServiceLoader serviceLoader = _serviceLoaderInstance.get();
-        ArquillianBundleGenerator arquillianBundleGenerator = serviceLoader.onlyOne(ArquillianBundleGenerator.class);
-        try {
-            Archive arquillianBundle = arquillianBundleGenerator.createArquillianBundle();
-            return installBundle(arquillianBundle, true);
-        } catch (Exception e) {
-            logger.error("Can't generate " + ArquillianBundleGenerator.BUNDLE_NAME);
-        }
-        return null;
     }
 
     protected MBeanServerConnection getMBeanServerConnection(final long timeout, final TimeUnit unit)

@@ -33,13 +33,9 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
-import org.jboss.arquillian.core.api.Instance;
-import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.core.spi.ServiceLoader;
 import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -93,9 +89,6 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
     private BundleContext syscontext;
     private MBeanServerConnection mbeanServer;
     private EmbeddedContainerConfiguration configuration;
-
-    @Inject
-    private Instance<ServiceLoader> _serviceLoaderInstance;
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -210,8 +203,11 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
             throw new LifecycleException("Cannot start embedded OSGi Framework", ex);
         }
 
-        installArquillianBundle();
-        awaitBundleActive(ArquillianBundleGenerator.BUNDLE_SYMBOLIC_NAME, syscontext, 30, TimeUnit.SECONDS);
+        try {
+            installArquillianBundle();
+        } catch (Exception e) {
+            log.error("Can't deploy " + ArquillianBundleGenerator.BUNDLE_NAME);
+        }
 
         log.info("Started OSGi embedded container: " + getClass().getName());
     }
@@ -376,18 +372,6 @@ public abstract class EmbeddedDeployableContainer<T extends EmbeddedContainerCon
         }
 
         return mbeanServer;
-    }
-
-    private Long installArquillianBundle() {
-        ServiceLoader serviceLoader = _serviceLoaderInstance.get();
-        ArquillianBundleGenerator arquillianBundleGenerator = serviceLoader.onlyOne(ArquillianBundleGenerator.class);
-        try {
-            Archive arquillianBundle = arquillianBundleGenerator.createArquillianBundle();
-            return installBundle(arquillianBundle, true);
-        } catch (Exception e) {
-            log.error("Can't generate " + ArquillianBundleGenerator.BUNDLE_NAME);
-        }
-        return null;
     }
 
     public abstract static class AbstractContainerLogger implements ContainerLogger {

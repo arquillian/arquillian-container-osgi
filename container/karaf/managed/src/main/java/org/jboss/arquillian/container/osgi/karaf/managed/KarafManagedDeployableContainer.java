@@ -25,10 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-
 import org.jboss.arquillian.container.osgi.jmx.JMXDeployableContainer;
 import org.jboss.arquillian.container.osgi.jmx.ObjectNameFactory;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -78,8 +76,8 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
         if (mbeanServer != null && !config.isAllowConnectingToRunningServer()) {
             throw new LifecycleException(
                     "The server is already running! Managed containers does not support connecting to running server instances due to the " +
-                    "possible harmful effect of connecting to the wrong server. Please stop server before running or change to another type of container.\n" +
-                    "To disable this check and allow Arquillian to connect to a running server, set allowConnectingToRunningServer to true in the container configuration");
+                            "possible harmful effect of connecting to the wrong server. Please stop server before running or change to another type of container.\n" +
+                            "To disable this check and allow Arquillian to connect to a running server, set allowConnectingToRunningServer to true in the container configuration");
         }
 
         // Start the Karaf process
@@ -187,9 +185,11 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
 
             // Await bootsrap complete services
             awaitBootstrapCompleteServices();
-
-            long bundleId = installArquillianBundle();
-            awaitBundleActive(bundleId, 30, TimeUnit.SECONDS);
+            try {
+                installArquillianBundle();
+            } catch (Exception e) {
+                _logger.error("Can't deploy " + ArquillianBundleGenerator.BUNDLE_NAME);
+            }
 
         } catch (RuntimeException rte) {
             destroyKarafProcess();
