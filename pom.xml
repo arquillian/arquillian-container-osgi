@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Parent -->
@@ -29,23 +30,30 @@
         <version.apache.felix.framework>4.2.1</version.apache.felix.framework>
         <version.apache.karaf>4.0.4</version.apache.karaf>
         <version.jboss.arquillian.core>1.4.0.Final</version.jboss.arquillian.core>
-        <version.jboss.logging>3.1.3.GA</version.jboss.logging>
+        <version.jboss.logging>3.3.1.Final</version.jboss.logging>
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
-        <version.jboss.osgi.framework>3.0.3.Final</version.jboss.osgi.framework>
+        <version.jboss.osgi.framework>5.0.1.Final</version.jboss.osgi.framework>
         <version.jboss.osgi.metadata>4.0.0.CR1</version.jboss.osgi.metadata>
-        <version.jboss.osgi.spi>4.0.0.Final</version.jboss.osgi.spi>
-        <version.jboss.osgi.vfs>2.0.0.Final</version.jboss.osgi.vfs>
+        <version.jboss.osgi.spi>6.0.1.Final</version.jboss.osgi.spi>
+        <version.jboss.osgi.vfs>4.0.1.Final</version.jboss.osgi.vfs>
+        <version.jboss.vfs>3.2.11.Final</version.jboss.vfs>
+        <version.jboss.modules>1.5.1.Final</version.jboss.modules>
+        <version.jboss.msc>1.2.6.Final</version.jboss.msc>
         <version.junit>4.12</version.junit>
         <version.hamcrest-core>1.3</version.hamcrest-core>
         <version.mockito>1.8.4</version.mockito>
-        <version.osgi>5.0.0</version.osgi>
+        <version.osgi>6.0.0</version.osgi>
+        <version.osgi.enterprise>5.0.0</version.osgi.enterprise>
         <version.slf4j>1.5.11</version.slf4j>
-		<version.eclipse.equinox>3.7.1</version.eclipse.equinox>
-		
-		<!-- Plugin versions -->
+        <version.eclipse.equinox>3.11.2</version.eclipse.equinox>
+
+        <!-- Plugin versions -->
         <version-maven-antrun-plugin>1.7</version-maven-antrun-plugin>
         <version-maven-javadoc-plugin>2.10.3</version-maven-javadoc-plugin>
-		<version-maven-release-plugin>2.5.3</version-maven-release-plugin>
+        <version-maven-release-plugin>2.5.3</version-maven-release-plugin>
+
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <!-- Modules -->
@@ -118,6 +126,21 @@
                 <version>${version.jboss.osgi.vfs}</version>
             </dependency>
             <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-vfs</artifactId>
+                <version>${version.jboss.vfs}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.msc</groupId>
+                <artifactId>jboss-msc</artifactId>
+                <version>${version.jboss.msc}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.modules</groupId>
+                <artifactId>jboss-modules</artifactId>
+                <version>${version.jboss.modules}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-all</artifactId>
                 <version>${version.mockito}</version>
@@ -130,7 +153,7 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.enterprise</artifactId>
-                <version>${version.osgi}</version>
+                <version>${version.osgi.enterprise}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -152,8 +175,8 @@
                 <artifactId>junit</artifactId>
                 <version>${version.junit}</version>
             </dependency>
-			<dependency>
-                <groupId>org.eclipse.osgi</groupId>
+            <dependency>
+                <groupId>org.eclipse.platform</groupId>
                 <artifactId>org.eclipse.osgi</artifactId>
                 <version>${version.eclipse.equinox}</version>
             </dependency>
@@ -170,7 +193,7 @@
                     <configLocation>${basedir}/../checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
-                    <useFile />
+                    <useFile/>
                 </configuration>
                 <executions>
                     <execution>
@@ -189,6 +212,11 @@
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
@@ -230,7 +258,7 @@
             <url>https://repository.jboss.org/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
-    
+
     <!-- Repositories -->
     <repositories>
         <repository>
@@ -248,6 +276,6 @@
             </snapshots>
         </repository>
     </repositories>
-    
+
 </project>
 

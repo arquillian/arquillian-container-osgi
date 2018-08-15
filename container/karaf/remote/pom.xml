@@ -42,6 +42,10 @@
 			<artifactId>jbosgi-spi</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.jboss</groupId>
+			<artifactId>jboss-vfs</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.jboss.osgi.vfs</groupId>
 			<artifactId>jbosgi-vfs30</artifactId>
 		</dependency>
