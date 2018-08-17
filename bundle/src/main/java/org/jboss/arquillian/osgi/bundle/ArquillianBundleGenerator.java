@@ -83,6 +83,7 @@ public class ArquillianBundleGenerator {
                 "org.jboss.shrinkwrap.api.asset",
                 "org.jboss.shrinkwrap.api.spec",
                 "org.junit",
+                "org.junit.rules",
                 "org.junit.runner",
                 "org.osgi.framework",
                 "org.jboss.osgi.metadata");
