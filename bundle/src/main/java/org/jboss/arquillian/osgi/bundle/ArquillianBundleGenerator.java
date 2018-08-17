@@ -21,6 +21,24 @@
  */
 package org.jboss.arquillian.osgi.bundle;
 
+import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
+import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.core.spi.ServiceLoader;
+import org.jboss.arquillian.osgi.ArquillianBundleActivator;
+import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.Filters;
+import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
+import org.osgi.framework.Constants;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -31,23 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
-import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
-import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
-import org.jboss.arquillian.core.api.Instance;
-import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.core.spi.ServiceLoader;
-import org.jboss.arquillian.osgi.ArquillianBundleActivator;
-import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
-import org.jboss.osgi.metadata.OSGiManifestBuilder;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.Filters;
-import org.jboss.shrinkwrap.api.Node;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.osgi.framework.Constants;
 
 /**
  * ArquillianBundleGenerator
