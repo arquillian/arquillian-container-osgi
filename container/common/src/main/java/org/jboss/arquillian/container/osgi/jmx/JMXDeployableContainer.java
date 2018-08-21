@@ -49,8 +49,11 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
+import org.jboss.arquillian.core.spi.ServiceLoader;
+import org.jboss.arquillian.osgi.bundle.ArquillianBundleGenerator;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.BundleInfo;
@@ -112,14 +115,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
 
             deployedBundles.put(metadata.getBundleSymbolicName(), handle);
 
-            //deploy fragment also
-            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
-
-            if (fragment != null) {
-                BundleHandle handleHandle = installBundle(fragment);
-
-                deployedBundles.put(metadata.getBundleSymbolicName()  + "-fragment", handleHandle);
-            }
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception ex) {
@@ -141,13 +136,6 @@ public abstract class JMXDeployableContainer<T extends JMXContainerConfiguration
             OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
 
             undeploy(metadata.getBundleSymbolicName());
-
-            //undeploy fragment also
-            JavaArchive fragment = archive.getAsType(JavaArchive.class, AbstractOSGiApplicationArchiveProcessor.FRAGMENT_PATH);
-
-            if (fragment != null) {
-                undeploy(metadata.getBundleSymbolicName() + "-fragment");
-            }
 
         }
         catch (IOException e) {
