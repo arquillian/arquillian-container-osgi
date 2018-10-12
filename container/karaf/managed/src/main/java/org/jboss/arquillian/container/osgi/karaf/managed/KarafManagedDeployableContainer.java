@@ -121,6 +121,10 @@ public class KarafManagedDeployableContainer<T extends KarafManagedContainerConf
             // Classpath
             StringBuilder classPath = new StringBuilder();
             File karafLibBootDir = new File(karafHomeDir, "lib/boot/");
+            if (!karafLibBootDir.exists()) {
+                // In Karaf 3 the lib directory contains the boot jars
+                karafLibBootDir = new File(karafHomeDir, "lib/");
+            }
             String[] libs = karafLibBootDir.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
