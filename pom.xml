@@ -49,6 +49,7 @@
 
         <!-- Plugin versions -->
         <version-maven-antrun-plugin>1.7</version-maven-antrun-plugin>
+        <version-maven-checkstyle-plugin>3.0.0</version-maven-checkstyle-plugin>
         <version-maven-javadoc-plugin>2.10.3</version-maven-javadoc-plugin>
         <version-maven-release-plugin>2.5.3</version-maven-release-plugin>
 
@@ -215,7 +216,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${version-maven-checkstyle-plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

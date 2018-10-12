@@ -87,8 +87,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     }
 
     protected void uninstallArquillianBundle() throws Exception {
-        if(arquillianBundleId == null)
-        {
+        if(arquillianBundleId == null) {
             throw new IllegalStateException("Arquillian bundle is not installed");
         }
         uninstallBundle(arquillianBundleId);
