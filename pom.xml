@@ -40,7 +40,7 @@
         <version.jboss.msc>1.2.6.Final</version.jboss.msc>
         <version.junit>4.12</version.junit>
         <version.hamcrest-core>1.3</version.hamcrest-core>
-        <version.mockito>1.8.4</version.mockito>
+        <version.mockito>1.10.19</version.mockito>
         <version.osgi>6.0.0</version.osgi>
         <version.osgi.enterprise>5.0.0</version.osgi.enterprise>
         <version.slf4j>1.5.11</version.slf4j>
