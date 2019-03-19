@@ -27,7 +27,7 @@
     <!-- Properties -->
     <properties>
         <version.apache.felix.framework>4.2.1</version.apache.felix.framework>
-        <version.apache.karaf>4.0.4</version.apache.karaf>
+        <version.apache.karaf>4.2.4</version.apache.karaf>
         <version.jboss.arquillian.core>1.4.0.Final</version.jboss.arquillian.core>
         <version.jboss.logging>3.3.1.Final</version.jboss.logging>
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
