@@ -1,0 +1,21 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "11:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: org.eclipse.platform:org.eclipse.osgi
+    versions:
+    - 3.16.100
+  - dependency-name: org.apache.karaf:org.apache.karaf.main
+    versions:
+    - 4.3.0
+  - dependency-name: biz.aQute.bnd:biz.aQute.bndlib
+    versions:
+    - 5.2.0
+  - dependency-name: org.jboss:jboss-parent
+    versions:
+    - "37"
