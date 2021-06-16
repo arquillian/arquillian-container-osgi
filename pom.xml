@@ -44,7 +44,7 @@
         <version.osgi>6.0.0</version.osgi>
         <version.osgi.enterprise>5.0.0</version.osgi.enterprise>
         <version.slf4j>1.5.11</version.slf4j>
-        <version.eclipse.equinox>3.11.2</version.eclipse.equinox>
+        <version.eclipse.equinox>3.16.300</version.eclipse.equinox>
 
         <!-- Plugin versions -->
         <version-maven-antrun-plugin>1.7</version-maven-antrun-plugin>
