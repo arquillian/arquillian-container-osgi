@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.jboss.osgi.metadata</groupId>
             <artifactId>jbosgi-metadata</artifactId>
-            <version>4.0.0.CR1</version>
+            <version>6.0.1.Final</version>
         </dependency>
         <dependency>
             <groupId>biz.aQute.bnd</groupId>
