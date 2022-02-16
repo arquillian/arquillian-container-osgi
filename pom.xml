@@ -32,7 +32,7 @@
         <version.jboss.logging>3.3.1.Final</version.jboss.logging>
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
         <version.jboss.osgi.framework>5.0.1.Final</version.jboss.osgi.framework>
-        <version.jboss.osgi.metadata>4.0.0.CR1</version.jboss.osgi.metadata>
+        <version.jboss.osgi.metadata>6.0.1.Final</version.jboss.osgi.metadata>
         <version.jboss.osgi.spi>6.0.1.Final</version.jboss.osgi.spi>
         <version.jboss.osgi.vfs>4.0.1.Final</version.jboss.osgi.vfs>
         <version.jboss.vfs>3.2.11.Final</version.jboss.vfs>
