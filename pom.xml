@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>9</version>
+        <version>38</version>
     </parent>
 
     <groupId>org.jboss.arquillian.osgi</groupId>
@@ -20,15 +20,15 @@
     <scm>
         <connection>scm:git:https://github.com/arquillian/arquillian-container-osgi.git</connection>
         <developerConnection>scm:git:https://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
-        <url>http://github.com/arquillian/arquillian-container-osgi.git</url>
+        <url>https://github.com/arquillian/arquillian-container-osgi.git</url>
         <tag>HEAD</tag>
     </scm>
 
     <!-- Properties -->
     <properties>
-        <version.apache.felix.framework>4.2.1</version.apache.felix.framework>
+        <version.apache.felix.framework>6.0.1</version.apache.felix.framework>
         <version.apache.karaf>4.0.4</version.apache.karaf>
-        <version.jboss.arquillian.core>1.4.0.Final</version.jboss.arquillian.core>
+        <version.jboss.arquillian.core>1.6.0.Final</version.jboss.arquillian.core>
         <version.jboss.logging>3.3.1.Final</version.jboss.logging>
         <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
         <version.jboss.osgi.framework>5.0.1.Final</version.jboss.osgi.framework>
@@ -36,15 +36,15 @@
         <version.jboss.osgi.spi>6.0.1.Final</version.jboss.osgi.spi>
         <version.jboss.osgi.vfs>4.0.1.Final</version.jboss.osgi.vfs>
         <version.jboss.vfs>3.2.11.Final</version.jboss.vfs>
-        <version.jboss.modules>1.5.1.Final</version.jboss.modules>
+        <version.jboss.modules>1.11.0.Final</version.jboss.modules>
         <version.jboss.msc>1.2.6.Final</version.jboss.msc>
-        <version.junit>4.12</version.junit>
+        <version.junit>4.13.1</version.junit>
         <version.hamcrest-core>1.3</version.hamcrest-core>
-        <version.mockito>1.8.4</version.mockito>
+        <version.mockito>1.10.19</version.mockito>
         <version.osgi>6.0.0</version.osgi>
         <version.osgi.enterprise>5.0.0</version.osgi.enterprise>
-        <version.slf4j>1.5.11</version.slf4j>
         <version.eclipse.equinox>3.16.300</version.eclipse.equinox>
+        <version.slf4j>1.7.25</version.slf4j>
 
         <!-- Plugin versions -->
         <version-maven-antrun-plugin>1.7</version-maven-antrun-plugin>
@@ -264,7 +264,7 @@
         <repository>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
