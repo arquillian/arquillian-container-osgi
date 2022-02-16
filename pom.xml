@@ -35,7 +35,7 @@
         <version.jboss.osgi.metadata>4.0.0.CR1</version.jboss.osgi.metadata>
         <version.jboss.osgi.spi>6.0.1.Final</version.jboss.osgi.spi>
         <version.jboss.osgi.vfs>4.0.1.Final</version.jboss.osgi.vfs>
-        <version.jboss.vfs>3.2.11.Final</version.jboss.vfs>
+        <version.jboss.vfs>3.2.16.Final</version.jboss.vfs>
         <version.jboss.modules>1.11.0.Final</version.jboss.modules>
         <version.jboss.msc>1.2.6.Final</version.jboss.msc>
         <version.junit>4.13.1</version.junit>
