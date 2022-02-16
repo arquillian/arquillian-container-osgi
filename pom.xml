@@ -20,7 +20,7 @@
     <scm>
         <connection>scm:git:https://github.com/arquillian/arquillian-container-osgi.git</connection>
         <developerConnection>scm:git:https://github.com/arquillian/arquillian-container-osgi.git</developerConnection>
-        <url>http://github.com/arquillian/arquillian-container-osgi.git</url>
+        <url>https://github.com/arquillian/arquillian-container-osgi.git</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -264,7 +264,7 @@
         <repository>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
