@@ -30,7 +30,7 @@
         <version.apache.karaf>4.0.4</version.apache.karaf>
         <version.jboss.arquillian.core>1.6.0.Final</version.jboss.arquillian.core>
         <version.jboss.logging>3.3.1.Final</version.jboss.logging>
-        <version.jboss.logmanager>1.4.1.Final</version.jboss.logmanager>
+        <version.jboss.logmanager>2.1.18.Final</version.jboss.logmanager>
         <version.jboss.osgi.framework>5.0.1.Final</version.jboss.osgi.framework>
         <version.jboss.osgi.metadata>4.0.0.CR1</version.jboss.osgi.metadata>
         <version.jboss.osgi.spi>6.0.1.Final</version.jboss.osgi.spi>
