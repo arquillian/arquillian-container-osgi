@@ -96,6 +96,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <jboss.modules.system.pkgs>java.util.logging</jboss.modules.system.pkgs>
                         <test.archive.directory>${project.build.directory}/test-libs</test.archive.directory>
                         <log4j.configuration>file://${basedir}/src/test/resources/logging.properties</log4j.configuration>
                     </systemPropertyVariables>
