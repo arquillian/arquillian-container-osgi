@@ -43,7 +43,7 @@
         <version.mockito>1.10.19</version.mockito>
         <version.osgi>6.0.0</version.osgi>
         <version.osgi.enterprise>5.0.0</version.osgi.enterprise>
-        <version.eclipse.equinox>3.16.300</version.eclipse.equinox>
+        <version.eclipse.equinox>3.17.200</version.eclipse.equinox>
         <version.slf4j>1.7.36</version.slf4j>
 
         <!-- Plugin versions -->
